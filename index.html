@@ -523,6 +523,26 @@ const CONFIG = {
   // Ekip listesini değiştirdiğinizde bu sayıyı artırın: kayıtlı verideki ekip, aynı isimli üyeler
   // güncellenerek ve yeni üyeler eklenerek otomatik eşitlenir (elle eklenen üyelere dokunulmaz).
   teamVersion: 2,
+  // Kat işlevleri: kayıtlı bir kat adı girilmemişse bu adlar gösterilir. restricted: herkes çıkamaz (kısıtlı erişim)
+  floorInfo: {
+    'K1-1': { name:'Giriş · Lobi, Güvenlik ve Turnikeler', desc:'Lobi bekleme alanı, güvenlik noktası ve turnikeler.' },
+    'K1-21':{ name:'Toplantı Odaları', desc:'Toplantı odaları katı.' },
+    'K1-36':{ name:'Genel Müdür Yardımcıları', desc:'Diğer genel müdür yardımcıları.', restricted:true },
+    'K1-37':{ name:'Genel Müdür ve GMY’ler', desc:'Genel müdür ve genel müdür yardımcıları.', restricted:true },
+    'K1-38':{ name:'Yönetim Kurulu Başkanlığı', desc:'Yönetim kurulu başkanlığı.', restricted:true },
+    'K1-40':{ name:'Yemek Salonları', desc:'Yemek salonları.' },
+    'K1-41':{ name:'Konferans Alanı', desc:'Konferans alanı.' },
+    'K2-0': { name:'Spor Salonu', desc:'Kule 2 asma katındaki spor salonu.' },
+  },
+  // Ortak alanlar: haritada etiketle gösterilir; kat gibi görev, not ve hatırlatma tutulabilir
+  spaces: [
+    { id:'CARSI', label:'Çarşı', icon:'🛍️', pos:[44,23,30], desc:'Kulelerin ortak çarşısı: kafeler, restoranlar, kahve mekânları, market, eczane, kuaför ve mağazalar. İşmekan çalışma alanı ve Girişimcilik Şubesi.' },
+    { id:'B1', label:'-1 Kat · Yemekhane', icon:'🍽️', pos:[-3,24,-28], desc:'Orta avlulu yemekhane, revir ve diş hekimi.' },
+    { id:'ODITORYUM', label:'Oditoryum', icon:'🎭', pos:[-46,11,84], desc:'Peyzaj alanından girilen oditoryum: büyük sahne ve geniş seyirci kapasitesi. Etkinlik biletleri İŞİM uygulamasından alınır.' },
+    { id:'OTOPARK', label:'Açık Otopark · EV Şarj', icon:'🔌', pos:[112,9,-33], desc:'Açık otopark ve elektrikli araç şarj üniteleri.' },
+    { id:'B4', label:'-4 Otopark · EV Şarj', icon:'🅿️', pos:[-112,16,-1], desc:'Kapalı otopark katı (-4) ve elektrikli araç şarj alanı.' },
+    { id:'PEYZAJ', label:'Peyzaj · Açık Alan', icon:'🌳', pos:[40,10,90], desc:'Yürüyüş yolları, sigara içme alanları, temiz hava sahası ve Kibele heykeli. Paşa, diğer köpek ve kediler de burada.' },
+  ],
   // Vaziyet planından alınan peyzaj/yerleşim öğeleri (yerel koordinatlar, m)
   site: {
     roundabout:{x:104,z:8,r:12,fr:5.5},                 // doğu girişi: çeşmeli göbek
@@ -537,6 +557,12 @@ const CONFIG = {
     treeRow:{z:-72,x0:-28,x1:26,step:7},
     pergolas:[[-9,-65,9],[7,-65,9]],
     galleries:[[-24,8.4,2,8.4,14.9],[20,8.4,76,8.4,16.9],[11,16,11,46,16.9]],
+    kibele:{x:38,z:86},                                   // Kibele heykeli
+    auditorium:{x:-46,z:85},                              // oditoryum giriş pavyonu
+    smokeZones:[{x:-82,z:62,ent:'K3',via:[]},{x:87,z:38,ent:'MAIN',via:[[88,60]]},{x:68,z:-58,ent:'K1',via:[]}], // sigara içme alanları
+    cleanAir:{x:-107,z:60},                               // temiz hava sahası
+    evChargers:4,                                         // açık otoparktaki şarj ünitesi sayısı
+    shopSigns:['☕ KAHVE','🍽️ RESTORAN','🛒 MARKET','✚ ECZANE','✂️ KUAFÖR','💡 İŞMEKAN'],
   },
   palettes: {
     floorTags: ['#4cc2ff','#7b8cff','#b278ff','#ff7eb6','#ff5d6c','#ffa94d','#ffd84d','#4cd98a','#2ee6d6','#a3b1c6'],
@@ -1023,7 +1049,8 @@ function terrainH(x,z){
 function inParking(x,z,m=0){ const PK=CONFIG.parking; return x>PK.x0-m&&x<PK.x1+m&&z>PK.z0-m&&z<PK.z1+m; }
 const SITE=CONFIG.site;
 const siteZones=[{x:SITE.roundabout.x,z:SITE.roundabout.z,r:SITE.roundabout.r+10},{x:SITE.loop.x,z:SITE.loop.z,r:SITE.loop.r+4},
-  {x:(SITE.garage.x0+SITE.garage.x1)/2,z:(SITE.garage.z0+SITE.garage.z1)/2,r:27},...SITE.palms.map(([x,z])=>({x,z,r:4}))];
+  {x:(SITE.garage.x0+SITE.garage.x1)/2,z:(SITE.garage.z0+SITE.garage.z1)/2,r:27},...SITE.palms.map(([x,z])=>({x,z,r:4})),
+  {x:SITE.kibele.x,z:SITE.kibele.z,r:8},{x:SITE.auditorium.x,z:SITE.auditorium.z,r:13},{x:SITE.cleanAir.x,z:SITE.cleanAir.z,r:6}];
 const GRASS_A=col('#5f9440'), GRASS_B=col('#86b552'), GRASS_C=col('#9fbf5e'), DRY=col('#a8a35a'), PLAZA_C=col('#cfc4ae'), PLAZA_D=col('#b9ad96'), SOIL=col('#6a4a30');
 function terrainColor(x,z,t,c){
   const n=fbm(x*.025,z*.025,3), n2=vnoise(x*.18,z*.18);
@@ -1441,15 +1468,83 @@ function buildSiteDetails(){
   for(const [x,z,a] of [[72,6,.6],[75,13,.9],[8,40,.4],[-20,-6,1.1]]){ const y=x>3.5&&z>-1?16.9:14.9;
     const dish=new THREE.Mesh(new THREE.SphereGeometry(1.3,12,6,0,Math.PI*2,0,1).rotateX(-.9).rotateY(a),envMat({color:'#e8e8e6',roughness:.5,side:THREE.DoubleSide},{keep:true}));
     dish.position.set(x,y+1.4,z); towersGroup.add(dish); const st=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1.4,6),envMat({color:'#777',roughness:.5},{keep:true})); st.position.set(x,y+.7,z); towersGroup.add(st); }
+  // ---- Kibele heykeli (aslanlı tahtta oturan tanrıça, bronz) ----
+  { const K=S.kibele, y=terrainH(K.x,K.z), B=[], bz='#8a6a45', s=1.6;
+    add(new THREE.CylinderGeometry(5.2,5.4,.3,28).translate(K.x,y+.15,K.z),'#d6cfc0');
+    add(new THREE.BoxGeometry(3.6,2.2,3).translate(K.x,y+1.4,K.z),'#cfc6b4'); add(new THREE.BoxGeometry(4,.3,3.4).translate(K.x,y+2.6,K.z),'#bdb3a0');
+    const T=(g)=>B.push(cg(g.scale(s,s,s).translate(K.x,y+2.75,K.z),bz));
+    T(new THREE.BoxGeometry(1.4,.9,1).translate(0,.45,-.1)); T(new THREE.BoxGeometry(1.4,1.2,.2).translate(0,1.3,-.55));
+    T(new THREE.CylinderGeometry(.32,.42,1.1,8).translate(0,1.45,0)); T(new THREE.SphereGeometry(.24,10,8).translate(0,2.2,0)); T(new THREE.CylinderGeometry(.18,.22,.36,8).translate(0,2.52,0));
+    T(new THREE.BoxGeometry(.7,.25,.55).translate(0,.95,.35)); T(new THREE.BoxGeometry(.5,.6,.2).translate(0,.45,.6));
+    for(const sx of [-1,1]){ T(new THREE.BoxGeometry(.38,.42,.8).translate(sx*.95,.25,.25)); T(new THREE.BoxGeometry(.32,.36,.32).translate(sx*.95,.62,.62)); T(new THREE.IcosahedronGeometry(.25,0).translate(sx*.95,.62,.48)); }
+    islandGroup.add(vcMesh(B,{keep:true},{metalness:.65,roughness:.38})); }
+  // ---- Oditoryum giriş pavyonu (peyzajdan girilir) ----
+  { const A=S.auditorium, y=terrainH(A.x,A.z);
+    add(new THREE.BoxGeometry(16,.4,11).translate(A.x,y+.2,A.z),'#d6cfc0');
+    add(new THREE.BoxGeometry(12,4,7).translate(A.x,y+2.4,A.z+.5),'#8fb8da');
+    add(new THREE.BoxGeometry(16,.5,10.5).translate(A.x,y+4.65,A.z),'#e8e2d6');
+    for(const sx of [-7.4,7.4]) for(const sz of [-4.6,4.6]) add(new THREE.CylinderGeometry(.18,.18,4.2,8).translate(A.x+sx,y+2.5,A.z+sz),'#e8e2d6');
+    add(new THREE.BoxGeometry(5,.1,3).translate(A.x,y+.42,A.z-4.2),'#3a3f46');
+    for(let k=0;k<4;k++) add(new THREE.BoxGeometry(5,.12,.5).translate(A.x,y+.36,A.z-3.2-k*.5),k%2?'#9a9690':'#b8b2a8');
+    signMesh('ODİTORYUM',9,1.5,'#14233f','#ffd76a',A.x,y+5.25,A.z-5.27,Math.PI);
+    signMesh('Etkinlik biletleri · İŞİM uygulaması',8,.9,'#1d2a40','#ffffff',A.x,y+3.3,A.z-3.05,Math.PI); }
+  // ---- Sigara içme alanları (sundurma, kül tablası, tabela) ----
+  for(const Z of S.smokeZones){ const y=terrainH(Z.x,Z.z);
+    for(const sx of [-3,3]) for(const sz of [-2,2]) add(new THREE.CylinderGeometry(.1,.1,3,6).translate(Z.x+sx,y+1.5,Z.z+sz),'#5a5f66');
+    add(new THREE.BoxGeometry(6.8,.18,4.8).translate(Z.x,y+3.05,Z.z),'#b9c3cc');
+    for(const sx of [-3.6,3.6]){ add(new THREE.CylinderGeometry(.24,.2,1,10).translate(Z.x+sx,y+.5,Z.z+2.6),'#2f3338'); add(new THREE.CylinderGeometry(.26,.26,.06,10).translate(Z.x+sx,y+1.02,Z.z+2.6),'#9aa0a6'); }
+    add(new THREE.CylinderGeometry(.06,.06,2.2,6).translate(Z.x+3.9,y+1.1,Z.z-2.4),'#5a5f66');
+    signMesh('🚬 SİGARA İÇME ALANI',3.4,.7,'#2b2f36','#ffd76a',Z.x+3.9,y+2.3,Z.z-2.4,Math.PI/2); }
+  // ---- Temiz hava sahası ----
+  { const C=S.cleanAir, y=terrainH(C.x,C.z); add(new THREE.CylinderGeometry(4.6,4.8,.2,26).translate(C.x,y+.1,C.z),'#cfe2c0');
+    add(new THREE.CylinderGeometry(.06,.06,2.4,6).translate(C.x,y+1.2,C.z+4),'#5a5f66');
+    signMesh('🌿 TEMİZ HAVA SAHASI · Sigara içilmez',4.6,.8,'#1f5a3a','#ffffff',C.x,y+2.5,C.z+4.05,0);
+    for(const a of [0,2.1,4.2]){ const bx=C.x+Math.cos(a)*3.2, bz=C.z+Math.sin(a)*3.2, yaw=Math.atan2(-Math.cos(a),-Math.sin(a));
+      for(const g of [new THREE.BoxGeometry(2.2,.1,.55).translate(0,.48,0),new THREE.BoxGeometry(2.2,.5,.08).translate(0,.78,-.28)]){ const gg=cg(g,'#8a6a4a'); gg.rotateY(yaw); gg.translate(bx,y,bz); P.push(gg); } } }
+  // ---- Açık otopark: elektrikli araç şarj üniteleri ----
+  { const PK=CONFIG.parking, sc=new THREE.MeshBasicMaterial({color:new THREE.Color(.3,2.4,.9),toneMapped:false});
+    for(let k=0;k<S.evChargers;k++){ const z=PK.z0+1.8+k*3.6, x=PK.x1-.7;
+      add(new THREE.BoxGeometry(.35,1.6,.6).translate(x,.42+.8,z),'#f2f4f6'); add(new THREE.BoxGeometry(.05,.08,3).translate(PK.x1-4.5,.44,z+1.6),'#3fae6b');
+      const s=new THREE.Mesh(new THREE.BoxGeometry(.06,.35,.4),sc); s.position.set(x-.2,.42+1.2,z); islandGroup.add(s); }
+    signMesh('🔌 EV ŞARJ',3,.8,'#1f5a3a','#ffffff',PK.x1+.2,3,PK.z0+5,Math.PI/2);
+    add(new THREE.CylinderGeometry(.06,.06,2.6,6).translate(PK.x1+.2,.42+1.3,PK.z0+5),'#5a5f66'); }
+  // ---- Çarşı tabelaları (podyum cephesi) ----
+  S.shopSigns.forEach((t,i)=>signMesh(t,6.8,1.3,['#5b3a29','#7a2f2f','#2b5a3a','#1f6b52','#5b3a6b','#1f4e79'][i%6],'#ffffff',31+i*8.4,6.4,47.42,0));
+  signMesh('ÇARŞI',8,1.6,'#14233f','#ffd76a',18,14.6,47.5,0);
+  signMesh('GİRİŞİMCİLİK ŞUBE',10,1.3,'#1f4e79','#ffffff',-38.25,7.2,42.4,0);
   islandGroup.add(vcMesh(P));
 }
+function signMesh(text,w,h,bg,fg,x,y,z,rotY){ const c=document.createElement('canvas'); const W=512, H=Math.max(48,Math.round(512*h/w)); c.width=W; c.height=H; const g=c.getContext('2d');
+  g.fillStyle=bg; g.fillRect(0,0,W,H); g.strokeStyle='rgba(255,255,255,.35)'; g.lineWidth=3; g.strokeRect(4,4,W-8,H-8);
+  g.fillStyle=fg; let fs=Math.floor(H*.58); g.font=`700 ${fs}px Inter,Segoe UI,sans-serif`; while(g.measureText(text).width>W-30&&fs>10){ fs-=2; g.font=`700 ${fs}px Inter,Segoe UI,sans-serif`; }
+  g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,W/2,H/2+2);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,side:THREE.DoubleSide})); m.position.set(x,y,z); m.rotation.y=rotY; islandGroup.add(m); return m; }
+/* ---- Ortak alanlar (seçilebilir birimler) + harita etiketleri ---- */
+const SPACE_TW={id:'A',name:'Ortak Alanlar',labels:{}};
+const spaces=[]; const pinGroup=new THREE.Group(); scene.add(pinGroup);
+function pinTexture(s,open,over){ const c=document.createElement('canvas'); c.width=512; c.height=128; const g=c.getContext('2d');
+  const r=40; g.fillStyle='rgba(14,20,34,.86)'; g.beginPath(); g.roundRect(6,10,500,92,r); g.fill(); g.strokeStyle='rgba(76,194,255,.75)'; g.lineWidth=4; g.stroke();
+  g.beginPath(); g.moveTo(240,100); g.lineTo(256,124); g.lineTo(272,100); g.closePath(); g.fillStyle='rgba(14,20,34,.86)'; g.fill();
+  g.fillStyle='#fff'; g.font='600 44px Inter,Segoe UI,sans-serif'; g.textBaseline='middle'; g.fillText(s.icon+' '+s.label,34,57,open?380:440);
+  if(open){ g.fillStyle=over?'#ff5d6c':'#4cc2ff'; g.beginPath(); g.arc(462,56,30,0,7); g.fill(); g.fillStyle='#04121c'; g.font='700 34px Inter,sans-serif'; g.textAlign='center'; g.fillText(String(open),462,58); }
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; }
+function buildSpaces(){
+  for(const s of CONFIG.spaces){ const key='A-'+s.id, pos=V(...s.pos);
+    const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:pinTexture(s,0,0),depthTest:false,depthWrite:false,transparent:true,sizeAttenuation:false,toneMapped:false}));
+    spr.position.copy(pos); spr.center.set(.5,0); spr.scale.set(.15,.0375,1); spr.renderOrder=30; spr.userData={spaceKey:key}; pinGroup.add(spr);
+    const f={key,tw:SPACE_TW,no:s.id,idx:0,label:s.label,isSpace:true,space:s,pos,mesh:spr,y0:pos.y,h:4,half:20,pinState:''};
+    spaces.push(f); floorByKey.set(key,f); }
+}
+function updatePins(){ pinGroup.visible=false; return; // harita etiketleri kapalı (ortak alanlara Alanlar rehberinden erişilir)
+  for(const f of spaces){ const st=floorStats(f.key), sig=st.open+'/'+st.overdue; if(sig===f.pinState) continue; f.pinState=sig; const m=f.mesh.material; m.map.dispose(); m.map=pinTexture(f.space,st.open,st.overdue); m.needsUpdate=true; } }
 function signTex(t,bg){ const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.fillStyle=bg; g.fillRect(0,0,128,128); g.fillStyle='#fff'; g.font='700 96px Inter,Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,64,70); const tx=new THREE.CanvasTexture(c); tx.colorSpace=THREE.SRGBColorSpace; return tx; }
 function helipadTex(){ const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d'); g.fillStyle='#5d6168'; g.fillRect(0,0,256,256);
   g.strokeStyle='#f0f0ea'; g.lineWidth=6; g.strokeRect(14,14,228,228); g.lineWidth=7; g.beginPath(); g.moveTo(128,52); g.lineTo(214,200); g.lineTo(42,200); g.closePath(); g.stroke();
   g.fillStyle='#f0f0ea'; g.font='700 78px Inter,Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('H',128,150);
   const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; }
 
-buildTowers(); buildPodium(); buildIsland(); buildPaths(); buildWater(); buildVegetation(); buildLamps(); buildSiteDetails(); buildSatellites();
+buildTowers(); buildPodium(); buildIsland(); buildPaths(); buildWater(); buildVegetation(); buildLamps(); buildSiteDetails(); buildSpaces(); buildSatellites();
 
 /* ===================== Gökyüzü, yıldızlar, ay ===================== */
 const skyU = { uFlash:{value:0}, uTop:{value:col('#3274d2')}, uHorizon:{value:col('#bcd7f0')}, uBottom:{value:col('#a8bdd4')}, uSunDir:{value:V(0,1,0)}, uSunColor:{value:col('#ffffff')}, uSunAmt:{value:1}, uMoonDir:{value:V(0,1,0)}, uNight:G.uNight, uClay:G.uClay, uCyber:G.uCyber };
@@ -1910,7 +2005,9 @@ if(DB.view.camera && Array.isArray(DB.view.camera.position)){ camera.position.fr
 const raycaster=new THREE.Raycaster(); const ndc=new THREE.Vector2(); let needRay=false, hovered=null, selected=null, downInfo=null, mouse={x:0,y:0};
 const rayTargets=[...floors.map(f=>f.mesh),...raycastBlockers];
 const tooltip=document.getElementById('tooltip');
-function pickAt(){ raycaster.setFromCamera(ndc,camera); const hits=raycaster.intersectObjects(rayTargets,false);
+function pickAt(){ raycaster.setFromCamera(ndc,camera);
+  if(pinGroup.visible){ const ph=raycaster.intersectObjects(pinGroup.children,false); if(ph.length) return floorByKey.get(ph[0].object.userData.spaceKey); }
+  const hits=raycaster.intersectObjects(rayTargets,false);
   for(const h of hits){ if(h.object.userData.isFloor) return floorByKey.get(h.object.userData.key); if(h.object.userData.blocker) return null; } return null; }
 canvas.addEventListener('pointermove',e=>{ mouse.x=e.clientX; mouse.y=e.clientY; ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);
   if(downInfo && Math.hypot(e.clientX-downInfo.x,e.clientY-downInfo.y)>6) downInfo.drag=true;
@@ -1930,8 +2027,10 @@ function setHover(f){
   canvas.style.cursor=f?'pointer':'';
   if(f){ tooltip.innerHTML=tooltipHTML(f); tooltip.classList.remove('hidden'); positionTooltip(); } else tooltip.classList.add('hidden');
 }
-function updateOutline(){ const sel=[]; if(selected) sel.push(selected.mesh); if(hovered && hovered!==selected) sel.push(hovered.mesh); outlinePass.selectedObjects=sel; outlinePass.enabled=sel.length>0; }
+function updateOutline(){ const sel=[]; if(selected&&!selected.isSpace) sel.push(selected.mesh); if(hovered && hovered!==selected && !hovered.isSpace) sel.push(hovered.mesh); outlinePass.selectedObjects=sel; outlinePass.enabled=sel.length>0; }
 function focusFloor(f,dur=1.4){
+  if(f.isSpace){ const target=f.pos.clone(); target.y=Math.max(2,target.y-8); const dir=camera.position.clone().sub(target); dir.y=0; if(dir.lengthSq()<1) dir.set(.6,0,.8); dir.normalize();
+    const pos=target.clone().addScaledVector(dir,110); pos.y+=55; flyTo(pos,target,dur); return; }
   const info=towerInfo[f.tw.id]; const target=V(info.x,f.y0+f.h/2,info.z);
   const dir=camera.position.clone().sub(target); dir.y=0; if(dir.lengthSq()<1) dir.set(.6,0,.8); dir.normalize();
   const dist=Math.max(f.half*6.4,115); const pos=target.clone().addScaledVector(dir,dist); pos.y+=dist*.3;
@@ -1946,7 +2045,7 @@ function selectFloor(key,opts={}){
 }
 function deselect(){ selected=null; updateOutline(); closePanel(); }
 function stepFloor(dir){
-  if(!selected) return; const info=towerInfo[selected.tw.id]; const i=selected.idx+dir; if(i<0||i>=info.floors.length) return;
+  if(!selected||selected.isSpace) return; const info=towerInfo[selected.tw.id]; const i=selected.idx+dir; if(i<0||i>=info.floors.length) return;
   selectFloor(info.floors[i].key,{keepTab:true});
 }
 function focusSelected(){ if(selected) focusFloor(selected); else flyToView('general'); }
@@ -2022,8 +2121,9 @@ const PANTS=['#2b2f36','#3b4250','#1f2a3a','#5a4a3a','#6b6f78','#252525'];
 const SKINS=['#f1c7a5','#e0ac85','#c68a62','#a8714a','#f5d6bd','#8d5a3b'];
 const UMBS=['#d63a3a','#2f6fd6','#f2c200','#2d2d2d','#3fae6b','#8e44ad'];
 const ENT={ K2:{door:[-13.5,46.6],front:[-13.5,57]}, K3:{door:[-63,46.6],front:[-63,57]}, MAIN:{door:[18,47.6],front:[18,59]}, K1:{door:[55,-47.6],front:[55,-57]} };
-const WALK_ROUTES={ south:[ [[18,69],[18,88],[19,102]], [[88,60],[93,24],[118,22],[132,15],[140,6],[152,10],[160,13]], [[88,60],[92,24],[88,8],[90,-8],[112,-6]], [[-88,60],[-100,62],[-104,68]], [[-88,60],[-97,29],[-114,30],[-126,28]], [[70,66],[86,98],[96,110]] ],
-  north:[ [[30,-60],[2,-66],[2,-82],[0,-96]], [[30,-60],[-30,-62],[-60,-70],[-60,-80],[-80,-100],[-94,-116]], [[88,-58],[90,-12],[112,-6]], [[30,-60],[-20,-62],[-37,-52],[-38,-28]] ] };
+const WALK_ROUTES={ south:[ [[18,69],[18,88],[19,102]], [[88,60],[93,24],[118,22],[132,15],[140,6],[152,10],[160,13]], [[88,60],[92,24],[88,8],[90,-8],[112,-6]], [[-88,60],[-100,62],[-104,68]], [[-88,60],[-97,29],[-114,30],[-126,28]], [[70,66],[86,98],[96,110]],
+    [[18,69],[30,79],[34,82]], [[-55,64],[-55,74],[-46,78]], [[-55,64],[-55,74],[-48,78]], [[-88,64],[-100,64],[-104,61]], [[24,64],[44,64],[44,58]] ],
+  north:[ [[30,-60],[2,-66],[2,-82],[0,-96]], [[30,-60],[-30,-62],[-60,-70],[-60,-80],[-80,-100],[-94,-116]], [[88,-58],[90,-12],[112,-6]], [[30,-60],[-20,-62],[-37,-52],[-38,-28]], [[30,-60],[12,-57],[6,-55]], [[30,-60],[-6,-57],[-10,-55]] ] };
 const agents=[], freeSlots=[...Array(MAXP).keys()].reverse(), groups=[];
 let lifeT=0, nextSpawn=2, lifeInit=false;
 function newAgent(kind,x,z){
@@ -2047,24 +2147,18 @@ function spawnWalker(){
 }
 function spawnJogger(){ const a=newAgent('jogger',0,0); if(!a) return; a.state='jog'; a.u=Math.random(); a.dir=Math.random()<.5?1:-1; }
 const CANOPY_SPOTS=[{c:[-13.5,49.2],ent:'K2'},{c:[-63,49.2],ent:'K3'},{c:[18,50.6],ent:'MAIN'}];
+// Sigara yalnızca belirlenmiş sigara içme alanlarında: her alanda sundurma altı + yanında bir grup yeri.
+// Yağmur/karda sadece sundurmanın altı kullanılır.
 function chooseSmokeSpot(rainy){
-  if(rainy){ const free=CANOPY_SPOTS.filter(s=>!groups.some(g=>Math.hypot(g.c[0]-s.c[0],g.c[1]-s.c[1])<5)); if(!free.length) return null; const s=pick(free); return {c:[s.c[0]+R2(-2.5,2.5),s.c[1]],ent:s.ent,via:[]}; }
-  for(let tries=0;tries<30;tries++){
-    const zone=Math.random(); let c,ent,via=[];
-    if(zone<.62){ c=[R2(-86,80),R2(56,66)]; if(Object.values(ENT).some(e=>Math.abs(e.door[0]-c[0])<7&&e.door[1]>0)) continue;
-      ent=['K3','K2','MAIN'].sort((p,q)=>Math.abs(ENT[p].front[0]-c[0])-Math.abs(ENT[q].front[0]-c[0]))[0]; }
-    else if(zone<.82){ c=[R2(36,80),R2(-61,-53)]; ent='K1'; if(Math.abs(c[0]-55)<6) continue; }
-    else { c=[R2(84,92),R2(-30,50)]; if(c[1]<10){ ent='K1'; via=[[88,-57]]; } else { ent='MAIN'; via=[[88,60]]; } }
-    if(groups.some(g=>Math.hypot(g.c[0]-c[0],g.c[1]-c[1])<9)) continue;
-    if(siteObstacles.some(o=>Math.hypot(o.x-c[0],o.z-c[1])<o.r)) continue;
-    return {c,ent,via};
-  }
-  return null;
+  const opts=[];
+  for(const Z of SITE.smokeZones){ const slots=rainy?[[0,0]]:[[0,0],[5.8,0]];
+    for(const [dx,dz] of slots){ const c=[Z.x+dx,Z.z+dz]; if(groups.some(g=>Math.hypot(g.c[0]-c[0],g.c[1]-c[1])<4.5)) continue; opts.push({c:[c[0]+R2(-.6,.6),c[1]+R2(-.6,.6)],ent:Z.ent,via:Z.via,sheltered:dx===0&&dz===0}); } }
+  return opts.length?pick(opts):null;
 }
 function spawnGroup(instant=false){
   const rainy=WX.rain>.35||WX.snow>.5; const s=chooseSmokeSpot(rainy); if(!s) return; const E=ENT[s.ent];
   const n=2+Math.floor(Math.random()*3); if(freeSlots.length<n) return;
-  const g={c:s.c,members:[],timer:R2(35,75),ent:s.ent,via:s.via,leaving:false}; groups.push(g);
+  const g={c:s.c,members:[],timer:R2(35,75),ent:s.ent,via:s.via,leaving:false,sheltered:s.sheltered}; groups.push(g);
   const rad=(n===2?.6:.6+.13*n)*PS, a0=Math.random()*6.28;
   for(let k=0;k<n;k++){
     const ang=a0+k/n*Math.PI*2, tx=s.c[0]+Math.cos(ang)*rad, tz=s.c[1]+Math.sin(ang)*rad;
@@ -2102,7 +2196,7 @@ function updateAgents(dt){
     if(!visible){ for(const m of [pTorso,pLegs,pHead,pUmb,pCig]) m.setMatrixAt(a.slot,_zero); continue; }
     _q4.setFromAxisAngle(UP,a.yaw); _v4.set(a.x,y,a.z); _m4.compose(_v4,_q4,_s4);
     pTorso.setMatrixAt(a.slot,_m4); pLegs.setMatrixAt(a.slot,_m4); pHead.setMatrixAt(a.slot,_m4);
-    pUmb.setMatrixAt(a.slot,(rainyUmb&&a.umb&&a.kind!=='jogger'&&!(a.kind==='smoker'&&a.state==='smoke'&&a.group&&Math.abs(a.z-49.5)<3))?_m4:_zero);
+    pUmb.setMatrixAt(a.slot,(rainyUmb&&a.umb&&a.kind!=='jogger'&&!(a.kind==='smoker'&&a.state==='smoke'&&a.group&&a.group.sheltered))?_m4:_zero);
     if(a.kind==='smoker'&&a.state==='smoke'){
       const cyc=(lifeT+a.ph)%7, puff=cyc<1.6; const fx=Math.sin(a.yaw), fz=Math.cos(a.yaw), rx=Math.cos(a.yaw), rz=-Math.sin(a.yaw);
       const hx=a.x+(puff?fx*.17+rx*.05:fx*.12-rx*.3)*PS, hy=y+(puff?1.55:1.08)*PS, hz=a.z+(puff?fz*.17+rz*.05:fz*.12-rz*.3)*PS;
@@ -2174,27 +2268,64 @@ const _v4b=new THREE.Vector3();
 function updateLife(dt){
   if(!DB.settings.life||!ringCurve){ lifeGroup.visible=false; return; } lifeGroup.visible=true;
   lifeT+=dt; const q=Qs();
-  if(!lifeInit){ lifeInit=true; initCars(); for(let i=0;i<Math.min(2,q.groups);i++) spawnGroup(true); for(let i=0;i<q.joggers;i++) spawnJogger(); }
+  if(!lifeInit){ lifeInit=true; initCars(); initAnimals(); for(let i=0;i<Math.min(2,q.groups);i++) spawnGroup(true); for(let i=0;i<q.joggers;i++) spawnJogger(); }
   const night=G.uNight.value, harsh=Math.max(WX.storm,WX.snow*.5);
   const maxG=Math.round(q.groups*(1-harsh*.5)), maxW=Math.round(q.walkers*(1-night*.6)*(1-harsh*.7));
   if(lifeT>nextSpawn){ nextSpawn=lifeT+R2(2.5,7);
     const nW=agents.filter(a=>a.kind==='walker').length;
     if(groups.filter(g=>!g.leaving).length<maxG && Math.random()<.55) spawnGroup(); else if(nW<maxW) spawnWalker(); }
-  updateGroups(dt); updateAgents(dt); updateCars(dt);
+  updateGroups(dt); updateAgents(dt); updateCars(dt); updateAnimals(dt);
   smokeMat.uniforms.uLight.value=.35+.65*(1-night*.7);
 }
+
+/* ---- Hayvanlar: Paşa, diğer köpek ve kediler ---- */
+const AREAS={ south:[-86,86,54,66], lawnS:[-78,78,78,100], east:[83,93,-40,50], north:[-24,88,-62,-51], west:[-93,-84,-50,50], cafe:[-15,21,-60,-50] };
+const dogGeo=mergeGeometries([colGeo(new THREE.BoxGeometry(.34,.34,.86).translate(0,.56,0),'#ffffff'),colGeo(new THREE.BoxGeometry(.3,.3,.32).translate(0,.82,.52),'#ffffff'),colGeo(new THREE.BoxGeometry(.16,.13,.2).translate(0,.75,.74),'#cfc6b8'),
+  colGeo(new THREE.BoxGeometry(.08,.14,.06).translate(-.11,1.0,.48),'#8a7b6a'),colGeo(new THREE.BoxGeometry(.08,.14,.06).translate(.11,1.0,.48),'#8a7b6a'),colGeo(new THREE.BoxGeometry(.06,.06,.05).translate(0,.78,.85),'#222222'),
+  ...[[-.11,.3],[.11,.3],[-.11,-.3],[.11,-.3]].map(([x,z])=>colGeo(new THREE.BoxGeometry(.09,.42,.09).translate(x,.21,z),'#ffffff')),colGeo(new THREE.BoxGeometry(.07,.07,.36).rotateX(.7).translate(0,.78,-.52),'#ffffff')]);
+const catGeo=mergeGeometries([colGeo(new THREE.BoxGeometry(.18,.18,.46).translate(0,.3,0),'#ffffff'),colGeo(new THREE.BoxGeometry(.19,.17,.17).translate(0,.45,.28),'#ffffff'),
+  colGeo(new THREE.ConeGeometry(.045,.09,4).translate(-.06,.58,.28),'#ffffff'),colGeo(new THREE.ConeGeometry(.045,.09,4).translate(.06,.58,.28),'#ffffff'),
+  ...[[-.06,.16],[.06,.16],[-.06,-.16],[.06,-.16]].map(([x,z])=>colGeo(new THREE.BoxGeometry(.05,.22,.05).translate(x,.11,z),'#ffffff')),colGeo(new THREE.BoxGeometry(.04,.04,.42).rotateX(-1.0).translate(0,.5,-.36),'#ffffff')]);
+const dogs=new THREE.InstancedMesh(dogGeo,personMat,2), cats=new THREE.InstancedMesh(catGeo,personMat,14);
+for(const m of [dogs,cats]){ m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled=false; m.castShadow=true; lifeGroup.add(m); }
+const CAT_NAMES=['Tekir','Pamuk','Sarman','Duman','Minnoş','Boncuk','Zeytin','Fıstık','Karamel','Gece','Lokum','Şeker','Mırmır','Bulut'];
+const CAT_COLS=['#e2a65a','#f4f1ea','#7d7f86','#2b2b2b','#c98a4b','#d9d2c3','#6b5a4a','#f0c78a','#9a9690','#1f1f1f','#e9dccb','#b87a3d','#8c8f96','#efe9df'];
+const animals=[];
+function initAnimals(){
+  const dogDefs=[{name:'Paşa',col:'#c79a5e',areas:['south','lawnS'],pasa:true},{name:'Paşa’nın arkadaşı',col:'#3a3532',areas:['east','north']}];
+  dogDefs.forEach((d,i)=>{ const A=AREAS[d.areas[0]]; animals.push({kind:'dog',inst:dogs,slot:i,name:d.name,pasa:!!d.pasa,areas:d.areas,x:R2(A[0],A[1]),z:R2(A[2],A[3]),yaw:Math.random()*6,tx:null,tz:null,timer:R2(1,4),speed:1.7*PS/1.7,ph:Math.random()*9}); dogs.setColorAt(i,col(d.col)); });
+  const homes=['cafe','cafe','cafe','north','south','south','south','south','west','east','cafe','lawnS','south','west'];
+  CAT_NAMES.forEach((n,i)=>{ const A=AREAS[homes[i]]; animals.push({kind:'cat',inst:cats,slot:i,name:n,areas:[homes[i]],x:R2(A[0],A[1]),z:R2(A[2],A[3]),yaw:Math.random()*6,tx:null,tz:null,timer:R2(2,12),speed:.9*PS/1.7,ph:Math.random()*9}); cats.setColorAt(i,col(CAT_COLS[i])); });
+  dogs.instanceColor.needsUpdate=true; cats.instanceColor.needsUpdate=true;
+}
+const _sA=new THREE.Vector3();
+function updateAnimals(dt){
+  for(const a of animals){ let bob=0;
+    if(a.tx==null){ a.timer-=dt; if(a.timer<=0){ const A=AREAS[pick(a.areas)]; a.tx=R2(A[0],A[1]); a.tz=R2(A[2],A[3]); a.run=a.kind==='cat'?Math.random()<.15:Math.random()<.25; } }
+    else { const dx=a.tx-a.x, dz=a.tz-a.z, d=Math.hypot(dx,dz), st=a.speed*(a.run?2.4:1)*dt;
+      if(d<=st){ a.x=a.tx; a.z=a.tz; a.tx=null; a.timer=a.kind==='cat'?R2(6,22):R2(3,10); }
+      else { a.x+=dx/d*st; a.z+=dz/d*st; const ty=Math.atan2(dx,dz); let dy=ty-a.yaw; dy=Math.atan2(Math.sin(dy),Math.cos(dy)); a.yaw+=dy*Math.min(1,dt*7); bob=Math.abs(Math.sin((lifeT+a.ph)*(a.run?16:10)))*.05*PS; } }
+    const s=a.kind==='dog'?PS:PS*.9; _s4b.set(s,s,s); if(a.kind==='dog'&&a.tx==null) a.yaw+=Math.sin(lifeT*1.3+a.ph)*.004;
+    _q4.setFromAxisAngle(UP,a.yaw); _m4.compose(_sA.set(a.x,terrainH(a.x,a.z)+bob,a.z),_q4,_s4b); a.inst.setMatrixAt(a.slot,_m4); }
+  dogs.instanceMatrix.needsUpdate=true; cats.instanceMatrix.needsUpdate=true;
+}
+const _s4b=new THREE.Vector3();
+const PASA_Q=['Ben Paşa. Bu adanın gayriresmî güvenlik şefiyim; turnike bana açılmasa da olur.','Kafe terasından düşen simit benim maaşım; zammı yoktur, ama düzenli gelir.','Kibele’nin aslanlarına havladım; cevap vermediler. Bence ben kazandım.','Sigara içme alanını denetliyorum: izmaritler bana, sohbetler size.','Herkes 38. kata çıkamıyor; ben de çıkmıyorum ama lobide en iyi yer benim.','Oditoryumda etkinlik varmış; İŞİM’den bilet alamıyorum ama kapıda karşılama yapıyorum.','Kuyruk sallama performansım bu çeyrek hedefin üstünde.'];
+const DOG_Q=['Biri “Paşa!” diye seslendi, ben de koştum. Ben Paşa değilim ama ilgi güzel.','Otoparkta EV şarj ünitesini kokladım; elektrik kokuyor, mama kokmuyor.','Paşa ile vardiyalı çalışıyoruz: o güneyi, ben doğuyu koruyorum.','Kafe terası kapanınca bütün masalar benim.'];
+const CAT_Q=['Çarşıdaki market kasiyeri bana mama veriyor; yani resmen çarşı çalışanıyım.','Yemekhane avlusunun en güneşli köşesi benim. Rezervasyonsuz toplantı odası gibi.','İşmekan’ın klavyeleri sıcak; girişimcilik ruhum oradan geliyor.','Revirdeki hemşire beni de muayene etti: sağlıklıyım, sadece biraz tembelim.','Eczanenin önündeki karton kutu benim ofisim; kapı her zaman açık.','Kuaförden çıkan herkes bana bakıyor; ama tüylerim onlarınkinden güzel.','Paşa ile anlaşmamız var: o havlar, ben görmezden gelirim.','Kibele’nin aslanları akrabalarım. Biraz fazla büyümüşler.','Kafe terasında masa yoksa sebebi benim; en güzel sandalyede uyuyorum.','Turnikeden geçmiyorum, altından geçiyorum. Kart gerekmiyor.','Spor salonunu camdan izliyorum; benim antrenmanım 16 saat uyku.','Temiz hava sahası bana göre; sigara dumanı tüylerime sinmesin.'];
 
 /* ---- Tıklama: konuşma balonu ---- */
 const bubbleEl=document.createElement('div'); bubbleEl.className='bubble hidden'; document.body.appendChild(bubbleEl); let bubbleTarget=null, bubbleT=0;
 function closeBubble(){ bubbleTarget=null; bubbleEl.classList.add('hidden'); }
 bubbleEl.addEventListener('click',e=>{ if(e.target.closest('.bx')) closeBubble(); else if(e.target.closest('.bn')&&bubbleTarget) showBubble(bubbleTarget,true); });
-function lifeWorldPos(t,out){ if(t.slot!=null&&t.kind) return out.set(t.x,terrainH(t.x,t.z)+1.95*PS,t.z); return out.set(t.x,(inParking(t.x,t.z,1)?.42:terrainH(t.x,t.z))+2.3*CSC,t.z); }
+function lifeWorldPos(t,out){ if(t.kind==='dog'||t.kind==='cat') return out.set(t.x,terrainH(t.x,t.z)+(t.kind==='dog'?1.25:.8)*PS,t.z); if(t.slot!=null&&t.kind) return out.set(t.x,terrainH(t.x,t.z)+1.95*PS,t.z); return out.set(t.x,(inParking(t.x,t.z,1)?.42:terrainH(t.x,t.z))+2.3*CSC,t.z); }
 const _pv=new THREE.Vector3();
 function pickLife(cx,cy){
   if(!DB.settings.life||!lifeGroup.visible) return null; let best=null, bd=22;
   const test=(t,yOff)=>{ lifeWorldPos(t,_pv); _pv.y-=yOff; _pv.project(camera); if(_pv.z>1) return; const sx=(_pv.x*.5+.5)*innerWidth, sy=(-_pv.y*.5+.5)*innerHeight; const d=Math.hypot(sx-cx,sy-cy); if(d<bd){ bd=d; best=t; } };
   for(const a of agents) if(a.delay<=0) test(a,.9*PS);
   for(const c of carList) if(c.state!=='off') test(c,1.4*CSC);
+  for(const a of animals) test(a,(a.kind==='dog'?.6:.45)*PS);
   return best;
 }
 function dataQuip(){
@@ -2231,6 +2362,11 @@ CRITIQUES.push('Otopark binasının üçüncü katında sinyal yok; arabam bile 
 SMOKER_Q.push('Bu çember toplantısının gündem maddesi yok ama karar çok.','Duman bile bu binada bizden hızlı terfi ediyor, hemen yukarı çıkıyor.','İçeride klima soğuk, dışarıda rüzgâr. Ortası burası: sigara noktası.','Kulübedeki güvenlik bizi kameradan izliyor; herhalde “verimlilik ölçümü”.','Sigara molası 5 dakika, bilgi alışverişi 15 dakika, dönüş yolu 10 dakika.','Burada konuşulan her şey gizli. Rüzgâr hariç.');
 JOGGER_Q.push('Göbekte üç tur attım, çeşme benden yorulmuş.','Koşarken kafe terasının kokusu beni geri çağırıyor.','Nabız 150, gelen kutusu 300. İkisi de yüksek.');
 DRIVER_Q.push('Otopark binasına girdim, çıkış rampasını bulamadım; şimdi burası evim.','Çeşmeli göbekte iki tur attım, sonra karar verdim: üçüncü tur.','Helikopter pistine park etmeyi düşündüm; güvenlik “hayır” dedi.','Bu sarı taksi her sabah aynı tur atıyor; artık rehber gibi.','Navigasyon “hedefe vardınız” dedi. Hedef 41 kat yukarıda.');
+/* ---- Mekânlara özel yorumlar (çarşı, -1 kat, kısıtlı katlar, oditoryum, hayvanlar...) ---- */
+THOUGHTS.push('Öğle arasında çarşıda kahve mi, -1’deki yemekhane mi? Avluda güneş varsa yemekhane.','İşmekan’da bir fikir buldum; Girişimcilik Şube de yan tarafta. Kader mi bu?','Spor salonuna yazıldım. Kule 2 asma kata kadar yürüdüm, bugünlük yeter.','İŞİM’den oditoryum etkinliğine bilet aldım; ön sıra, sahneye üç adım.','Kibele heykeline her sabah selam veriyorum; aslanları hâlâ cevap vermiyor.','Paşa bugün yine kapıda karşıladı; güvenlikten önce o tanıyor beni.','Eczaneden vitamin aldım, kuaförden randevu, marketten simit. Çarşı her şeyi çözüyor.','40. kattaki yemek salonundan şehir manzarası... bir gün oraya davet edileceğim.','21. katta toplantı odası buldum! Rezervasyonu yapan çıkana kadar benim.','Temiz hava sahasında beş dakika durdum; ciğerlerim teşekkür etti, gelen kutum etmedi.','Elektrikli aracımı -4’te şarja taktım; benim şarjım ise kahveye bağlı.');
+CRITIQUES.push('Turnikede kartım okunmadı; arkamdaki kedi geçti, ben kaldım.','Lobideki bekleme alanı o kadar rahat ki misafirler gitmek istemiyor.','38. kata çıkmak için kartım yetmedi; asansör 37’de bile durmadı.','36, 37, 38... Bu katlar “herkes çıkamaz” listesinde. Benim için asansörde o tuşlar dekor.','Kat 41’deki konferansa yetiştim ama konferans çoktan 40’taki yemek salonuna geçmişti.','21. kattaki toplantı odalarından biri boşsa haber verin, efsane diye anlatacağız.','-1 kattaki yemekhanede kuyruk avluya taştı; avlu da kuyruğa doymuyor.','Revirde tansiyonumu ölçtüler, Excel’i kapatınca düştü.','Diş hekimi “gülümseyin” dedi; maaş günü değildi, zorlandım.','Çarşıdaki kafelerin hepsini denedim; en iyi kahve hâlâ arkadaşın getirdiği.','Kuaförde sıra beklerken üç toplantıya katıldım; saçım değil, takvimim kısaldı.','Market kasasındaki kedi poşet istemiyor, o yüzden çevreci.','İşmekan’da yer bulmak, otoparkta EV şarj yeri bulmaktan kolay.','Açık otoparktaki EV şarj üniteleri dolu; benim telefonum da yüzde 3.','Oditoryum biletleri İŞİM’de üç dakikada tükendi; konser değil, bütçe sunumuydu.','Kibele heykeli binlerce yıldır oturuyor; toplantıda bunu ilk ben başardım sanmıştım.','Sigara içme alanının sundurması yağmuru tutuyor, dedikoduyu tutmuyor.','Temiz hava sahası yazıyor ama yanından geçen arabaların fikri farklı.','Paşa sabah turunu bitirmeden kimse lobiye girmiyor; gayriresmî güvenlik prosedürü.','Kediler yemekhanenin avlusunu kiralamış; biz misafiriz.','Spor salonunda koşu bandı dolu; ben de merdivenden 41 kat çıktım. Şaka, asansörü bekledim.');
+SMOKER_Q.push('Sigara alanı burası; temiz hava sahası öbür tarafta. Ortada da vicdanım var.','Sundurmanın altında beş kişi, dört fikir, bir çakmak.','Paşa izmarit kontrolüne geldi; buradaki en disiplinli denetçi o.');
+DRIVER_Q.push('EV şarj ünitesine yer bulamadım; aracım da ben de düşük bataryayla dolaşıyoruz.','-4’e indim, park yeri yok; açık otoparka çıktım, Paşa yerimi tutmuş.','Bu tur oditoryum etkinliği için; bilet İŞİM’de, park yeri kaderde.');
 /* ---- Ekip üyelerine özel (kişiselleştirilmiş) yorumlar ---- */
 const TEAM_ABOUT={
   yonetim:[n=>`${n} “bu hafta bitsin” dedi. Takvim de “hangi hafta?” diye sordu.`, n=>`${n} toplantıya girerken “beş dakika” dedi; toplantı salonu bunu bir ömür olarak kaydetti.`, n=>`Bütçe onayı için ${n} imzası bekleniyor. İmza gelince çeşmeyi fıskiye gösterisine çevireceğiz.`, n=>`${n} kısa bir e-posta attı: “Ufak bir rica.” Ekinde 14 sayfalık Excel var.`, n=>`${n} adayı görse ilk sorusu “işletme maliyeti ne kadar?” olur.`],
@@ -2272,6 +2408,9 @@ function selfQuips(mb){ const out=[...(ABOUT_BY_NAME[mb.name]?[]:(mb.disc||[]).f
   return out; }
 function showBubble(t,next=false){
   bubbleTarget=t; bubbleT=0;
+  if(t.kind==='dog'||t.kind==='cat'){ bubbleTarget=t; bubbleT=0; const pool=t.pasa?PASA_Q:t.kind==='dog'?DOG_Q:CAT_Q; const a=pick(pool); let b=pick(pool); for(let i=0;i<5&&b===a;i++) b=pick(pool);
+    bubbleEl.innerHTML=`<button class="bx" title="Kapat">×</button><div class="bh">${t.kind==='dog'?'🐕':'🐈'} ${esc(t.name)} <span>· ${t.pasa?'Adanın köpeği':t.kind==='dog'?'Köpek':'Kule kedisi'}</span></div><div class="bt">💭 ${esc(a)}</div><div class="bc">${t.kind==='dog'?'🐾':'😼'} ${esc(b)}</div><div class="bf"><button class="bn">Başka bir şey söyle ↻</button><span>${t.kind==='dog'?'Hav!':'Miyav.'}</span></div>`;
+    bubbleEl.classList.remove('hidden'); return; }
   const isCar=!t.kind, who=isCar?t.driver:t; const role=isCar?'Sürücü':t.kind==='smoker'?'Sigara molasında':t.kind==='jogger'?'Koşuda':'Yürüyüşte';
   const mb=!isCar&&t.member?DB.team.find(m=>m.name===t.member)||null:null;
   const thoughtPool=mb?selfQuips(mb):isCar?DRIVER_Q:[...THOUGHTS,...(t.kind==='jogger'?JOGGER_Q:[])];
@@ -2284,7 +2423,7 @@ function showBubble(t,next=false){
 }
 function updateBubble(dt){
   if(!bubbleTarget) return; bubbleT+=dt; if(bubbleT>16){ closeBubble(); return; }
-  if(bubbleTarget.kind&&!agents.includes(bubbleTarget)){ closeBubble(); return; }
+  if(bubbleTarget.kind&&bubbleTarget.kind!=='dog'&&bubbleTarget.kind!=='cat'&&!agents.includes(bubbleTarget)){ closeBubble(); return; }
   lifeWorldPos(bubbleTarget,_pv).project(camera); if(_pv.z>1){ bubbleEl.style.display='none'; return; } bubbleEl.style.display='';
   bubbleEl.style.left=((_pv.x*.5+.5)*innerWidth)+'px'; bubbleEl.style.top=((-_pv.y*.5+.5)*innerHeight)+'px';
 }
@@ -2340,7 +2479,7 @@ function frame(){
   // hover
   if(needRay && !downInfo && !flight){ needRay=false; const lh=pickLife(mouse.x,mouse.y); if(lh){ setHover(null); canvas.style.cursor='pointer'; } else setHover(pickAt()); }
   // katlar
-  const focus=hovered||selected;
+  const focus=(hovered&&!hovered.isSpace?hovered:null)||(selected&&!selected.isSpace?selected:null);
   for(const f of floors){
     const on=f===hovered||f===selected;
     f.pop=damp(f.pop,on?1:0,9,dt); const s=1+f.pop*(.85/f.half); f.mesh.scale.set(s,1,s);
@@ -2466,7 +2605,11 @@ function floorStats(key){
     st.notes=d.notes.length; st.progress=st.total?Math.round(st.done/st.total*100):0; }
   statsCache.set(key,st); return st;
 }
-function floorTitle(key){ const f=floorByKey.get(key); if(!f) return key; const n=DB.floors[key]?.name; return `${f.tw.name} – ${f.label}${n?' · '+n:''}`; }
+function floorInfo(key){ return CONFIG.floorInfo[key]||null; }
+function floorName(key){ return DB.floors[key]?.name || CONFIG.floorInfo[key]?.name || ''; }
+function isRestricted(key){ return !!CONFIG.floorInfo[key]?.restricted; }
+function floorTitle(key){ const f=floorByKey.get(key); if(!f) return key; const n=f.isSpace?'':floorName(key); return `${f.tw.name} – ${f.label}${n?' · '+n:''}`; }
+function allUnits(){ return [...floors,...spaces]; }
 
 /* ---- Kayıt, geri alma, aktivite ---- */
 let saveT=null, lastSavedToast=0;
@@ -2481,7 +2624,7 @@ function logAct(key,type,text){ DB.activity.unshift({id:uid(),ts:Date.now(),floo
 function mutate(fn,acts){ undoStack.push(snapshot()); if(undoStack.length>60) undoStack.shift(); fn(); if(acts) for(const a of acts) logAct(...a); dataChanged(true); }
 function undo(){ const s=undoStack.pop(); if(!s){ toast('Geri alınacak işlem yok','info'); return; } const o=JSON.parse(s); DB.floors=o.floors; DB.activity=o.activity; if(o.reminders) DB.reminders=o.reminders; if(o.team) DB.team=o.team; dataChanged(false); toast('Son işlem geri alındı','info'); }
 function dataChanged(showSaved=true){
-  statsCache.clear(); persist(!showSaved); updateFloorVisuals(); updateIndicators(); renderSummary();
+  statsCache.clear(); persist(!showSaved); updateFloorVisuals(); updateIndicators(); updatePins(); renderSummary();
   if(panelFloor) renderPanel(true);
   if(hovered) tooltip.innerHTML=tooltipHTML(hovered);
 }
@@ -2586,18 +2729,28 @@ function setViewMode(m){ DB.view.viewMode=m; updateFloorVisuals(); refreshTopbar
 
 const VIEWS=[['general','home','Genel'],['K1','tower','Kule 1'],['K2','tower','Kule 2'],['K3','tower','Kule 3'],['bird','bird','Kuşbakışı']];
 function initViews(){
-  $('#views').innerHTML=VIEWS.map(([k,i,l])=>`<button data-v="${k}" title="${l}">${ic(i)}<span class="vt">${l}</span></button>`).join('')+`<hr><button data-v="reset" title="Görünümü sıfırla (R)">${ic('reset')}<span class="vt">Sıfırla</span></button>`;
+  $('#views').innerHTML=VIEWS.map(([k,i,l])=>`<button data-v="${k}" title="${l}">${ic(i)}<span class="vt">${l}</span></button>`).join('')+`<hr><button data-v="dir" title="Alanlar ve kat rehberi (A)">${ic('pin')}<span class="vt">Alanlar</span></button><button data-v="reset" title="Görünümü sıfırla (R)">${ic('reset')}<span class="vt">Sıfırla</span></button>`;
   $('#views').onclick=e=>{ const b=e.target.closest('[data-v]'); if(!b) return; const v=b.dataset.v;
+    if(v==='dir'){ openDirectory(); return; }
     if(v==='reset'){ deselect(); flyToView('general'); return; }
     if(selected && v!=='general') deselect();
     flyToView(v); };
+}
+function openDirectory(){
+  const row=f=>{ const s=floorStats(f.key); const nm=f.isSpace?f.space.desc:(floorName(f.key)+(floorInfo(f.key)?.desc&&!DB.floors[f.key]?.name?' — '+floorInfo(f.key).desc:''));
+    return `<div class="drow" data-key="${f.key}"><span class="dot" style="background:${f.isSpace?'#4cd98a':isRestricted(f.key)?'#ffd76a':'#4cc2ff'}"></span><div class="dt"><b>${f.isSpace?esc(f.space.icon)+' ':''}${isRestricted(f.key)?'🔒 ':''}${esc(f.isSpace?f.label:f.tw.name+' – '+f.label)}</b><small>${esc(nm)}</small></div>${s.open?`<span class="badge ${s.overdue?'due-over':''}">${s.open} açık</span>`:''}</div>`; };
+  const fl=floors.filter(f=>floorInfo(f.key)||DB.floors[f.key]?.name).sort((a,b)=>a.key.localeCompare(b.key,'tr',{numeric:true}));
+  const m=openModal({ wide:true, title:'📍 Alanlar ve kat rehberi', body:`<div class="dsec" style="margin-top:0">Ortak alanlar</div>${spaces.map(row).join('')}<div class="dsec">Kat işlevleri</div>${fl.map(row).join('')}
+    <p class="hint" style="margin-top:12px">Ortak alanlar için de kat gibi görev, not ve hatırlatma tutabilirsiniz.</p>`, foot:'<button class="btn primary" data-ok>Kapat</button>' });
+  m.el.querySelector('[data-ok]').onclick=()=>m.close();
+  m.el.addEventListener('click',e=>{ const r=e.target.closest('.drow[data-key]'); if(r){ m.close(); selectFloor(r.dataset.key); } });
 }
 function setActiveView(id){ $$('#views button').forEach(b=>b.classList.toggle('active',b.dataset.v===id)); }
 
 let summaryMin=isMobile;
 function renderSummary(){
   let open=0,over=0,week=0; const arr=[];
-  for(const f of floors){ const s=floorStats(f.key); open+=s.open; over+=s.overdue; week+=s.weekDone; if(s.open) arr.push([f,s]); }
+  for(const f of allUnits()){ const s=floorStats(f.key); open+=s.open; over+=s.overdue; week+=s.weekDone; if(s.open) arr.push([f,s]); }
   arr.sort((a,b)=>b[1].open-a[1].open||b[1].overdue-a[1].overdue);
   const el=$('#summary'); el.classList.toggle('min',summaryMin);
   el.innerHTML=`<h4><span>Genel Özet${summaryMin?` · ${open} açık · <span style="color:var(--danger)">${over} gecikmiş</span>`:''}</span><button class="collapse" data-act="sum" title="${summaryMin?'Genişlet':'Daralt'}">${ic(summaryMin?'up':'down')}</button></h4>
@@ -2617,8 +2770,8 @@ function renderLegend(){
   else el.innerHTML=`<div class="lg-title"><b>Isı haritası · İlerleme yüzdesi</b><span>tamamlanan görev</span></div><div class="bar" style="background:${grad(CONFIG.palettes.progress)}"></div><div class="ticks"><span>%0</span><span>%50</span><span>%100</span></div><div class="sw"><span><i style="background:#6f7885"></i>Görev yok</span></div>`;
 }
 function tooltipHTML(f){
-  const s=floorStats(f.key), n=DB.floors[f.key]?.name;
-  return `<div class="t1">${esc(f.tw.name)} – ${esc(f.label)}${n?' • '+esc(n):''} • ${s.open} açık görev${s.overdue?` • <span class="od">${s.overdue} gecikmiş</span>`:''}</div><div class="t2">${s.notes?s.notes+' not • ':''}${s.total?`İlerleme %${s.progress} • `:''}Detay için tıklayın</div>`;
+  const s=floorStats(f.key), n=f.isSpace?'':floorName(f.key), lock=isRestricted(f.key);
+  return `<div class="t1">${lock?'🔒 ':''}${esc(f.tw.name)} – ${esc(f.label)}${n?' • '+esc(n):''} • ${s.open} açık görev${s.overdue?` • <span class="od">${s.overdue} gecikmiş</span>`:''}</div><div class="t2">${lock?'Kısıtlı erişim · ':''}${f.isSpace?esc(f.space.desc.slice(0,70))+'… • ':''}${s.notes?s.notes+' not • ':''}${s.total?`İlerleme %${s.progress} • `:''}Detay için tıklayın</div>`;
 }
 
 /* ==========================================================================
@@ -2645,17 +2798,18 @@ function renderPanel(keepScroll=false){
   <div class="p-head">
     <div class="p-top">
       <div class="ring" title="Tamamlanan görev yüzdesi">${ringSVG(st.progress)}<span>%${st.progress}</span></div>
-      <div class="p-title"><div class="tw">${esc(f.tw.name)} ${d.color?`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${d.color};margin-left:4px"></span>`:''}</div><div class="fl">${esc(f.label)}${d.name?` <span style="color:var(--muted);font-weight:500;font-size:15px">· ${esc(d.name)}</span>`:''}</div>
-        <div class="hint">${st.open} açık · <span style="color:${st.overdue?'var(--danger)':'inherit'}">${st.overdue} gecikmiş</span> · ${st.done} tamamlandı</div></div>
-      <button class="btn icon sm" data-act="remind" title="Bu kat için hatırlatma kur">${ic('bell')}</button>
-      <button class="btn icon sm" data-act="down" title="Alt kat (↓)">${ic('down')}</button>
-      <button class="btn icon sm" data-act="up" title="Üst kat (↑)">${ic('up')}</button>
+      <div class="p-title"><div class="tw">${esc(f.tw.name)} ${d.color?`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${d.color};margin-left:4px"></span>`:''}</div><div class="fl">${f.isSpace?esc(f.space.icon)+' ':''}${esc(f.label)}${(!f.isSpace&&floorName(f.key))?` <span style="color:var(--muted);font-weight:500;font-size:15px">· ${esc(floorName(f.key))}</span>`:''}</div>
+        <div class="hint">${isRestricted(f.key)?'<span class="badge" style="color:#ffd76a;background:rgba(255,215,106,.14)">🔒 Kısıtlı erişim · herkes çıkamaz</span> ':''}${st.open} açık · <span style="color:${st.overdue?'var(--danger)':'inherit'}">${st.overdue} gecikmiş</span> · ${st.done} tamamlandı</div>
+        ${(f.isSpace||floorInfo(f.key))&&!d.desc?`<div class="hint" style="margin-top:4px;color:#b9c4d4">${esc(f.isSpace?f.space.desc:floorInfo(f.key).desc)}</div>`:''}</div>
+      <button class="btn icon sm" data-act="remind" title="Bu alan için hatırlatma kur">${ic('bell')}</button>
+      ${f.isSpace?'':`<button class="btn icon sm" data-act="down" title="Alt kat (↓)">${ic('down')}</button>
+      <button class="btn icon sm" data-act="up" title="Üst kat (↑)">${ic('up')}</button>`}
       <button class="btn icon sm" data-act="close" title="Kapat (Esc)">${ic('x')}</button>
     </div>
     <div class="p-meta">
-      <label>Kat adı / Departman<input class="inp" id="pm-name" data-meta="name" value="${esc(d.name)}" placeholder="örn. Muhasebe" maxlength="60"></label>
+      <label>${f.isSpace?'Alan adı / Birim':'Kat adı / Departman'}<input class="inp" id="pm-name" data-meta="name" value="${esc(d.name)}" placeholder="${esc(f.isSpace?'örn. Kafe 2 · Market':(floorInfo(f.key)?.name||'örn. Muhasebe'))}" maxlength="60"></label>
       <label>Sorumlu kişi<input class="inp" id="pm-owner" data-meta="owner" value="${esc(d.owner)}" placeholder="Ad Soyad" maxlength="60" list="people-list"></label>
-      <label class="full">Kısa açıklama<textarea class="inp" id="pm-desc" data-meta="desc" rows="2" placeholder="Bu katın kısa açıklaması" maxlength="400">${esc(d.desc)}</textarea></label>
+      <label class="full">Kısa açıklama<textarea class="inp" id="pm-desc" data-meta="desc" rows="2" placeholder="${f.isSpace?'Bu alanın kısa açıklaması':'Bu katın kısa açıklaması'}" maxlength="400">${esc(d.desc)}</textarea></label>
       <div class="full swatches"><span class="hint" style="margin-right:4px">Renk etiketi</span>${CONFIG.palettes.floorTags.map(c=>`<button data-color="${c}" class="${d.color===c?'on':''}" style="background:${c}" title="${c}"></button>`).join('')}<button data-color="" class="${!d.color?'on':''}" title="Renk yok" style="background:transparent;border-color:var(--line-strong)"></button></div>
     </div>
   </div>
@@ -2725,7 +2879,7 @@ function taskCard(t,kanban=false){
 }
 function renderTaskList(){
   const el=$('#task-list'); if(!el) return; const arr=filteredTasks(); const d=DB.floors[panelFloor.key];
-  if(!d||!d.tasks.length){ el.innerHTML=`<div class="empty"><b>Bu katta görev yok</b>“Yeni görev” ile ilk görevi ekleyin.</div>`; return; }
+  if(!d||!d.tasks.length){ el.innerHTML=`<div class="empty"><b>${panelFloor.isSpace?'Bu alanda':'Bu katta'} görev yok</b>“Yeni görev” ile ilk görevi ekleyin.</div>`; return; }
   if(ui.taskView==='kanban'){
     el.innerHTML=`<div class="kanban">${STATUS.map(([k,l])=>{ const items=arr.filter(t=>t.status===k); return `<div class="kcol" data-col="${k}"><h5><span>${l}</span><span>${items.length}</span></h5>${items.map(t=>taskCard(t,true)).join('')}</div>`; }).join('')}</div><div class="hint" style="margin-top:6px">Kartları sürükleyip bırakarak durum değiştirin.</div>`;
   } else el.innerHTML=arr.length?arr.map(t=>taskCard(t)).join(''):`<div class="empty"><b>Eşleşen görev yok</b>Filtreleri veya aramayı değiştirin.</div>`;
@@ -2733,7 +2887,7 @@ function renderTaskList(){
 function renderNoteList(){
   const el=$('#note-list'); if(!el) return; const d=DB.floors[panelFloor.key]; const q=ui.nq.trim().toLocaleLowerCase('tr');
   const arr=(d?.notes||[]).filter(n=>!q||(n.title+' '+n.body).toLocaleLowerCase('tr').includes(q)).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||(b.updated||0)-(a.updated||0));
-  if(!arr.length){ el.className=''; el.innerHTML=`<div class="empty"><b>${q?'Eşleşen not yok':'Bu katta not yok'}</b>${q?'':'Markdown destekli yapışkan notlar ekleyebilirsiniz.'}</div>`; return; }
+  if(!arr.length){ el.className=''; el.innerHTML=`<div class="empty"><b>${q?'Eşleşen not yok':panelFloor.isSpace?'Bu alanda not yok':'Bu katta not yok'}</b>${q?'':'Markdown destekli yapışkan notlar ekleyebilirsiniz.'}</div>`; return; }
   el.className='notes';
   el.innerHTML=arr.map(n=>`<div class="note" data-note="${n.id}" style="background:${n.color||CONFIG.palettes.noteColors[0]}">
     <button class="pin ${n.pinned?'on':''}" data-act="pin" title="${n.pinned?'Sabitlemeyi kaldır':'Sabitle'}">${ic('pin')}</button>
@@ -2858,12 +3012,12 @@ function openTaskEditor(key,id){
 }
 function openMoveCopy(key,id){
   const t=DB.floors[key].tasks.find(x=>x.id===id); const cur=floorByKey.get(key);
-  const towerOpts=CONFIG.towers.map(tw=>`<option value="${tw.id}" ${tw.id===cur.tw.id?'selected':''}>${tw.name}</option>`).join('');
+  const towerOpts=[...CONFIG.towers,SPACE_TW].map(tw=>`<option value="${tw.id}" ${tw.id===cur.tw.id?'selected':''}>${tw.name}</option>`).join('');
   const m=openModal({ title:'Görevi taşı veya kopyala', body:`<p class="hint" style="margin-top:0">“${esc(t.title)}” · şu an: ${esc(floorTitle(key))}</p>
     <div class="form"><label>Kule<select class="sel" id="mc-t">${towerOpts}</select></label><label>Kat<select class="sel" id="mc-f"></select></label></div>`,
     foot:`<button class="btn" data-cancel>İptal</button><button class="btn" id="mc-copy">${ic('copy')}Kopyala</button><button class="btn primary" id="mc-move">${ic('move')}Taşı</button>` });
   const E=m.el;
-  const fill=()=>{ const tid=$('#mc-t',E).value; $('#mc-f',E).innerHTML=towerInfo[tid].floors.slice().reverse().map(f=>`<option value="${f.key}" ${f.key===key?'selected':''}>${esc(f.label)}${DB.floors[f.key]?.name?' · '+esc(DB.floors[f.key].name):''}</option>`).join(''); };
+  const fill=()=>{ const tid=$('#mc-t',E).value; const list=tid==='A'?spaces:towerInfo[tid].floors.slice().reverse(); $('#mc-f',E).innerHTML=list.map(f=>`<option value="${f.key}" ${f.key===key?'selected':''}>${esc(f.label)}${!f.isSpace&&floorName(f.key)?' · '+esc(floorName(f.key)):''}</option>`).join(''); };
   fill(); $('#mc-t',E).onchange=fill; E.querySelector('[data-cancel]').onclick=()=>m.close();
   const go=(copy)=>{ const to=$('#mc-f',E).value; if(to===key&&!copy){ toast('Görev zaten bu katta','info'); return; }
     mutate(()=>{ const nt=structuredClone(t); nt.updated=Date.now(); if(copy){ nt.id=uid(); nt.created=Date.now(); nt.checklist=(nt.checklist||[]).map(c=>({...c,id:uid()})); } else { DB.floors[key].tasks=DB.floors[key].tasks.filter(x=>x.id!==id); }
@@ -2913,6 +3067,8 @@ function openSearch(){
       if(q && [d.name,d.owner,d.desc].join(' ').toLocaleLowerCase('tr').includes(q)) res.push({k:'Kat',key,title:floorTitle(key),sub:[d.owner,d.desc].filter(Boolean).join(' · '),tab:'tasks'});
       for(const t of d.tasks){ const hay=[t.title,t.desc,t.assignee,(t.tags||[]).join(' ')].join(' ').toLocaleLowerCase('tr'); if(!q||hay.includes(q)) res.push({k:'Görev',key,id:t.id,title:t.title,sub:`${floorTitle(key)} · ${STATUS_L[t.status]}${t.due?' · '+fmtDate(t.due):''}`,snip:q&&t.desc?snip(t.desc,q):'',tab:'tasks',st:t.status}); }
       for(const n of d.notes){ const hay=(n.title+' '+n.body).toLocaleLowerCase('tr'); if(!q||hay.includes(q)) res.push({k:'Not',key,id:n.id,title:n.title||n.body.split('\n')[0].replace(/^#+\s*/,'').slice(0,60)||'Not',sub:floorTitle(key),snip:q?snip(n.body,q):'',tab:'notes'}); } }
+    if(q){ for(const f of allUnits()){ const inf=f.isSpace?{name:f.label,desc:f.space.desc}:floorInfo(f.key); if(!inf||DB.floors[f.key]?.name) continue;
+      if((inf.name+' '+inf.desc).toLocaleLowerCase('tr').includes(q)) res.unshift({k:f.isSpace?'Alan':'Kat',key:f.key,title:floorTitle(f.key),sub:inf.desc,tab:'tasks'}); } }
     if(!q) res=res.filter(r=>r.k==='Görev'&&r.st!=='done').slice(0,12);
     res=res.slice(0,80); sel=0; draw(q); };
   const draw=q=>{ out.innerHTML=res.length?res.map((r,i)=>`<div class="result ${i===sel?'sel':''}" data-i="${i}"><span class="rk">${r.k}</span><div style="min-width:0"><div class="rt">${hl(r.title,q)}</div><div class="rs">${esc(r.sub)}</div>${r.snip?`<div class="rs">${hl(r.snip,q)}</div>`:''}</div></div>`).join(''):`<div class="empty">${q?'Sonuç bulunamadı':'Aramaya başlayın'}</div>`; if(!q&&res.length) out.insertAdjacentHTML('afterbegin','<div class="hint" style="margin-bottom:4px">Açık görevler</div>'); };
@@ -2940,7 +3096,7 @@ function exportJSON(){
 function exportCSV(){
   const q=v=>{ v=String(v??''); return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
   const rows=[['Kule','Kat','Kat Adı','Görev','Açıklama','Durum','Öncelik','Disiplin','Başlangıç','Bitiş','Atanan','Etiketler','Alt Görev','Tekrar','Hatırlatıcı','Gecikmiş','Oluşturma','Güncelleme']];
-  for(const f of floors){ const d=DB.floors[f.key]; if(!d) continue;
+  for(const f of allUnits()){ const d=DB.floors[f.key]; if(!d) continue;
     for(const t of d.tasks){ const cl=t.checklist||[]; rows.push([f.tw.name,f.label,d.name,t.title,t.desc,STATUS_L[t.status],PRIO_L[t.priority],DISC_L[t.disc]||'',t.start,t.due,t.assignee,(t.tags||[]).join(', '),cl.length?`${cl.filter(c=>c.done).length}/${cl.length}`:'',t.repeat?REPEAT_L[t.repeat]:'',t.remindAt?t.remindAt.replace('T',' '):'',dueState(t)==='overdue'?'Evet':'',t.created?fmtTime(t.created):'',t.updated?fmtTime(t.updated):'']); } }
   if(rows.length===1){ toast('Dışa aktarılacak görev yok','info'); return; }
   download(`is-kuleleri-gorevler-${stamp()}.csv`,'﻿'+rows.map(r=>r.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
@@ -3055,8 +3211,7 @@ function openSettings(){
     <div class="seg" id="st-q">${[['low','Düşük'],['medium','Orta'],['high','Yüksek']].map(([k,l])=>`<button data-q="${k}" class="${S.quality===k?'active':''}">${l}</button>`).join('')}</div>
     <div class="lbl"><b>Gölgeler</b><small>Yumuşak güneş gölgeleri</small></div>${sw('st-sh',S.shadows)}
     <div class="lbl"><b>Partiküller</b><small>Toz/polen, ateşböcekleri, yağmur</small></div>${sw('st-pa',S.particles)}
-    <div class="lbl"><b>Yaşam</b><small>Yürüyen insanlar, sigara molası grupları, araçlar</small></div>${sw('st-life',S.life)}
-    <div class="lbl"><b>SSAO (ortam kapatma)</b><small>İsteğe bağlı, GPU yükünü artırır</small></div>${sw('st-ao',S.ssao)}
+    <div class="lbl"><b>Yaşam</b><small>Yürüyen insanlar, sigara molası grupları, araçlar, Paşa ve kediler</small></div>${sw('st-life',S.life)}    <div class="lbl"><b>SSAO (ortam kapatma)</b><small>İsteğe bağlı, GPU yükünü artırır</small></div>${sw('st-ao',S.ssao)}
     <div class="set-sec">Kamera ve zaman</div>
     <div class="lbl"><b>Boşta otomatik dönüş</b><small>Etkileşimde durur</small></div>${sw('st-ar',S.autoRotate)}
     <div class="lbl"><b>Dönüş için bekleme (sn)</b></div><input class="inp" type="number" id="st-idle" min="3" max="300" value="${S.idleSeconds}" style="width:90px">
@@ -3074,8 +3229,7 @@ function openSettings(){
   $('#st-q',E).onclick=e=>{ const b2=e.target.closest('[data-q]'); if(!b2) return; S.quality=b2.dataset.q; $$('#st-q button',E).forEach(x=>x.classList.toggle('active',x===b2)); applyQuality(); save(); };
   $('#st-sh',E).onchange=e=>{ S.shadows=e.target.checked; applyShadows(); save(); };
   $('#st-pa',E).onchange=e=>{ S.particles=e.target.checked; applyStyle(); save(); };
-  $('#st-life',E).onchange=e=>{ S.life=e.target.checked; if(!S.life) closeBubble(); save(); };
-  $('#st-ao',E).onchange=e=>{ S.ssao=e.target.checked; applySSAO(); save(); if(S.ssao&&S.quality==='low') toast('SSAO düşük kalitede devre dışıdır','info'); };
+  $('#st-life',E).onchange=e=>{ S.life=e.target.checked; if(!S.life) closeBubble(); save(); };  $('#st-ao',E).onchange=e=>{ S.ssao=e.target.checked; applySSAO(); save(); if(S.ssao&&S.quality==='low') toast('SSAO düşük kalitede devre dışıdır','info'); };
   $('#st-ar',E).onchange=e=>{ S.autoRotate=e.target.checked; if(!S.autoRotate) controls.autoRotate=false; save(); };
   $('#st-idle',E).onchange=e=>{ S.idleSeconds=clamp(+e.target.value||20,3,300); save(); };
   $('#st-am',E).onchange=e=>{ S.autoMinutes=clamp(+e.target.value||6,.5,120); save(); };
@@ -3087,7 +3241,7 @@ function openSettings(){
 }
 function openHelp(){
   if(modalStack.some(m=>m.el.querySelector('.help'))) return;
-  const K=[['Sol tık + sürükle','Döndür'],['Sağ tık + sürükle','Kaydır'],['Tekerlek','Yakınlaştır / uzaklaştır'],['Tık','Katı seç, detay panelini aç'],['↑ / ↓','Seçili kuledeki üst / alt kat'],['Esc','Paneli / pencereyi kapat'],['1 · 2 · 3 · 4','Gündüz · Öğle · Akşam · Gece'],['Q · W · E','Normal · Blender · Cyberpunk tarzı'],['N · X · H','Normal · X-Ray · Isı haritası'],['Y','Hava durumu değiştir'],['D','Yönetim paneli (görev dağılımı, ajanda, ekip)'],['T','Hatırlatmalar'],['F','Seçili kata odaklan'],['R','Görünümü sıfırla'],['Ctrl + K','Tüm katlarda ara'],['Ctrl + Z','Geri al'],['?','Bu yardım penceresi']];
+  const K=[['Sol tık + sürükle','Döndür'],['Sağ tık + sürükle','Kaydır'],['Tekerlek','Yakınlaştır / uzaklaştır'],['Tık','Katı seç, detay panelini aç'],['↑ / ↓','Seçili kuledeki üst / alt kat'],['Esc','Paneli / pencereyi kapat'],['1 · 2 · 3 · 4','Gündüz · Öğle · Akşam · Gece'],['Q · W · E','Normal · Blender · Cyberpunk tarzı'],['N · X · H','Normal · X-Ray · Isı haritası'],['Y','Hava durumu değiştir'],['D','Yönetim paneli (görev dağılımı, ajanda, ekip)'],['A','Alanlar ve kat rehberi'],['T','Hatırlatmalar'],['F','Seçili kata odaklan'],['R','Görünümü sıfırla'],['Ctrl + K','Tüm katlarda ara'],['Ctrl + Z','Geri al'],['?','Bu yardım penceresi']];
   const m=openModal({ wide:true, title:'Yardım ve kısayollar', body:`<div class="help" style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px">
     <div><h4>Nasıl kullanılır?</h4><ul>
       <li><b>Kat seçimi:</b> Fareyle bir katın üzerine gelin; kat parlar ve dışarı çıkar. Tıklayınca sağda <b>kat detay paneli</b> açılır.</li>
@@ -3100,6 +3254,7 @@ function openHelp(){
       <li><b>Görev dağılımı:</b> Görevlere disiplin (Mimari, İnşaat, Elektrik, Mekanik, Bakım-Onarım…) verin; “Otomatik” düğmesi o disiplinde iş yükü en az olan ekip üyesine atar. <b>Yönetim Paneli</b> (<kbd>D</kbd>): özet, kişi bazında iş yükü, toplu otomatik dağıtım, 30 günlük ajanda ve ekip düzenleme.</li>
       <li><b>Hatırlatıcılar:</b> Görev düzenleyicisinde tarih/saat girin veya zil düğmesinden (<kbd>T</kbd>) bağımsız hatırlatma kurun. Sayfa açıkken zamanı gelince kart, ses ve (izin verirseniz) masaüstü bildirimi çıkar; kapalıyken kaçırılanlar açılışta gösterilir. Ertele: 10 dk / 1 saat / yarın.</li>
       <li><b>Periyodik görevler:</b> “Tekrar” (her hafta, her ay…) seçilen görev tamamlanınca bir sonraki otomatik oluşturulur — bakım planları için. <b>Takvim (.ics)</b> ile Outlook/Google Takvim'e aktarabilirsiniz.</li>
+      <li><b>Ortak alanlar:</b> Çarşı, -1 kat (yemekhane, revir, diş), oditoryum, açık otopark ve -4 (EV şarj) ile peyzaj için de kat gibi görev/not paneli vardır; <b>Alanlar</b> (<kbd>A</kbd>) rehberinden açılır. Rehber kat işlevlerini de listeler; 🔒 işaretli katlar (36–38) kısıtlı erişimlidir.</li>
       <li><b>Yaşam:</b> Adada yürüyen çalışanlar, sigara molası grupları, koşucular ve otoparktan çıkıp yola giren araçlar var. Bir kişiye veya araca tıklayınca ne düşündüğünü ve binayla ilgili (görev verilerinize göre de) esprili eleştirisini görürsünüz.</li>
       <li><b>Hava durumu:</b> Üst bardan veya <kbd>Y</kbd> ile Açık / Yağmur / Kar / Sis / Fırtına. Karda zemin beyazlar, yağmurda yüzeyler ıslanır, fırtınada şimşek çakar.</li>
       <li>Görev/not içeren katlarda cephede küçük renkli bir şerit görünür. Sol alttaki özet kartında en yoğun katlara tıklayarak uçabilirsiniz.</li>
@@ -3211,7 +3366,7 @@ function openReminders(floorKey){
     <div class="form" style="grid-template-columns:2fr 1.3fr 1.4fr auto;align-items:end">
       <label>Ne hatırlatılsın?<input class="inp" id="rm-text" placeholder="örn. Asansör bakım firmasını ara" maxlength="160"></label>
       <label>Tarih / saat<input type="datetime-local" class="inp" id="rm-at"></label>
-      <label>Kat (isteğe bağlı)<select class="sel" id="rm-floor"><option value="">Genel</option>${CONFIG.towers.map(tw=>`<optgroup label="${tw.name}">${towerInfo[tw.id].floors.slice().reverse().map(f=>`<option value="${f.key}" ${f.key===fk?'selected':''}>${esc(floorTitle(f.key))}</option>`).join('')}</optgroup>`).join('')}</select></label>
+      <label>Kat (isteğe bağlı)<select class="sel" id="rm-floor"><option value="">Genel</option><optgroup label="Ortak Alanlar">${spaces.map(f=>`<option value="${f.key}" ${f.key===fk?'selected':''}>${esc(f.label)}</option>`).join('')}</optgroup>${CONFIG.towers.map(tw=>`<optgroup label="${tw.name}">${towerInfo[tw.id].floors.slice().reverse().map(f=>`<option value="${f.key}" ${f.key===fk?'selected':''}>${esc(floorTitle(f.key))}</option>`).join('')}</optgroup>`).join('')}</select></label>
       <button class="btn primary" id="rm-add">${ic('plus')}Hatırlat</button>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center">${[['15','15 dk sonra'],['60','1 saat sonra'],['tom','Yarın 09:00'],['mon','Pazartesi 09:00']].map(([k,l])=>`<button class="btn sm" data-q="${k}">${l}</button>`).join('')}
@@ -3287,7 +3442,7 @@ function openDashboard(tab='ozet'){
     if(cur==='ozet'){
       const k=[['Açık görev',openT.length,''],['Gecikmiş',openT.filter(x=>x.t.due&&x.t.due<td).length,'red'],['Bugün biten',openT.filter(x=>x.t.due===td).length,''],['7 gün içinde',openT.filter(x=>x.t.due&&x.t.due>td&&x.t.due<=wk).length,''],['Atanmamış',openT.filter(x=>!x.t.assignee).length,''],['Hatırlatma (24 sa)',allReminderItems().filter(i=>!i.fired&&Date.parse(i.at)<=Date.now()+864e5).length,'green']];
       const byD=DISC.map(([d,l,c])=>[l,c,openT.filter(x=>x.t.disc===d).length]).concat([['Disiplinsiz','#5a6578',openT.filter(x=>!x.t.disc).length]]); const mxD=Math.max(1,...byD.map(x=>x[2]));
-      const byT=CONFIG.towers.map(tw=>[tw.name,'#4cc2ff',openT.filter(x=>x.key.startsWith(tw.id+'-')).length]); const mxT=Math.max(1,...byT.map(x=>x[2]));
+      const byT=[...CONFIG.towers,SPACE_TW].map(tw=>[tw.name,tw.id==='A'?'#4cd98a':'#4cc2ff',openT.filter(x=>x.key.startsWith(tw.id+'-')).length]); const mxT=Math.max(1,...byT.map(x=>x[2]));
       const bars=(arr,mx)=>`<div class="bars">${arr.map(([l,c,v])=>`<div class="br"><span>${esc(l)}</span><span class="bt"><i style="width:${v/mx*100}%;background:${c}"></i></span><b class="num">${v}</b></div>`).join('')}</div>`;
       const over=openT.filter(x=>x.t.due&&x.t.due<td).sort((a,b)=>a.t.due.localeCompare(b.t.due)).slice(0,10);
       B.innerHTML=`<div class="kpis">${k.map(([l,v,c])=>`<div class="stat ${c}"><b>${v}</b><span>${l}</span></div>`).join('')}</div>
@@ -3351,7 +3506,7 @@ addEventListener('keydown',e=>{
     case 'q': case 'Q': setStyle('normal'); break; case 'w': case 'W': setStyle('blender'); break; case 'e': case 'E': setStyle('cyber'); break;
     case 'n': case 'N': setViewMode('normal'); break; case 'x': case 'X': setViewMode(DB.view.viewMode==='xray'?'normal':'xray'); break; case 'h': case 'H': setViewMode(DB.view.viewMode==='heat'?'normal':'heat'); break;
     case 'f': case 'F': focusSelected(); break; case 'r': case 'R': deselect(); flyToView('general'); break;
-    case 'd': case 'D': openDashboard(); break; case 't': case 'T': openReminders(); break;
+    case 'd': case 'D': openDashboard(); break; case 't': case 'T': openReminders(); break; case 'a': case 'A': openDirectory(); break;
     case 'ArrowUp': if(selected){ e.preventDefault(); stepFloor(1); } break; case 'ArrowDown': if(selected){ e.preventDefault(); stepFloor(-1); } break;
     case '?': openHelp(); break;
     case 'y': case 'Y': { const W=['clear','rain','snow','fog','storm']; setWeather(W[(W.indexOf(DB.view.weather||'clear')+1)%W.length]); break; }
@@ -3418,7 +3573,7 @@ function init(){
   initTopbar(); initViews(); initSummary();
   if(firstRun){ persist(true); setTimeout(()=>toast('Hoş geldiniz · Bir kata tıklayıp “Yeni görev” ile başlayın','info',5200),1200); }
   statsCache.clear();
-  applyQuality(); updateFloorVisuals(); updateIndicators(); renderSummary(); refreshTopbar();
+  applyQuality(); updateFloorVisuals(); updateIndicators(); updatePins(); renderSummary(); refreshTopbar();
   applyTimeOfDay(timeState.hour); updateEnv();
   if(!DB.view.camera) setActiveView('general');
   if(DB.settings.sound){ const once=()=>{ audioEnable(true); removeEventListener('pointerdown',once); }; addEventListener('pointerdown',once); }
