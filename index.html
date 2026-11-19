@@ -12,8 +12,10 @@
     Mobilde: tek parmak döndür, iki parmak yakınlaştır/kaydır, dokun: kat seç.
   • Bir katın üzerine gelin (hover), tıklayın: sağda kat detay paneli açılır.
     ↑/↓ ile kat değiştirin, Esc ile kapatın.
-  • Üst bardan: zaman (1–4), tarz (Q/W/E), görünüm (Normal / X-Ray / Isı Haritası),
+  • Üst bardan: zaman (1–4), tarz (Q/W/E/P: Normal, Blender, Cyberpunk, Steampunk), görünüm (Normal / X-Ray / Isı Haritası),
     arama (Ctrl+K), dışa/içe aktarma ve ayarlar. "?" kısayol listesini açar.
+  • Millî bayramlarda ve 26 Ağustos'ta Kule 1 cephesine dev Türk bayrağı asılır
+    (tarih listesi CONFIG.holidays; Ayarlar → Özel gün bayrağı: Otomatik / Her zaman / Kapalı).
   • Veriler tarayıcının localStorage alanına otomatik kaydedilir. Kalıcı yedek için
     "Dışa Aktar → JSON" kullanın.
   • Kule ölçüleri, kat sayıları, kademe katları ve renk paletleri aşağıdaki
@@ -429,8 +431,10 @@ body.panel-open #gizmo{right:496px}
   <button class="btn icon rel" id="btn-dash" title="Yönetim paneli: özet, görev dağılımı, ajanda, ekip (D)"></button>
   <button class="btn icon rel" id="btn-bell" title="Hatırlatmalar (T)"></button>
   <button class="btn" id="btn-search" title="Tüm katlarda ara (Ctrl+K)"></button>
+  <div class="tb-sep"></div>
   <button class="btn" id="btn-export" title="Dışa aktar"></button>
   <button class="btn" id="btn-import" title="İçe aktar (JSON)"></button>
+  <div class="tb-sep"></div>
   <button class="btn icon" id="btn-settings" title="Ayarlar"></button>
   <button class="btn icon" id="btn-help" title="Yardım ve kısayollar (?)"></button>
   <input type="file" id="file-import" accept=".json,application/json" class="hidden">
@@ -497,14 +501,14 @@ const CONFIG = {
   ],
   // Podyum / lobi kütleleri: [cx, cz, yarıGenX, yarıGenZ, yükseklik]
   podium: {
-    blocks: [ [-3.5,-19,26.5,28,14], [41.75,23,38.25,24,16], [27.5,-24,4.5,23,14], [-38.25,29,7.75,13,12] ],
+    blocks: [ [-3.5,-19,26.5,28,14], [41.75,23,38.25,24,16], [27.5,-24,4.5,23,14], [-38.25,29,7.75,13,12,1] ], // son blok: K2–K3 arası, zemin katı açık geçit
     color:'#cdb38c', glass:'#3c5672', roof:'#8e8a84',
     dome:[12,16,9,9], arch:[18,47], canopies:[[-63,46,14,5],[-13.5,46,14,5],[18,47,16,6]],
   },
-  island: { rx:198, rz:172, depth:215, pond:{x:-112,z:82,r:13} },
+  island: { rx:198, rz:172, depth:215, pond:{x:-128,z:100,r:13} },
   plaza: { cx:0, cz:3, hx:95, hz:66, r:14 },
   ring: { a:136, b:106, cz:3, width:9 },            // ada çevresindeki araç yolu (elips)
-  parking: { x0:100, x1:124, z0:-50, z1:-16 },      // doğu otoparkı
+  parking: { x0:88, x1:112, z0:-48, z1:-16 },       // doğu otoparkı (halka yolun içinde kalır)
   life: { personScale:1.7, carScale:1.45 },          // diorama ölçeğinde insan / araç büyütmesi
   // Bina yönetim ekibi (görev dağılımı, otomatik atama ve kişiselleştirilmiş yorumlar için).
   // disc: sorumlu olduğu disiplinler → mimari, insaat, elektrik, mekanik, bakim, yonetim, guvenlik, temizlik, bt, diger
@@ -538,32 +542,50 @@ const CONFIG = {
   spaces: [
     { id:'CARSI', label:'Çarşı', icon:'🛍️', pos:[44,23,30], desc:'Kulelerin ortak çarşısı: kafeler, restoranlar, kahve mekânları, market, eczane, kuaför ve mağazalar. İşmekan çalışma alanı ve Girişimcilik Şubesi.' },
     { id:'B1', label:'-1 Kat · Yemekhane', icon:'🍽️', pos:[-3,24,-28], desc:'Orta avlulu yemekhane, revir ve diş hekimi.' },
-    { id:'ODITORYUM', label:'Oditoryum', icon:'🎭', pos:[-46,11,84], desc:'Peyzaj alanından girilen oditoryum: büyük sahne ve geniş seyirci kapasitesi. Etkinlik biletleri İŞİM uygulamasından alınır.' },
-    { id:'OTOPARK', label:'Açık Otopark · EV Şarj', icon:'🔌', pos:[112,9,-33], desc:'Açık otopark ve elektrikli araç şarj üniteleri.' },
+    { id:'ODITORYUM', label:'Oditoryum', icon:'🎭', pos:[-55,11,67], desc:'Ön peyzaj şeridinden girilen oditoryum: büyük sahne ve geniş seyirci kapasitesi. Etkinlik biletleri İŞİM uygulamasından alınır.' },
+    { id:'OTOPARK', label:'Açık Otopark · EV Şarj', icon:'🔌', pos:[100,9,-32], desc:'Açık otopark ve elektrikli araç şarj üniteleri.' },
     { id:'B4', label:'-4 Otopark · EV Şarj', icon:'🅿️', pos:[-112,16,-1], desc:'Kapalı otopark katı (-4) ve elektrikli araç şarj alanı.' },
-    { id:'PEYZAJ', label:'Peyzaj · Açık Alan', icon:'🌳', pos:[40,10,90], desc:'Yürüyüş yolları, sigara içme alanları, temiz hava sahası ve Kibele heykeli. Paşa, diğer köpek ve kediler de burada.' },
+    { id:'PEYZAJ', label:'Peyzaj · Açık Alan', icon:'🌳', pos:[40,10,90], desc:'Yürüyüş yolları, sigara içme alanları, ön peyzaj şeridi ve Kibele heykeli. Paşa, diğer köpek ve kediler de burada.' },
   ],
   // Vaziyet planından alınan peyzaj/yerleşim öğeleri (yerel koordinatlar, m)
   site: {
-    roundabout:{x:104,z:8,r:12,fr:5.5},                 // doğu girişi: çeşmeli göbek
-    amphi:{a0:-55,a1:-15,radii:[17,18.3,19.6]},         // göbek yanındaki basamaklı oturma
-    cafe:{x0:-16,x1:22,z0:-60,z1:-50},                  // kuzey kafe terası
-    loop:{x:-37,z:-66,r:11},                            // kuzeybatı araç bırakma döngüsü
-    pool:{x:-46,z:-24,w:8,d:7}, kiosk:{x:-46,z:-36,w:7,d:11,h:4},
+    roundabout:{x:104,z:8,r:12,fr:5.5},                 // doğu: çeşmeli göbek (kırmızı kilit parke)
+    court:{x0:-16,x1:22,z0:-61,z1:-47.4,depth:3.4},     // -1 kat yemekhane orta avlusu (gömülü avlu)
+    loop:{x:-37,z:-66,r:11},                            // kuzeybatı araç bırakma döngüsü (kilit parke)
+    smokePav:{x:-46,z:-41.5,w:10,d:23},                 // büyük üstü kapalı camlı sigara içme alanı
     helipad:{x:60,z:29,s:17},                           // podyum çatısı helikopter pisti
     garage:{x0:-124,x1:-100,z0:-22,z1:20,levels:3},     // batı katlı otopark
-    palms:[[98,27],[98,34],[98,41],[-52,-68],[-47,-72],[-56,-73],[-43,-69]],
-    flags:[[4,63],[8,63],[12,63]],
-    treeRow:{z:-72,x0:-28,x1:26,step:7},
+    palms:[[98,27],[98,34],[98,41],[-47,-72],[-56,-74],[-43,-69]],
+    flags:[[4,75],[8,75],[12,75]],                      // ana giriş bayrakları (çitin önündeki yeşil alanda)
+    treeRow:{z:-72,x0:-14,x1:26,step:7},
     pergolas:[[-9,-65,9],[7,-65,9]],
     galleries:[[-24,8.4,2,8.4,14.9],[20,8.4,76,8.4,16.9],[11,16,11,46,16.9]],
-    kibele:{x:38,z:86},                                   // Kibele heykeli
-    auditorium:{x:-46,z:85},                              // oditoryum giriş pavyonu
-    smokeZones:[{x:-82,z:62,ent:'K3',via:[]},{x:87,z:38,ent:'MAIN',via:[[88,60]]},{x:68,z:-58,ent:'K1',via:[]}], // sigara içme alanları
-    cleanAir:{x:-107,z:60},                               // temiz hava sahası
+    kibele:{x:-46,z:-23,ry:Math.PI/2},                               // Kibele heykeli (beyaz mermer, aslan ve koni ile) – sigara pavyonunun yanında
+    auditorium:{x:-55,z:67},                              // oditoryum girişi: ön peyzaj şeridinde (çit açıklığı)
+    // sigara içme alanları: büyük camlı pavyon (iki grup yeri) + iki küçük sundurma
+    smokeZones:[{x:-46,z:-47,ent:'K1',via:[[30,-64],[-20,-64],[-36,-58]],pav:true},{x:-46,z:-36,ent:'K1',via:[[30,-64],[-20,-64],[-36,-58]],pav:true},
+      {x:70,z:67,ent:'MAIN',via:[[60,61]]},{x:68,z:-58,ent:'K1',via:[]},
+      // göbek çevresi (doğu) ve Kule 1 kuzeybatı köşesi: küçük üstü kapalı sundurmalar
+      {x:112,z:23,ent:'MAIN',via:[[88,60],[89,26]]},{x:119.8,z:8,rot:Math.PI/2,ent:'MAIN',via:[[88,60],[89,22],[96,22]]},{x:112,z:-7,ent:'MAIN',via:[[88,60],[89,-6]]},
+      {x:49,z:-58,ent:'K1',via:[]},{x:30,z:-58,ent:'K1',via:[[40,-62]]}],
     evChargers:4,                                         // açık otoparktaki şarj ünitesi sayısı
-    shopSigns:['☕ KAHVE','🍽️ RESTORAN','🛒 MARKET','✚ ECZANE','✂️ KUAFÖR','💡 İŞMEKAN'],
+    // Fotoğraflardan: meydanın güney (ön) cephesi boyunca ön peyzaj şeridi: LED’li granit saksılar, oturma nişleri,
+    // Kule Çarşı portalı, üçgen su duvarı, saksı kaseler, niwaki; kilit parke kaldırım
+    front:{z0:64.2,z1:69.8,walk:[58.4,64.1],segs:[[-86,-59.4],[-50.6,12.8],[23.2,62]],niches:[-72,-22,48]},
+    carsiGate:{x:18,z:67},
+    greenWall:{a0:198,a1:326,r:17},                       // kuzeybatı döngüsünü kuzeyden saran kavisli yeşil duvar
   },
+  // Özel günler: Kule 1 cephesine dev Türk bayrağı asılır (ay-gün)
+  holidays:[
+    {md:'03-18', name:'Çanakkale Zaferi'},
+    {md:'04-23', name:'Ulusal Egemenlik ve Çocuk Bayramı'},
+    {md:'05-19', name:'Atatürk’ü Anma, Gençlik ve Spor Bayramı'},
+    {md:'07-15', name:'Demokrasi ve Millî Birlik Günü'},
+    {md:'08-26', name:'Türkiye İş Bankası’nın kuruluş yıl dönümü (1924)'},
+    {md:'08-30', name:'Zafer Bayramı'},
+    {md:'10-28', name:'Cumhuriyet Bayramı arifesi'},
+    {md:'10-29', name:'Cumhuriyet Bayramı'},
+  ],
   palettes: {
     floorTags: ['#4cc2ff','#7b8cff','#b278ff','#ff7eb6','#ff5d6c','#ffa94d','#ffd84d','#4cd98a','#2ee6d6','#a3b1c6'],
     heat: ['#2b83ba','#4fb3b0','#abdda4','#ffffbf','#fdae61','#f46d43','#d7191c'],
@@ -595,7 +617,7 @@ const col = h => new THREE.Color(h);
 /* ===================== Veri – yükleme (UI bölümü kullanır) ===================== */
 // v2: Kule 1 = 41 kat, Kule 2/3 yer değişimi → eski (v1) kayıtlar okunmaz, uygulama boş başlar
 const LS_KEY='isKuleleri.data.v2', LS_BACKUP='isKuleleri.backup.v2', SCHEMA_VERSION=1;
-const DEFAULT_SETTINGS = { quality: isMobile?'low':'high', shadows:true, particles:true, life:true, me:'', remindSound:true, autoRotate:true, ssao:false, sound:false, volume:0.5, autoMinutes:6, idleSeconds:20 };
+const DEFAULT_SETTINGS = { quality: isMobile?'low':'high', shadows:true, particles:true, life:true, me:'', remindSound:true, autoRotate:true, ssao:false, sound:false, volume:0.5, autoMinutes:6, idleSeconds:20, holidayFlag:'auto' };
 function defaultView(){ return { time:'day', weather:'clear', style:'normal', blenderSub:'material', wireOverlay:false, viewMode:'normal', heatMetric:'open', camera:null }; }
 function defaultTeam(){ return CONFIG.team.map(m=>({id:'tm'+Math.random().toString(36).slice(2,8),...m,disc:[...m.disc]})); }
 function defaultDB(){ return { schema:SCHEMA_VERSION, floors:{}, activity:[], reminders:[], team:defaultTeam(), teamVersion:CONFIG.teamVersion, settings:{...DEFAULT_SETTINGS}, view:defaultView() }; }
@@ -642,7 +664,7 @@ camera.position.set(360, 215, 430);
 
 /* Global shader uniform'ları – tüm kule/çevre malzemeleri paylaşır */
 const G = {
-  uTime:{value:0}, uNight:{value:0}, uClay:{value:0}, uCyber:{value:0}, uXray:{value:0},
+  uTime:{value:0}, uNight:{value:0}, uClay:{value:0}, uCyber:{value:0}, uSteam:{value:0}, uXray:{value:0},
   uLitRatio:{value:.42}, uClayColor:{value:col(CONFIG.palettes.claySolid)}, uClayGray:{value:0}, uWindowBoost:{value:1}, uSnowCover:{value:0}, uWetW:{value:0},
 };
 
@@ -660,7 +682,7 @@ function makeTowerMaterial(seed, opts={}){
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
 varying vec3 vMat;
-uniform float uTime,uNight,uClay,uClayGray,uCyber,uXray,uLitRatio,uSeed,uTintAmt,uDim,uHL,uFlood,uWinOn,uWindowBoost,uSnowCover,uActive;
+uniform float uTime,uNight,uClay,uClayGray,uCyber,uSteam,uXray,uLitRatio,uSeed,uTintAmt,uDim,uHL,uFlood,uWinOn,uWindowBoost,uSnowCover,uActive;
 uniform vec3 uTint,uClayColor;
 float h11(float p){ p=fract(p*0.1031); p*=p+33.33; p*=p+p; return fract(p); }`)
       .replace('#include <color_fragment>', `#include <color_fragment>
@@ -671,6 +693,13 @@ sty = mix(sty, vec3(0.42,0.64,0.88), isGlass*0.45);
 sty = mix(vec3(dot(sty,vec3(0.299,0.587,0.114))), sty, 1.2);
 diffuseColor.rgb = mix(diffuseColor.rgb, mix(sty, uClayColor, uClayGray), uClay);
 diffuseColor.rgb *= mix(1.0, 0.30, uCyber);
+// Steampunk: pirinç/bakır kaplama, perçinli dökme demir döşeme bantları, isli kehribar cam
+{ float lumS = dot(diffuseColor.rgb, vec3(0.299,0.587,0.114));
+  vec3 metalS = mix(vec3(0.50,0.27,0.13), vec3(0.78,0.58,0.28), smoothstep(0.35,0.85,lumS)) * (0.62+0.5*lumS);
+  vec3 glassS = mix(vec3(0.16,0.11,0.06), vec3(0.42,0.30,0.14), lumS);
+  vec3 stS = mix(metalS, glassS, isGlass);
+  stS = mix(stS, vec3(0.20,0.16,0.12), isSlab*0.6);
+  diffuseColor.rgb = mix(diffuseColor.rgb, stS, uSteam); }
 diffuseColor.rgb = mix(diffuseColor.rgb, uTint, uTintAmt);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.80,0.84,0.90), uDim*0.24*(1.0-uXray));
 if (isSlab > 0.5) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.45,0.82,1.0), uXray*0.75*(1.0-uTintAmt));
@@ -678,9 +707,11 @@ float xa = mix(0.13, 0.8, isSlab) * (1.0 - uDim*0.5);
 diffuseColor.a *= mix(1.0, mix(xa, 1.0, uHL), uXray);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
 roughnessFactor = mix(roughnessFactor, 0.10, isGlass*(1.0-uClay)*(1.0-uTintAmt*0.7));
+roughnessFactor = mix(roughnessFactor, mix(0.36,0.22,isGlass), uSteam*(1.0-uTintAmt*0.7));
 roughnessFactor = mix(roughnessFactor, 0.9, uClay);`)
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
 metalnessFactor = mix(metalnessFactor, 0.84, isGlass*(1.0-uClay)*(1.0-uTintAmt*0.75));
+metalnessFactor = mix(metalnessFactor, mix(0.82,0.55,isGlass), uSteam*(1.0-uTintAmt*0.75));
 metalnessFactor *= (1.0-uClay);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 { float upF = smoothstep(0.6,0.9,dot(normal, normalize((viewMatrix*vec4(0.0,1.0,0.0,0.0)).xyz)));
@@ -695,6 +726,7 @@ if (vMat.y >= 0.0) {
   wc = mix(wc, vec3(1.0,0.88,0.66), uActive*0.6);
   vec3 cc = mix(vec3(0.0,0.95,1.0), vec3(1.0,0.2,0.85), step(0.5,hv2));
   wc = mix(wc, cc, uCyber*step(0.45,hv2));
+  wc = mix(wc, vec3(1.0,0.56,0.20)*(0.85+0.3*sin(uTime*7.0+hv*40.0)*0.15), uSteam); // titrek gaz lambası
   totalEmissiveRadiance += wc * lit * uNight * (0.35+0.75*hv2) * 0.85 * (1.0+uActive*1.1) * uWindowBoost * (1.0-uClay*0.7) * (1.0-uDim*0.6);
   // gündüz: çok hafif sıcak cam parıltısı
   totalEmissiveRadiance += vec3(1.0,0.8,0.52) * uActive * 0.05 * (1.0-uNight) * (1.0-uClay*0.5) * uWinOn;
@@ -718,11 +750,13 @@ function envMat(params, opts={}){
     Object.assign(sh.uniforms, G, U);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
-uniform float uClay,uClayGray,uCyber,uWet,uKeep,uSnowK,uSnowCover,uWetW; uniform vec3 uClayColor;`)
+uniform float uClay,uClayGray,uCyber,uSteam,uWet,uKeep,uSnowK,uSnowCover,uWetW; uniform vec3 uClayColor;`)
       .replace('#include <color_fragment>', `#include <color_fragment>
 vec3 styE = mix(vec3(dot(diffuseColor.rgb,vec3(0.299,0.587,0.114))), diffuseColor.rgb, 1.15);
 diffuseColor.rgb = mix(diffuseColor.rgb, mix(styE, uClayColor, uClayGray*(1.0-uKeep*0.6)), uClay);
-diffuseColor.rgb *= mix(1.0, 0.36, uCyber*(1.0-uKeep));`)
+diffuseColor.rgb *= mix(1.0, 0.36, uCyber*(1.0-uKeep));
+{ vec3 c0=diffuseColor.rgb; vec3 sep=vec3(dot(c0,vec3(0.393,0.769,0.189)),dot(c0,vec3(0.349,0.686,0.168)),dot(c0,vec3(0.272,0.534,0.131)));
+  diffuseColor.rgb = mix(c0, mix(c0,sep,0.62)*vec3(0.92,0.86,0.74), uSteam*(1.0-uKeep*0.5)); }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
 roughnessFactor = mix(roughnessFactor, 0.14, max(uCyber,uWetW*0.85)*uWet);
 roughnessFactor = mix(roughnessFactor, 0.9, uClay);`)
@@ -973,6 +1007,44 @@ function buildFlag(x,y,z,s=1,rotY=-.6){
   m.customProgramCacheKey=()=> 'flag'+s;
   const flag=new THREE.Mesh(geo,m); flag.position.set(x,y,z); flag.rotation.y=rotY; flag.castShadow=true; towersGroup.add(flag);
 }
+/* ---- Özel günler: Kule 1 cephesine sarkıtılan dev Türk bayrağı ---- */
+function verticalFlagTexture(){ // dikey asılış: ay-yıldız yukarıda, yıldız ayın altında
+  const W=512, H=768, c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
+  g.translate(W,0); g.rotate(Math.PI/2); const s=W/200; g.scale(s,s); // 300x200 yatay bayrak → 768x512 dikey
+  g.fillStyle='#e30a17'; g.fillRect(0,0,300,200);
+  g.fillStyle='#fff'; g.beginPath(); g.arc(100,100,50,0,Math.PI*2); g.fill();
+  g.fillStyle='#e30a17'; g.beginPath(); g.arc(112.5,100,40,0,Math.PI*2); g.fill();
+  g.fillStyle='#fff'; g.beginPath(); for(let i=0;i<10;i++){ const r=i%2?10:25, a=Math.PI+i*Math.PI/5; g.lineTo(166+Math.cos(a)*r,100+Math.sin(a)*r); } g.closePath(); g.fill();
+  g.setTransform(1,0,0,1,0,0); g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,0,W,10); // üst kuşak (askı)
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; }
+const holidayGroup=new THREE.Group(); holidayGroup.visible=false; let holidayFlagMat=null, holidayShown=null, holidayToastDay='';
+function todayHoliday(d=new Date()){ const md=String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); return CONFIG.holidays.find(h=>h.md===md)||null; }
+function buildHolidayFlag(){
+  const info=towerInfo.K1, f35=floorByKey.get('K1-35'); if(!info||!f35) return;
+  const top=f35.y0+f35.h-.6, Hh=36, Ww=Hh*2/3;
+  const tex=verticalFlagTexture();
+  holidayFlagMat=envMat({map:tex,emissiveMap:tex,emissive:'#ffffff',emissiveIntensity:0,side:THREE.DoubleSide,roughness:.85},{keep:true,noSnow:true});
+  const prev=holidayFlagMat.onBeforeCompile;
+  holidayFlagMat.onBeforeCompile=sh=>{ prev(sh); sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uTime;')
+    .replace('#include <begin_vertex>',`#include <begin_vertex>
+float k=clamp(-position.y/${Hh.toFixed(2)},0.0,1.0);
+transformed.z += (0.55+0.45*sin(position.x*0.42+position.y*0.16-uTime*1.4))*1.1*k + 0.35*sin(position.y*0.3-uTime*0.9)*k*k;
+transformed.x += sin(position.y*0.11-uTime*0.7)*0.45*k*k;`); };
+  holidayFlagMat.customProgramCacheKey=()=> 'hflag';
+  const geo=new THREE.PlaneGeometry(Ww,Hh,14,22).translate(0,-Hh/2,0);
+  const face=info.half+.9;
+  for(const [dx,dz,ry] of [[0,face,0],[face,0,Math.PI/2]]){ // güney (meydan) ve doğu cepheleri
+    const m=new THREE.Mesh(geo,holidayFlagMat); m.position.set(info.x+dx,top,info.z+dz); m.rotation.y=ry; m.castShadow=true; holidayGroup.add(m);
+    const bar=new THREE.Mesh(new THREE.BoxGeometry(Ww+1.2,.35,.35),envMat({color:'#c9ccd2',metalness:.8,roughness:.3},{keep:true})); bar.position.set(info.x+dx*1.005,top+.2,info.z+dz*1.005); bar.rotation.y=ry; holidayGroup.add(bar); }
+  towersGroup.add(holidayGroup);
+}
+function updateHolidayFlag(announce){
+  const mode=DB.settings.holidayFlag||'auto', h=todayHoliday();
+  const show=mode==='on'||(mode==='auto'&&!!h);
+  if(show!==holidayShown){ holidayShown=show; holidayGroup.visible=show; }
+  if(h&&mode!=='off'){ const day=new Date().toDateString(); if(holidayToastDay!==day){ holidayToastDay=day; setTimeout(()=>toast(`☾★ ${h.name} kutlu olsun! Kule 1 cephesine dev Türk bayrağı asıldı.`,'info'),1800); } }
+  else if(announce&&show) toast('☾★ Dev Türk bayrağı Kule 1 cephesinde','info');
+}
 const beacons=[];
 function addBeacon(x,y,z){
   const m=new THREE.MeshBasicMaterial({color:new THREE.Color(4,.2,.15),toneMapped:false});
@@ -985,9 +1057,14 @@ function buildPodium(){
   const C={ stone:col(P.color), glass:col(P.glass), spandrel:col(P.glass), mullion:col(P.color), reveal:col(P.color).multiplyScalar(.78), cap:col(P.roof) };
   const st={ type:'punched', bay:4.2, pil:1.6, recess:.3, pilOut:.3, winSide:.2, winY:[.2,.82] };
   let wid=0;
-  for(const [cx,cz,hx,hz,h] of P.blocks){
+  for(const [cx,cz,hx,hz,h,open] of P.blocks){
     const pts=octPlan(hx,hz,0,cx,cz); const n=Math.round(h/4); const sh=h/n;
-    for(let k=0;k<n;k++) wid=buildStorey(gb,pts,k*sh,sh,k===0?{...st,winY:[.12,.9],bay:5}:st,C,wid,{top:k===n-1,bottom:false});
+    for(let k=open?1:0;k<n;k++) wid=buildStorey(gb,pts,k*sh,sh,k===0?{...st,winY:[.12,.9],bay:5}:st,C,wid,{top:k===n-1,bottom:false});
+    if(open){ // zemin katı açık geçit: araç ve yaya altından geçer (tavan döşemesi + kolonlar)
+      const soffit=new THREE.Mesh(new THREE.BoxGeometry(hx*2,.6,hz*2),envMat({color:'#cdbb9a',roughness:.8})); soffit.position.set(cx,sh-.3,cz); soffit.castShadow=true; soffit.receiveShadow=true; towersGroup.add(soffit);
+      const cm=envMat({color:P.color,roughness:.75});
+      for(const sx of [-1,1]) for(let zz=-hz+.8;zz<=hz-.79;zz+=(hz*2-1.6)/3){ const c=new THREE.Mesh(new THREE.BoxGeometry(1.1,sh-.6,1.1),cm); c.position.set(cx+sx*(hx-.8),(sh-.6)/2,cz+zz); c.castShadow=true; towersGroup.add(c); }
+      const lm=new THREE.Mesh(new THREE.BoxGeometry(hx*2-3,.04,.12),ledMat); lm.position.set(cx,sh-.62,cz); towersGroup.add(lm); }
     ringSlab(gb,pts,h,.9,col('#dcc7a3'),.5);
     addNeonRing(pts,h+.9,neonA,.55);
   }
@@ -1048,9 +1125,10 @@ function terrainH(x,z){
 }
 function inParking(x,z,m=0){ const PK=CONFIG.parking; return x>PK.x0-m&&x<PK.x1+m&&z>PK.z0-m&&z<PK.z1+m; }
 const SITE=CONFIG.site;
-const siteZones=[{x:SITE.roundabout.x,z:SITE.roundabout.z,r:SITE.roundabout.r+10},{x:SITE.loop.x,z:SITE.loop.z,r:SITE.loop.r+4},
+const siteZones=[{x:SITE.roundabout.x,z:SITE.roundabout.z,r:SITE.roundabout.r+10},{x:SITE.loop.x,z:SITE.loop.z,r:SITE.loop.r+10},
   {x:(SITE.garage.x0+SITE.garage.x1)/2,z:(SITE.garage.z0+SITE.garage.z1)/2,r:27},...SITE.palms.map(([x,z])=>({x,z,r:4})),
-  {x:SITE.kibele.x,z:SITE.kibele.z,r:8},{x:SITE.auditorium.x,z:SITE.auditorium.z,r:13},{x:SITE.cleanAir.x,z:SITE.cleanAir.z,r:6}];
+  {x:SITE.kibele.x,z:SITE.kibele.z,r:8},{x:SITE.auditorium.x,z:SITE.auditorium.z,r:6},
+  {x:8,z:75,r:7},{x:SITE.carsiGate.x,z:SITE.carsiGate.z,r:8},...SITE.smokeZones.filter(z=>!z.pav).map(z=>({x:z.x+2,z:z.z,r:7.5}))];
 const GRASS_A=col('#5f9440'), GRASS_B=col('#86b552'), GRASS_C=col('#9fbf5e'), DRY=col('#a8a35a'), PLAZA_C=col('#cfc4ae'), PLAZA_D=col('#b9ad96'), SOIL=col('#6a4a30');
 function terrainColor(x,z,t,c){
   const n=fbm(x*.025,z*.025,3), n2=vnoise(x*.18,z*.18);
@@ -1121,12 +1199,18 @@ function buildRoots(P,count,r){
 }
 
 const islandGroup=new THREE.Group(); scene.add(islandGroup);
+// Gömülü yemekhane avlusu: zemin yüzeyinde avlu dikdörtgeni boşaltılır (avlu tabanı ve istinat duvarları ayrıca kurulur)
+function addCourtHole(m){ const C=CONFIG.site.court, prev=m.onBeforeCompile;
+  m.onBeforeCompile=sh=>{ prev(sh); sh.uniforms.uHole={value:new THREE.Vector4(C.x0,C.z0,C.x1,C.z1)};
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vHoleP;').replace('#include <begin_vertex>','#include <begin_vertex>\nvHoleP=(modelMatrix*vec4(transformed,1.0)).xz;');
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vHoleP; uniform vec4 uHole;').replace('void main() {','void main() {\nif(vHoleP.x>uHole.x&&vHoleP.x<uHole.z&&vHoleP.y>uHole.y&&vHoleP.y<uHole.w) discard;'); };
+  m.customProgramCacheKey=()=> 'envMatHole'; }
 let terrainMesh;
 const pathSamples=[]; // ağaç yerleşimi için yol örnekleri
 function buildIsland(){
   const topGeo=buildTopSurface(edgeR,terrainH,terrainColor,isMobile?46:62,isMobile?160:230);
   terrainMesh=new THREE.Mesh(topGeo,envMat({vertexColors:true,roughness:.95,flatShading:true},{wet:true}));
-  terrainMesh.receiveShadow=true; islandGroup.add(terrainMesh);
+  terrainMesh.receiveShadow=true; islandGroup.add(terrainMesh); addCourtHole(terrainMesh.material);
   const UP_={ S:isMobile?120:180, M:isMobile?26:38, edgeFn:edgeR, yEdge:th=>{ const Rr=edgeR(th); return terrainH(Math.cos(th)*Rr,Math.sin(th)*Rr); },
     soil:9, depthFn:th=>IS.depth*(.6+.55*Math.pow(fbm(Math.cos(th)*1.6+7,Math.sin(th)*1.6+3,3),1.5))+IS.depth*.45*Math.pow(Math.max(0,Math.sin(th*7+1.3)),14),
     depthMax:IS.depth*1.3, off:[18,-12], s:4.2, stalactites:18, stalLen:[25,85], stalRad:[5,13], seed:11 };
@@ -1140,14 +1224,9 @@ function buildIsland(){
 const PATHS=[
   { pts:'ring' },
   { pts:[[18,69],[18,88],[19,104]] },
-  { pts:[[-96,29],[-114,30],[-131,28]] },
   { pts:[[0,-63],[2,-82],[0,-100]] },
-  { pts:[[140,6],[152,10],[166,14]] },
-  { pts:[[93,24],[118,22],[132,15]] },
-  { pts:[[-104,62],[-106,68],[-104,72]] },
-  { pts:[[-60,-80],[-80,-100],[-96,-118],[-112,-124]] },
-  { pts:[[70,74],[86,98],[100,116]] },
-];
+  { pts:[[84,64.4],[84,73],[84.3,81.4]] },   // ön şeridin doğu ucundan halka yola inen beyaz yaya yolu
+];  // tüm patikalar ana halka yolun içinde kalır
 function ringPts(){ const {a,b,cz}=CONFIG.ring,out=[]; for(let i=0;i<48;i++){ const t=i/48*Math.PI*2; out.push([Math.cos(t)*a,cz+Math.sin(t)*b]); } return out; }
 function roadTexture(){ const c=document.createElement('canvas'); c.width=64; c.height=128; const g=c.getContext('2d');
   g.fillStyle='#4a4d52'; g.fillRect(0,0,64,128); for(let i=0;i<500;i++){ g.fillStyle=`rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},255,.04)`; g.fillRect(Math.random()*64,Math.random()*128,1.5,1.5); }
@@ -1164,19 +1243,35 @@ function ringExitPoint(){ let best=1e9,bu=0; for(let i=0;i<600;i++){ const u=i/6
 function road0Mat(){ const m=envMat({color:'#55585e',roughness:.85},{wet:true}); m.polygonOffset=true; m.polygonOffsetFactor=-3; m.polygonOffsetUnits=-3; return m; }
 const pathMat=envMat({color:'#d8ccb2',roughness:.95},{wet:true});
 pathMat.polygonOffset=true; pathMat.polygonOffsetFactor=-2; pathMat.polygonOffsetUnits=-2;
+const roadFP=[]; // tüm yol/patika şeritlerinin ayak izi [x,z,yarıGenişlik] → altındaki zemin oyulur
 function ribbon(points2d,closed,width,yOff,store){
   const curve=new THREE.CatmullRomCurve3(points2d.map(p=>V(p[0],0,p[1])),closed,'catmullrom',.5);
-  const L=curve.getLength(), n=Math.max(4,Math.ceil(L/2)); const sp=curve.getSpacedPoints(n);
-  const pos=[],idx=[],nor=[],uv=[]; const seg=L/n;
+  const L=curve.getLength(), n=Math.max(4,Math.ceil(L/1.5)); const sp=curve.getSpacedPoints(n);
+  const pos=[],idx=[],nor=[],uv=[]; const seg=L/n, hw=width/2;
+  // enine birkaç ara nokta (tepelerde zemin şeridin ortasından taşmasın) + iki yanda aşağı inen etek
+  const XS=width>5?[-1,-.5,0,.5,1]:[-1,0,1], C=XS.length+2;
   for(let i=0;i<sp.length;i++){
     const p=sp[i], q=sp[Math.min(i+1,sp.length-1)], o=sp[Math.max(i-1,0)];
     const dx=q.x-o.x, dz=q.z-o.z, l=Math.hypot(dx,dz)||1, nx=-dz/l, nz=dx/l;
-    for(const s of [-1,1]){ const x=p.x+nx*width/2*s, z=p.z+nz*width/2*s; pos.push(x,terrainH(x,z)+yOff,z); nor.push(0,1,0); uv.push(s<0?0:1,i*seg/10); }
-    if(store) store.push([p.x,p.z,width/2]);
-    if(i<sp.length-1){ const a=i*2; idx.push(a,a+1,a+2,a+1,a+3,a+2); }
+    const row=XS.map(s=>{ const x=p.x+nx*hw*s, z=p.z+nz*hw*s; return [x,terrainH(x,z)+yOff,z,(s+1)/2]; });
+    const a0=row[0], a1=row[row.length-1];
+    const full=[[a0[0]-nx*.1,a0[1]-1.2,a0[2]-nz*.1,0],...row,[a1[0]+nx*.1,a1[1]-1.2,a1[2]+nz*.1,1]];
+    for(const v of full){ pos.push(v[0],v[1],v[2]); nor.push(0,1,0); uv.push(v[3],i*seg/10); }
+    roadFP.push([p.x,p.z,hw]); if(store) store.push([p.x,p.z,hw]);
+    if(i<sp.length-1) for(let c=0;c<C-1;c++){ const a=i*C+c; idx.push(a,a+1,a+C,a+1,a+C+1,a+C); }
   }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setIndex(idx);
   return {geo:g,curve,points:sp};
+}
+// Yol ayak izi altındaki zemin köşe noktalarını hafifçe indir: tümseklerde çim/toprak asfaltın üstüne çıkmasın
+function carveTerrain(){
+  const cell=8, grid=new Map(), key=(i,j)=>i*100000+j;
+  for(const f of roadFP){ const k=key(Math.floor(f[0]/cell),Math.floor(f[1]/cell)); let a=grid.get(k); if(!a) grid.set(k,a=[]); a.push(f); }
+  const pa=terrainMesh.geometry.attributes.position;
+  for(let v=0;v<pa.count;v++){ const x=pa.getX(v), z=pa.getZ(v), i0=Math.floor(x/cell), j0=Math.floor(z/cell); let best=1e9;
+    for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){ const arr=grid.get(key(i0+di,j0+dj)); if(arr) for(const f of arr){ const d=Math.hypot(x-f[0],z-f[1])-f[2]; if(d<best) best=d; } }
+    if(best<1.5) pa.setY(v,pa.getY(v)-.45*smooth(1.5,.2,best)); }
+  pa.needsUpdate=true; terrainMesh.geometry.computeVertexNormals(); terrainMesh.geometry.computeBoundingSphere();
 }
 const lampSpots=[];
 function buildPaths(){
@@ -1195,10 +1290,9 @@ function buildPaths(){
   // otopark
   const PK=CONFIG.parking; const pg=new THREE.PlaneGeometry(PK.x1-PK.x0,PK.z1-PK.z0).rotateX(-Math.PI/2);
   const pk=new THREE.Mesh(pg,envMat({map:parkingTexture(),roughness:.85},{wet:true})); pk.position.set((PK.x0+PK.x1)/2,.42,(PK.z0+PK.z1)/2); pk.receiveShadow=true; islandGroup.add(pk);
-  const ex=ringExitPoint(); const dw=ribbon([[PK.x1-1,parkExitZ],[ex.x,ex.z]],false,7,.38); islandGroup.add(new THREE.Mesh(dw.geo,road0Mat()));
-  // seyir terası
-  const deck=new THREE.Mesh(new THREE.CylinderGeometry(7,7,.5,20),envMat({color:'#b9a58a',roughness:.85},{wet:true}));
-  deck.position.set(168,terrainH(168,14)+.3,14); deck.receiveShadow=true; islandGroup.add(deck);
+  // çıkış yolu halka yolun iç kenarında biter (asfalt üst üste binip titremesin)
+  const ex=ringExitPoint(), sx=PK.x1-1, dl=Math.hypot(sx-ex.x,parkExitZ-ex.z)||1, eh=CONFIG.ring.width/2-.25;
+  const dw=ribbon([[sx,parkExitZ],[ex.x+(sx-ex.x)/dl*eh,ex.z+(parkExitZ-ex.z)/dl*eh]],false,7,.38); islandGroup.add(new THREE.Mesh(dw.geo,road0Mat()));
 }
 let waterMat, fallMat, waterfallTop;
 function buildWater(){
@@ -1309,7 +1403,7 @@ function buildVegetation(){
     if(r()<.45){ const a=r()*Math.PI*2; const d=PL.r; // plaza kenarı
       const side=Math.floor(r()*4); const tt=r()*2-1;
       if(side===0){x=PL.cx+tt*PL.hx; z=PL.cz-PL.hz-2.5;} else if(side===1){x=PL.cx+tt*PL.hx; z=PL.cz+PL.hz+2.5;} else if(side===2){x=PL.cx-PL.hx-2.5; z=PL.cz+tt*PL.hz;} else {x=PL.cx+PL.hx+2.5; z=PL.cz+tt*PL.hz;}
-      if(nearPath(x,z,3.2)||normR(x,z)>.94||inParking(x,z,2)) continue; }
+      if(nearPath(x,z,3.2)||normR(x,z)>.94||inParking(x,z,2)||siteZones.some(s=>Math.hypot(x-s.x,z-s.z)<s.r*.8)) continue; }
     else { const th=r()*Math.PI*2, rr=Math.sqrt(r())*.92; x=Math.cos(th)*edgeR(th)*rr; z=Math.sin(th)*edgeR(th)*rr; if(!okSpot(x,z,3)) continue; }
     const s=.8+r()*1.5; m.compose(V(x,terrainH(x,z)+s*.3,z),q.setFromAxisAngle(UP,r()*6),V(s*1.3,s*.8,s*1.2)); bush.setMatrixAt(k,m); bush.setColorAt(k,c.set(r()<.1?'#c57b9a':'#4c7f35').multiplyScalar(.8+r()*.4)); k++; }
   bush.count=k; bush.userData.maxCount=k; bush.castShadow=true; bush.receiveShadow=true; islandGroup.add(bush); treeMeshes.push(bush);
@@ -1317,6 +1411,12 @@ function buildVegetation(){
 
 /* ---- Sokak lambaları ---- */
 let lampHeadMat, lampGlowMat;
+// Fotoğraflardaki sıcak LED şeritler (saçak altı, bank altı, portal çıtaları) ve bitki aydınlatmaları (gece yanar)
+const ledMat=new THREE.MeshStandardMaterial({color:'#3a3026',emissive:new THREE.Color('#ffc070'),emissiveIntensity:0,roughness:.6});
+function uplightTex(){ const c=document.createElement('canvas'); c.width=64; c.height=128; const g=c.getContext('2d');
+  const gr=g.createRadialGradient(32,128,0,32,128,124); gr.addColorStop(0,'rgba(255,220,130,1)'); gr.addColorStop(.45,'rgba(255,205,110,.45)'); gr.addColorStop(1,'rgba(255,190,90,0)'); g.fillStyle=gr; g.fillRect(0,0,64,128);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; }
+const uplightMat=new THREE.MeshBasicMaterial({map:uplightTex(),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0,side:THREE.DoubleSide,fog:true});
 function radialTex(inner='rgba(255,220,160,1)',outer='rgba(255,200,120,0)',size=128){
   const c=document.createElement('canvas'); c.width=c.height=size; const g=c.getContext('2d');
   const gr=g.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2); gr.addColorStop(0,inner); gr.addColorStop(1,outer); g.fillStyle=gr; g.fillRect(0,0,size,size);
@@ -1372,47 +1472,32 @@ function cg(geo,hex){ let g=geo.index?geo.toNonIndexed():geo; if(g.attributes.uv
   for(let i=0;i<a.length;i+=3){ a[i]=c.r; a[i+1]=c.g; a[i+2]=c.b; } g.setAttribute('color',new THREE.BufferAttribute(a,3)); g.computeVertexNormals(); return g; }
 function vcMesh(parts,opts={},params={}){ const m=new THREE.Mesh(mergeGeometries(parts),envMat({vertexColors:true,roughness:.8,...params},opts)); m.castShadow=true; m.receiveShadow=true; return m; }
 function buildSiteDetails(){
-  const S=SITE, P=[], add=(g,hex)=>P.push(cg(g,hex));
+  const S=SITE, P=[], add=(g,hex)=>P.push(cg(g,hex)), cafeLed=[];
   // ---- Göbek (roundabout) + çeşme ----
   const RB=S.roundabout, ry=terrainH(RB.x,RB.z);
-  const rbRoad=new THREE.Mesh(new THREE.RingGeometry(RB.fr+1.2,RB.r,48).rotateX(-Math.PI/2),road0Mat()); rbRoad.position.set(RB.x,ry+.06,RB.z); rbRoad.receiveShadow=true; islandGroup.add(rbRoad);
-  add(new THREE.CylinderGeometry(RB.fr+1.2,RB.fr+1.3,.35,40).translate(RB.x,ry+.18,RB.z),'#d9d2c3');
-  add(new THREE.CylinderGeometry(RB.fr,RB.fr,.75,40).translate(RB.x,ry+.37,RB.z),'#9b5a44');
+  const rbm=envMat({map:roundaboutTex(RB.fr+1.2,RB.r),roughness:.82},{wet:true}); rbm.polygonOffset=true; rbm.polygonOffsetFactor=-3; rbm.polygonOffsetUnits=-3;
+  const rbRoad=new THREE.Mesh(new THREE.RingGeometry(RB.fr+1.2,RB.r,64).rotateX(-Math.PI/2),rbm); rbRoad.position.set(RB.x,ry+.06,RB.z); rbRoad.receiveShadow=true; islandGroup.add(rbRoad);
+  add(new THREE.CylinderGeometry(RB.fr+1.2,RB.fr+1.3,.35,40).translate(RB.x,ry+.18,RB.z),'#6e4440');
+  add(new THREE.CylinderGeometry(RB.fr,RB.fr,.75,40).translate(RB.x,ry+.37,RB.z),'#8a5650');
   add(new THREE.CylinderGeometry(RB.fr*.5,RB.fr*.5,.85,32).translate(RB.x,ry+.42,RB.z),'#5f9440');
   const water=new THREE.Mesh(new THREE.RingGeometry(RB.fr*.52,RB.fr*.9,40).rotateX(-Math.PI/2),waterMat); water.position.set(RB.x,ry+.72,RB.z); islandGroup.add(water);
   { const jm=new THREE.MeshStandardMaterial({color:'#e8f6ff',transparent:true,opacity:.55,roughness:.1,depthWrite:false}); fountainJets=new THREE.Group();
     for(let i=0;i<10;i++){ const a=i/10*Math.PI*2; const j=new THREE.Mesh(new THREE.ConeGeometry(.12,2.2,6).translate(0,1.1,0),jm); j.position.set(RB.x+Math.cos(a)*RB.fr*.71,ry+.7,RB.z+Math.sin(a)*RB.fr*.71); j.rotation.set(Math.sin(a)*-.35,0,Math.cos(a)*.35); fountainJets.add(j); }
     const c=new THREE.Mesh(new THREE.ConeGeometry(.25,4,8).translate(0,2,0),jm); c.position.set(RB.x,ry+.85,RB.z); fountainJets.add(c); islandGroup.add(fountainJets); }
-  // göbeği halka yola ve otoparka bağlayan yollar
-  const rr=ribbon([[RB.x+RB.r-1,RB.z],[RB.x+RB.r+8,RB.z-.5],[134.5,7]],false,7,.4); islandGroup.add(new THREE.Mesh(rr.geo,road0Mat()));
-  const rp=ribbon([[RB.x,RB.z-RB.r+1],[RB.x+1,RB.z-RB.r-6],[RB.x+2,CONFIG.parking.z1+1]],false,6.5,.4); islandGroup.add(new THREE.Mesh(rp.geo,road0Mat()));
-  const rw=ribbon([[CONFIG.plaza.cx+CONFIG.plaza.hx-6,RB.z],[RB.x-RB.r+1,RB.z]],false,6.5,.42); islandGroup.add(new THREE.Mesh(rw.geo,road0Mat()));
-  // amfi tipi oturma basamakları
-  { const A=S.amphi; A.radii.forEach((rad,k)=>{ for(let a=A.a0;a<A.a1;a+=4.5){ const t=a*Math.PI/180, x=RB.x+Math.cos(t)*rad, z=RB.z+Math.sin(t)*rad;
-      const g=new THREE.BoxGeometry(1.25,.45*(k+1),1.25).translate(0,.225*(k+1),0).rotateY(-t); g.translate(x,terrainH(x,z),z); add(g,k%2?'#c9b79c':'#b8a589'); } }); siteObstacles.push({x:RB.x,z:RB.z,r:RB.r+9}); }
-  // ---- Kuzey kafe terası ----
-  { const C=S.cafe; const y=.35; add(new THREE.BoxGeometry(C.x1-C.x0,.12,C.z1-C.z0).translate((C.x0+C.x1)/2,y+.06,(C.z0+C.z1)/2),'#bfa98a');
-    for(let x=C.x0+2.5;x<C.x1-1;x+=4.6) for(const z of [C.z0+2.2,C.z1-2.2]){
-      add(new THREE.CylinderGeometry(.55,.55,.06,10).translate(x,y+.78,z),'#f3f1ec'); add(new THREE.CylinderGeometry(.06,.06,.75,5).translate(x,y+.4,z),'#4a4f57');
-      for(const [dx,dz] of [[.9,0],[-.9,0],[0,.9],[0,-.9]]) add(new THREE.BoxGeometry(.42,.45,.42).translate(x+dx,y+.23,z+dz),'#3d4652');
-      add(new THREE.ConeGeometry(1.6,.55,8).translate(x,y+2.45,z),(Math.round(x)%3)?'#f2ede2':'#b8573a'); add(new THREE.CylinderGeometry(.04,.04,2.2,4).translate(x,y+1.2,z),'#ddd'); }
-    for(let x=C.x0+4.8;x<C.x1-2;x+=7.5){ const z=(C.z0+C.z1)/2; add(new THREE.BoxGeometry(1.6,.7,1.6).translate(x,y+.35,z),'#8d8a84');
-      add(new THREE.CylinderGeometry(.12,.16,1.4,6).translate(x,y+1.3,z),'#5b4130'); add(new THREE.IcosahedronGeometry(1.15,1).scale(1,.9,1).translate(x,y+2.5,z),'#5f9a43'); }
-    siteObstacles.push({x:(C.x0+C.x1)/2,z:(C.z0+C.z1)/2,r:22}); }
+  siteObstacles.push({x:RB.x,z:RB.z,r:RB.r+4});
   // ---- Pergolalı banklar ----
   for(const [cx,cz,len] of S.pergolas){ const y=terrainH(cx,cz);
-    for(const sx of [-len/2,len/2]) for(const sz of [-1.2,1.2]) add(new THREE.BoxGeometry(.25,2.8,.25).translate(cx+sx,y+1.4,cz+sz),'#e8e2d6');
-    for(let x=-len/2;x<=len/2;x+=.9) add(new THREE.BoxGeometry(.18,.18,3.0).translate(cx+x,y+2.85,cz),'#7a5a3e');
-    add(new THREE.BoxGeometry(len-.6,.12,.6).translate(cx,y+.5,cz-.35),'#8a6a4a'); add(new THREE.BoxGeometry(len-.6,.6,.1).translate(cx,y+.8,cz-.68),'#8a6a4a');
+    // fotoğraf: koyu çelik çerçeve + tik ahşap çıtalar, uçlarda dikey çıta perdesi
+    for(const sx of [-len/2,len/2]) for(const sz of [-1.2,1.2]) add(new THREE.BoxGeometry(.25,2.8,.25).translate(cx+sx,y+1.4,cz+sz),'#2b2f34');
+    for(const sz of [-1.2,1.2]) add(new THREE.BoxGeometry(len+.25,.25,.25).translate(cx,y+2.72,cz+sz),'#2b2f34');
+    for(let x=-len/2;x<=len/2;x+=.6) add(new THREE.BoxGeometry(.16,.2,3.0).translate(cx+x,y+2.95,cz),'#a8693a');
+    for(const sx of [-len/2,len/2]) for(let k=-3;k<=3;k++) add(new THREE.BoxGeometry(.1,2.5,.14).translate(cx+sx+(sx<0?-.1:.1),y+1.35,cz+k*.33),'#a8693a');
+    add(new THREE.BoxGeometry(len-.6,.12,.6).translate(cx,y+.5,cz-.35),'#a8693a'); add(new THREE.BoxGeometry(len-.6,.6,.1).translate(cx,y+.8,cz-.68),'#a8693a');
     add(new THREE.BoxGeometry(len+1,.5,1).translate(cx,y+.25,cz+1.9),'#5f8f3e'); }
   // ---- Kuzeybatı araç bırakma döngüsü ----
-  { const L=S.loop, y=terrainH(L.x,L.z); const lr=new THREE.Mesh(new THREE.RingGeometry(L.r*.45,L.r,40).rotateX(-Math.PI/2),road0Mat()); lr.position.set(L.x,y+.06,L.z); islandGroup.add(lr);
-    add(new THREE.CylinderGeometry(L.r*.45,L.r*.45,.4,32).translate(L.x,y+.2,L.z),'#6aa84f'); add(new THREE.IcosahedronGeometry(2.2,1).translate(L.x,y+2.4,L.z),'#4f8a3a'); add(new THREE.CylinderGeometry(.25,.35,1.8,6).translate(L.x,y+.9,L.z),'#5b4130'); }
-  // ---- Yansıma havuzu ve güvenlik kulübesi ----
-  { const W=S.pool; add(new THREE.BoxGeometry(W.w+1,.55,W.d+1).translate(W.x,.62,W.z),'#d6cfc0');
-    const pw=new THREE.Mesh(new THREE.PlaneGeometry(W.w,W.d).rotateX(-Math.PI/2),waterMat); pw.position.set(W.x,.92,W.z); islandGroup.add(pw);
-    const K=S.kiosk; add(new THREE.BoxGeometry(K.w,K.h,K.d).translate(K.x,.35+K.h/2,K.z),'#e4ddcf'); add(new THREE.BoxGeometry(K.w+1.2,.3,K.d+1.2).translate(K.x,.35+K.h+.15,K.z),'#8e8a84');
-    add(new THREE.BoxGeometry(K.w+.05,1.4,K.d*.7).translate(K.x,.35+K.h*.55,K.z),'#3c5672'); siteObstacles.push({x:W.x,z:(W.z+K.z)/2,r:12}); }
+  { const L=S.loop, y=terrainH(L.x,L.z); const lm=envMat({map:roundaboutTex(L.r*.45,L.r),roughness:.82},{wet:true}); lm.polygonOffset=true; lm.polygonOffsetFactor=-3; lm.polygonOffsetUnits=-3;
+    const lr=new THREE.Mesh(new THREE.RingGeometry(L.r*.45,L.r,56).rotateX(-Math.PI/2),lm); lr.position.set(L.x,y+.06,L.z); lr.receiveShadow=true; islandGroup.add(lr);
+    add(new THREE.CylinderGeometry(L.r*.45,L.r*.45+.15,.45,32).translate(L.x,y+.22,L.z),'#2c2d30'); add(new THREE.CylinderGeometry(L.r*.45-.2,L.r*.45-.2,.47,32).translate(L.x,y+.23,L.z),'#5f8f3e'); }
   // ---- Batı katlı otopark ----
   { const G=S.garage, gx=(G.x0+G.x1)/2, gz=(G.z0+G.z1)/2, w=G.x1-G.x0, d=G.z1-G.z0, lh=3.2;
     for(let l=0;l<=G.levels;l++){ const y=.35+l*lh; add(new THREE.BoxGeometry(w,.35,d).translate(gx,y+.17,gz),l===G.levels?'#9a9c9f':'#b7b5ae');
@@ -1428,18 +1513,20 @@ function buildSiteDetails(){
     if(cm.length) islandGroup.add(vcMesh(cm,{noSnow:true},{roughness:.4,metalness:.4}));
     const sign=new THREE.Mesh(new THREE.PlaneGeometry(3,3),new THREE.MeshBasicMaterial({map:signTex('P','#2b6fd6'),toneMapped:false})); sign.position.set(G.x1+.2,.35+G.levels*lh+2,gz); sign.rotation.y=Math.PI/2; islandGroup.add(sign); }
   // ---- Bayraklar (ana giriş) ----
-  for(const [x,z] of S.flags){ add(new THREE.CylinderGeometry(.08,.12,13,6).translate(x,.35+6.5,z),'#d8dce2'); add(new THREE.CylinderGeometry(.5,.6,.4,8).translate(x,.55,z),'#9a9690'); buildFlag(x+.1,13.2,z,.45,Math.PI*.15); }
-  siteObstacles.push({x:8,z:63,r:6});
+  { const fx=S.flags.reduce((a,f)=>a+f[0],0)/S.flags.length, fz=S.flags[0][1], fy=terrainH(fx,fz);
+    add(new THREE.BoxGeometry(13,.3,4.2).translate(fx,fy+.12,fz),'#2c2d30'); add(new THREE.BoxGeometry(12.4,.32,3.6).translate(fx,fy+.16,fz),'#3a3b3f');
+    for(const [x,z] of S.flags){ add(new THREE.CylinderGeometry(.08,.12,13,6).translate(x,fy+.3+6.5,z),'#d8dce2'); add(new THREE.CylinderGeometry(.5,.6,.4,8).translate(x,fy+.5,z),'#9a9690'); buildFlag(x+.1,fy+13.15,z,.45,Math.PI*.15); }
+    siteObstacles.push({x:fx,z:fz,r:7}); }
   // ---- Palmiyeler ----
   for(const [x,z] of S.palms){ const y=terrainH(x,z), h=7+((x*7+z)%3+3)%3, tilt=.06;
     add(new THREE.CylinderGeometry(.22,.38,h,7).translate(0,h/2,0).rotateZ(tilt).translate(x,y,z),'#8a6e4f');
     for(let k=0;k<9;k++){ const a=k/9*Math.PI*2; const fr=new THREE.BoxGeometry(.6,.08,3.6).translate(0,0,1.8).rotateX(.55).rotateY(a).translate(x+Math.sin(tilt)*-h,y+h,z); add(fr,k%2?'#3f7a35':'#4f8f3c'); } }
   // ---- Çitler (şimşir) ----
   { const PL=CONFIG.plaza, zS=PL.cz+PL.hz+1.6, xW=PL.cx-PL.hx-1.6, xE=PL.cx+PL.hx+1.6, zN=PL.cz-PL.hz-1.6;
-    const segs=[[[-88,zS],[-58,zS]],[[-52,zS],[13,zS]],[[23,zS],[64,zS]],[[76,zS],[88,zS]],[[xW,-52],[xW,22]],[[xW,36],[xW,60]],[[xE,-55],[xE,-10]],[[xE,46],[xE,60]],[[-90,zN],[-55,zN]],[[30,zN],[88,zN]]];
+    const segs=[[[-88,zS],[-59.6,zS]],[[-50.4,zS],[13,zS]],[[23,zS],[64,zS]],[[76,zS],[81.6,zS]],[[xW,-52],[xW,-12.5]],[[xW,-3.5],[xW,22]],[[xW,36],[xW,60]],[[CONFIG.parking.x0-1.6,-55],[CONFIG.parking.x0-1.6,-12]],[[xE,46],[xE,60]],[[-90,zN],[-55,zN]],[[30,zN],[88,zN]]];
     for(const [[x0,z0],[x1,z1]] of segs){ const L=Math.hypot(x1-x0,z1-z0); add(new THREE.BoxGeometry(1.2,1.1,1).scale(1,1,L).rotateY(Math.atan2(x1-x0,z1-z0)).translate((x0+x1)/2,.35+.55,(z0+z1)/2),'#3f6f33'); } }
   // ---- Çiçek tarhları ----
-  { const beds=[[-38,61.5,2.4],[2,61.5,2.4],[38,61.5,2.4],[70,61.5,2.4],[-46,-59,2],[RB.x-15,RB.z+16,3],[POND.x+18,POND.z-12,3.2],[-104,48,2.6]];
+  { const beds=[[RB.x-3,RB.z+16.5,2.4],[POND.x+18,POND.z-12,3.2],[-104,48,2.6]];
     const FL=['#e84a6f','#f7c948','#b65fcf','#ffffff','#ff8a3d','#e2397a']; const fp=[];
     for(const [x,z,r0] of beds){ const y=terrainH(x,z); add(new THREE.CylinderGeometry(r0,r0+.15,.5,20).translate(x,y+.25,z),'#a69c8c'); add(new THREE.CylinderGeometry(r0-.25,r0-.25,.52,20).translate(x,y+.27,z),'#5a3e2b');
       for(let i=0;i<34;i++){ const a=Math.random()*6.283, d=Math.sqrt(Math.random())*(r0-.5); fp.push(cg(new THREE.IcosahedronGeometry(.22+Math.random()*.15,0).translate(x+Math.cos(a)*d,y+.65+Math.random()*.2,z+Math.sin(a)*d),FL[Math.floor(Math.random()*FL.length)])); }
@@ -1468,39 +1555,47 @@ function buildSiteDetails(){
   for(const [x,z,a] of [[72,6,.6],[75,13,.9],[8,40,.4],[-20,-6,1.1]]){ const y=x>3.5&&z>-1?16.9:14.9;
     const dish=new THREE.Mesh(new THREE.SphereGeometry(1.3,12,6,0,Math.PI*2,0,1).rotateX(-.9).rotateY(a),envMat({color:'#e8e8e6',roughness:.5,side:THREE.DoubleSide},{keep:true}));
     dish.position.set(x,y+1.4,z); towersGroup.add(dish); const st=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1.4,6),envMat({color:'#777',roughness:.5},{keep:true})); st.position.set(x,y+.7,z); towersGroup.add(st); }
-  // ---- Kibele heykeli (aslanlı tahtta oturan tanrıça, bronz) ----
-  { const K=S.kibele, y=terrainH(K.x,K.z), B=[], bz='#8a6a45', s=1.6;
-    add(new THREE.CylinderGeometry(5.2,5.4,.3,28).translate(K.x,y+.15,K.z),'#d6cfc0');
-    add(new THREE.BoxGeometry(3.6,2.2,3).translate(K.x,y+1.4,K.z),'#cfc6b4'); add(new THREE.BoxGeometry(4,.3,3.4).translate(K.x,y+2.6,K.z),'#bdb3a0');
-    const T=(g)=>B.push(cg(g.scale(s,s,s).translate(K.x,y+2.75,K.z),bz));
+  // ---- Kibele heykeli (fotoğraf: beyaz mermer, kaide üstünde oturan figür, önünde yatan aslan, yanında konik taş) ----
+  // yerel koordinatlarda kurulur, sonra KB.ry kadar döndürülür (figür ve aslan meydana / doğuya bakar)
+  { const K=S.kibele, y=terrainH(K.x,K.z), B=[], Pb=[], bz='#ece8df', s=1.6, ry=K.ry??Math.PI/2;
+    const ad=(g,c)=>Pb.push(cg(g,c));
+    ad(new THREE.BoxGeometry(11,.3,9).translate(0,y+.15,0),'#2f3034'); ad(new THREE.BoxGeometry(10.4,.06,8.4).translate(0,y+.31,0),'#3d3e43');
+    ad(new THREE.BoxGeometry(3.6,2.2,3).translate(0,y+1.4,0),'#e2ddd2'); ad(new THREE.BoxGeometry(4,.3,3.4).translate(0,y+2.6,0),'#d8d2c6');
+    { const lx=-.4, lz=3.4, ly=y+.3;
+      B.push(cg(new THREE.CapsuleGeometry(.55,1.7,4,8).rotateZ(Math.PI/2).translate(lx,ly+.6,lz),bz), cg(new THREE.SphereGeometry(.62,10,8).translate(lx+1.5,ly+1.05,lz),bz),
+        cg(new THREE.IcosahedronGeometry(.75,1).scale(1,1,.9).translate(lx+1.25,ly+1.15,lz),'#e4dfd4'), cg(new THREE.BoxGeometry(.9,.3,.35).translate(lx+1.6,ly+.15,lz+.3),bz), cg(new THREE.BoxGeometry(.9,.3,.35).translate(lx+1.6,ly+.15,lz-.3),bz));
+      B.push(cg(new THREE.ConeGeometry(1.1,7.5,16).translate(4,y+.3+3.75,-2.6),'#e9e5dc')); }
+    const T=(g)=>B.push(cg(g.scale(s,s,s).translate(0,y+2.75,0),bz));
     T(new THREE.BoxGeometry(1.4,.9,1).translate(0,.45,-.1)); T(new THREE.BoxGeometry(1.4,1.2,.2).translate(0,1.3,-.55));
     T(new THREE.CylinderGeometry(.32,.42,1.1,8).translate(0,1.45,0)); T(new THREE.SphereGeometry(.24,10,8).translate(0,2.2,0)); T(new THREE.CylinderGeometry(.18,.22,.36,8).translate(0,2.52,0));
     T(new THREE.BoxGeometry(.7,.25,.55).translate(0,.95,.35)); T(new THREE.BoxGeometry(.5,.6,.2).translate(0,.45,.6));
     for(const sx of [-1,1]){ T(new THREE.BoxGeometry(.38,.42,.8).translate(sx*.95,.25,.25)); T(new THREE.BoxGeometry(.32,.36,.32).translate(sx*.95,.62,.62)); T(new THREE.IcosahedronGeometry(.25,0).translate(sx*.95,.62,.48)); }
-    islandGroup.add(vcMesh(B,{keep:true},{metalness:.65,roughness:.38})); }
+    for(const g of [...B,...Pb]){ g.rotateY(ry); g.translate(K.x,0,K.z); }
+    P.push(...Pb); islandGroup.add(vcMesh(B,{keep:true},{metalness:.02,roughness:.45})); siteObstacles.push({x:K.x,z:K.z,r:7}); }
   // ---- Oditoryum giriş pavyonu (peyzajdan girilir) ----
+  // küçük sigara sundurmalarıyla aynı dilde: koyu düz çatı + LED saçak, çıtalı dikmeler; altında cam giriş kutusu ve aşağı inen merdiven
   { const A=S.auditorium, y=terrainH(A.x,A.z);
-    add(new THREE.BoxGeometry(16,.4,11).translate(A.x,y+.2,A.z),'#d6cfc0');
-    add(new THREE.BoxGeometry(12,4,7).translate(A.x,y+2.4,A.z+.5),'#8fb8da');
-    add(new THREE.BoxGeometry(16,.5,10.5).translate(A.x,y+4.65,A.z),'#e8e2d6');
-    for(const sx of [-7.4,7.4]) for(const sz of [-4.6,4.6]) add(new THREE.CylinderGeometry(.18,.18,4.2,8).translate(A.x+sx,y+2.5,A.z+sz),'#e8e2d6');
-    add(new THREE.BoxGeometry(5,.1,3).translate(A.x,y+.42,A.z-4.2),'#3a3f46');
-    for(let k=0;k<4;k++) add(new THREE.BoxGeometry(5,.12,.5).translate(A.x,y+.36,A.z-3.2-k*.5),k%2?'#9a9690':'#b8b2a8');
-    signMesh('ODİTORYUM',9,1.5,'#14233f','#ffd76a',A.x,y+5.25,A.z-5.27,Math.PI);
-    signMesh('Etkinlik biletleri · İŞİM uygulaması',8,.9,'#1d2a40','#ffffff',A.x,y+3.3,A.z-3.05,Math.PI); }
+    smallShelter({x:A.x,z:A.z,rot:0},{inner:(Ad,Ld,yy)=>{
+      Ad(new THREE.BoxGeometry(7.6,.14,5.6).translate(0,yy+.07,0),'#2f3034');
+      Ad(new THREE.BoxGeometry(4.4,2.5,2.4).translate(0,yy+1.39,.9),'#8fb8da'); Ad(new THREE.BoxGeometry(4.5,.12,2.5).translate(0,yy+2.7,.9),'#2a2d31');
+      Ad(new THREE.BoxGeometry(1.6,2.1,.05).translate(0,yy+1.19,-.32),'#1f2a38');
+      for(let k=0;k<4;k++) Ad(new THREE.BoxGeometry(3.2,.1,.42).translate(0,yy+.13-k*.02,-1.2-k*.42),k%2?'#9a9690':'#b8b2a8');
+      Ld(new THREE.BoxGeometry(4.4,.05,.05).translate(0,yy+.16,-.35)); } });
+    signMesh('ODİTORYUM',4.6,.45,'#25282c','#ffd76a',A.x,y+3.25,A.z-2.72,Math.PI);
+    signMesh('Etkinlik biletleri · İŞİM uygulaması',3.6,.42,'#1d2a40','#ffffff',A.x,y+2.2,A.z-.33,Math.PI); }
   // ---- Sigara içme alanları (sundurma, kül tablası, tabela) ----
-  for(const Z of S.smokeZones){ const y=terrainH(Z.x,Z.z);
-    for(const sx of [-3,3]) for(const sz of [-2,2]) add(new THREE.CylinderGeometry(.1,.1,3,6).translate(Z.x+sx,y+1.5,Z.z+sz),'#5a5f66');
-    add(new THREE.BoxGeometry(6.8,.18,4.8).translate(Z.x,y+3.05,Z.z),'#b9c3cc');
-    for(const sx of [-3.6,3.6]){ add(new THREE.CylinderGeometry(.24,.2,1,10).translate(Z.x+sx,y+.5,Z.z+2.6),'#2f3338'); add(new THREE.CylinderGeometry(.26,.26,.06,10).translate(Z.x+sx,y+1.02,Z.z+2.6),'#9aa0a6'); }
-    add(new THREE.CylinderGeometry(.06,.06,2.2,6).translate(Z.x+3.9,y+1.1,Z.z-2.4),'#5a5f66');
-    signMesh('🚬 SİGARA İÇME ALANI',3.4,.7,'#2b2f36','#ffd76a',Z.x+3.9,y+2.3,Z.z-2.4,Math.PI/2); }
-  // ---- Temiz hava sahası ----
-  { const C=S.cleanAir, y=terrainH(C.x,C.z); add(new THREE.CylinderGeometry(4.6,4.8,.2,26).translate(C.x,y+.1,C.z),'#cfe2c0');
-    add(new THREE.CylinderGeometry(.06,.06,2.4,6).translate(C.x,y+1.2,C.z+4),'#5a5f66');
-    signMesh('🌿 TEMİZ HAVA SAHASI · Sigara içilmez',4.6,.8,'#1f5a3a','#ffffff',C.x,y+2.5,C.z+4.05,0);
-    for(const a of [0,2.1,4.2]){ const bx=C.x+Math.cos(a)*3.2, bz=C.z+Math.sin(a)*3.2, yaw=Math.atan2(-Math.cos(a),-Math.sin(a));
-      for(const g of [new THREE.BoxGeometry(2.2,.1,.55).translate(0,.48,0),new THREE.BoxGeometry(2.2,.5,.08).translate(0,.78,-.28)]){ const gg=cg(g,'#8a6a4a'); gg.rotateY(yaw); gg.translate(bx,y,bz); P.push(gg); } } }
+  // fotoğraf: koyu düz çatı + LED saçak, dikey çıtalı koyu dikmeler, LED’li ahşap oturma, ayaklı küllükler
+  // küçük sundurma: yerel koordinatlarda kurulur, Z.rot kadar döndürülür (koyu düz çatı + LED saçak, çıtalı dikmeler, LED’li ahşap bank, ayaklı küllükler)
+  function smallShelter(Z,opts={}){ const y=terrainH(Z.x,Z.z), r=Z.rot||0, T=g=>g.rotateY(r).translate(Z.x,0,Z.z), A=(g,c)=>add(T(g),c), Ld=g=>cafeLed.push(T(g));
+    for(const sx of [-3,3]) for(const sz of [-2.1,2.1]) for(let k=-1;k<=1;k++) A(new THREE.BoxGeometry(.13,3,.3).translate(sx+k*.22,y+1.5,sz),'#2a2d31');
+    A(new THREE.BoxGeometry(7.4,.5,5.4).translate(0,y+3.25,0),'#25282c'); A(new THREE.BoxGeometry(7,.04,5).translate(0,y+2.99,0),'#3a3d42');
+    Ld(new THREE.BoxGeometry(7.4,.08,.08).translate(0,y+3.02,-2.7)); Ld(new THREE.BoxGeometry(7.4,.08,.08).translate(0,y+3.02,2.7)); Ld(new THREE.BoxGeometry(.08,.08,5.4).translate(-3.7,y+3.02,0)); Ld(new THREE.BoxGeometry(.08,.08,5.4).translate(3.7,y+3.02,0));
+    if(opts.inner){ opts.inner(A,Ld,y); return; }
+    A(new THREE.BoxGeometry(5.6,.42,.95).translate(0,y+.24,-2.1),'#2c2d30'); A(new THREE.BoxGeometry(5.8,.1,1.1).translate(0,y+.5,-2.1),'#8a5530'); Ld(new THREE.BoxGeometry(5.4,.05,.05).translate(0,y+.08,-1.6));
+    for(const sx of [-3.6,3.6]){ A(new THREE.BoxGeometry(.3,1.05,.3).translate(sx,y+.53,2.6),'#2a2d31'); A(new THREE.BoxGeometry(.36,.06,.36).translate(sx,y+1.08,2.6),'#9aa0a6'); A(new THREE.BoxGeometry(.7,.05,.7).translate(sx,y+.03,2.6),'#3a3d42'); }
+    A(new THREE.CylinderGeometry(.06,.06,2.2,6).translate(3.9,y+1.1,-2.4),'#5a5f66');
+    const c=Math.cos(r), s=Math.sin(r); signMesh('🚬 SİGARA İÇME ALANI',3.4,.7,'#2b2f36','#ffd76a',Z.x+3.9*c-2.4*s,y+2.3,Z.z-3.9*s-2.4*c,Math.PI/2+r); }
+  for(const Z of S.smokeZones){ if(!Z.pav) smallShelter(Z); }
   // ---- Açık otopark: elektrikli araç şarj üniteleri ----
   { const PK=CONFIG.parking, sc=new THREE.MeshBasicMaterial({color:new THREE.Color(.3,2.4,.9),toneMapped:false});
     for(let k=0;k<S.evChargers;k++){ const z=PK.z0+1.8+k*3.6, x=PK.x1-.7;
@@ -1508,10 +1603,8 @@ function buildSiteDetails(){
       const s=new THREE.Mesh(new THREE.BoxGeometry(.06,.35,.4),sc); s.position.set(x-.2,.42+1.2,z); islandGroup.add(s); }
     signMesh('🔌 EV ŞARJ',3,.8,'#1f5a3a','#ffffff',PK.x1+.2,3,PK.z0+5,Math.PI/2);
     add(new THREE.CylinderGeometry(.06,.06,2.6,6).translate(PK.x1+.2,.42+1.3,PK.z0+5),'#5a5f66'); }
-  // ---- Çarşı tabelaları (podyum cephesi) ----
-  S.shopSigns.forEach((t,i)=>signMesh(t,6.8,1.3,['#5b3a29','#7a2f2f','#2b5a3a','#1f6b52','#5b3a6b','#1f4e79'][i%6],'#ffffff',31+i*8.4,6.4,47.42,0));
-  signMesh('ÇARŞI',8,1.6,'#14233f','#ffd76a',18,14.6,47.5,0);
-  signMesh('GİRİŞİMCİLİK ŞUBE',10,1.3,'#1f4e79','#ffffff',-38.25,7.2,42.4,0);
+  buildPhotoLandscape(P,add);
+  if(cafeLed.length) islandGroup.add(new THREE.Mesh(mergeGeometries(cafeLed),ledMat));
   islandGroup.add(vcMesh(P));
 }
 function signMesh(text,w,h,bg,fg,x,y,z,rotY){ const c=document.createElement('canvas'); const W=512, H=Math.max(48,Math.round(512*h/w)); c.width=W; c.height=H; const g=c.getContext('2d');
@@ -1520,6 +1613,244 @@ function signMesh(text,w,h,bg,fg,x,y,z,rotY){ const c=document.createElement('ca
   g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,W/2,H/2+2);
   const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
   const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,side:THREE.DoubleSide})); m.position.set(x,y,z); m.rotation.y=rotY; islandGroup.add(m); return m; }
+/* ---- Fotoğraflardan peyzaj: kilit parke, kavisli yeşil duvar, Kule Çarşı portalı, su duvarı, niwaki,
+        oturma nişi, zeytinli saksı-banklar, yönlendirme totemi, bollard ve bitki aydınlatmaları ---- */
+function paverTex(stripe){ const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d'), r=mulberry32(stripe?41:42);
+  g.fillStyle='#5e3229'; g.fillRect(0,0,256,256); const cols=['#9a5446','#8e4a3e','#a35c4c','#874538','#96503f','#7f4235'];
+  for(let y=0;y<256;y+=12){ const off=(y/12)%2?8:0; for(let x=-16;x<256;x+=16){ g.fillStyle=cols[(r()*cols.length)|0]; g.fillRect(x+off+1,y+1,14,10); } }
+  if(stripe){ g.fillStyle='#3c3a3e'; g.fillRect(120,0,16,256); }
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; }
+function roundaboutTex(rIn,rOut){ const c=document.createElement('canvas'); c.width=c.height=512; const g=c.getContext('2d'), m=256, r=mulberry32(43), k=256/rOut;
+  g.fillStyle='#5e3229'; g.fillRect(0,0,512,512); const cols=['#9a5446','#8e4a3e','#a35c4c','#874538','#96503f'];
+  for(let y=0;y<512;y+=9){ const off=(y/9)%2?6:0; for(let x=-12;x<512;x+=12){ g.fillStyle=cols[(r()*cols.length)|0]; g.fillRect(x+off+1,y+1,10,7); } }
+  const band=(rad,w,cl)=>{ g.strokeStyle=cl; g.lineWidth=w*k; g.beginPath(); g.arc(m,m,rad*k,0,7); g.stroke(); };
+  band(rIn+.4,.5,'#cfc8bd'); band(rIn+2.0,.45,'#3a383c'); band(rIn+3.1,.3,'#c9c2b5'); band(rOut-1.3,.5,'#3a383c'); band(rOut-.2,.4,'#cfc8bd');
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; }
+function tileTex(){ const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'), r=mulberry32(44);
+  for(let y=0;y<4;y++) for(let x=0;x<4;x++){ const v=118+Math.floor(r()*22); g.fillStyle=`rgb(${v},${v},${v+1})`; g.fillRect(x*32,y*32,32,32); }
+  g.strokeStyle='#55595f'; g.lineWidth=2; for(let k=0;k<=4;k++){ g.beginPath(); g.moveTo(k*32,0); g.lineTo(k*32,128); g.stroke(); g.beginPath(); g.moveTo(0,k*32); g.lineTo(128,k*32); g.stroke(); }
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; }
+function paverMat(stripe=true){ const m=envMat({map:paverTex(stripe),roughness:.82},{wet:true}); m.polygonOffset=true; m.polygonOffsetFactor=-3; m.polygonOffsetUnits=-3; return m; }
+function totemTex(){ const c=document.createElement('canvas'); c.width=256; c.height=640; const g=c.getContext('2d');
+  g.fillStyle='#1d1f22'; g.fillRect(0,0,256,640); g.fillStyle='#e9e4da'; g.textBaseline='middle';
+  g.font='700 92px Georgia,serif'; g.textAlign='center'; g.fillText('İŞ',128,92);
+  g.font='600 25px Inter,Segoe UI,sans-serif'; g.textAlign='left';
+  [['ODİTORYUM',250],['KULE ÇARŞI',284],['KULE 2',318],['OTOPARK 2',392],['OTOPARK 1',466],['KULE 3',500]].forEach(([t,y])=>g.fillText(t,30,y));
+  g.font='700 30px Inter,sans-serif'; g.textAlign='right'; g.fillText('›',228,284); g.fillText('⌃',228,392); g.textAlign='left'; g.fillText('‹',8,483);
+  g.fillStyle='rgba(233,228,218,.25)'; g.fillRect(30,350,196,2); g.fillRect(30,428,196,2);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; }
+function buildPhotoLandscape(P,add){
+  const S=SITE, led=[], ups=[], RB=S.roundabout;
+  const upl=(x,y,z,ry,w,h)=>ups.push(new THREE.PlaneGeometry(w,h).translate(0,h/2,0).rotateY(ry).translate(x,y+.05,z));
+  const olive=(x,y,z,s)=>{ add(new THREE.CylinderGeometry(.24*s,.4*s,1.6*s,7).translate(x,y+.8*s,z),'#6b5a48');
+    for(let k=0;k<4;k++){ const a=k*1.6+.4; add(new THREE.CylinderGeometry(.1*s,.18*s,1.7*s,6).translate(0,.85*s,0).rotateZ(.55).rotateY(a).translate(x,y+1.5*s,z),'#6b5a48');
+      add(new THREE.IcosahedronGeometry(.85*s,1).scale(1.25,.7,1.25).translate(x-.9*s*Math.cos(a),y+2.95*s,z+.9*s*Math.sin(a)),k%2?'#8a9a6a':'#7d8f5e'); }
+    add(new THREE.IcosahedronGeometry(1.05*s,1).scale(1.3,.75,1.3).translate(x,y+3.35*s,z),'#86966a'); };
+  const niwaki=(x,y,z,s)=>{ add(new THREE.CylinderGeometry(.16*s,.3*s,3.4*s,6).translate(x,y+1.7*s,z),'#5b4636');
+    [[0,3.6,0,1],[.9,2.4,.3,.75],[-.8,2.0,-.4,.7],[.3,1.3,-.9,.6],[-.5,2.9,.7,.6]].forEach(([dx,dy,dz,r0])=>{ add(new THREE.CylinderGeometry(.05*s,.08*s,Math.hypot(dx,dz)*s+.1,4).rotateZ(Math.PI/2).rotateY(-Math.atan2(dz,dx)).translate(x+dx*s/2,y+dy*s,z+dz*s/2),'#5b4636');
+      add(new THREE.IcosahedronGeometry(r0*s,1).scale(1.25,.55,1.25).translate(x+dx*s,y+dy*s+.15*s,z+dz*s),'#355e2f'); }); };
+  const cycad=(x,y,z,s)=>{ add(new THREE.CylinderGeometry(.2*s,.26*s,.5*s,7).translate(x,y+.25*s,z),'#6b5236');
+    for(let k=0;k<10;k++){ const a=k/10*Math.PI*2; add(new THREE.BoxGeometry(.18*s,.05*s,1.4*s).translate(0,0,.7*s).rotateX(-.5).rotateY(a).translate(x,y+.5*s,z),k%2?'#3d6b2c':'#4a7a33'); } };
+  const carex=(x,y,z)=>{ for(let k=0;k<6;k++){ const a=k*1.05; add(new THREE.ConeGeometry(.07,.8,3).translate(0,.4,0).rotateZ(.5).rotateY(a).translate(x,y,z),k%2?'#c4cc6e':'#a9b85a'); } };
+  const bowl=(x,y,z,r0,fl)=>{ add(new THREE.SphereGeometry(r0,14,6,0,Math.PI*2,Math.PI/2,Math.PI/2).translate(x,y+r0,z),'#7c7d80');
+    add(new THREE.CylinderGeometry(r0*.92,r0*.92,.08,14).translate(x,y+r0*.94,z),'#3b2a1e'); add(new THREE.IcosahedronGeometry(r0*.75,0).scale(1,.55,1).translate(x,y+r0*1.15,z),'#3f6f33');
+    if(fl) for(let k=0;k<7;k++){ const a=k*.9, d=r0*.45*(k%2?1:.4); add(new THREE.IcosahedronGeometry(.12,0).translate(x+Math.cos(a)*d,y+r0*1.45,z+Math.sin(a)*d),fl); } };
+  const bollard=(x,z)=>{ const y=terrainH(x,z); add(new THREE.BoxGeometry(.2,.85,.2).translate(x,y+.42,z),'#26292d'); led.push(new THREE.BoxGeometry(.22,.12,.22).translate(x,y+.78,z)); upl(x,y,z,0,.9,.9); };
+
+  // ---- Göbek: kızıl granit kademeli havuz, ortada zeytin ağacı ve ağapantus (fotoğraf: yuvarlak çeşme) ----
+  { const ry=terrainH(RB.x,RB.z);
+    add(new THREE.CylinderGeometry(RB.fr*.52,RB.fr*.55,.25,32).translate(RB.x,ry+.95,RB.z),'#7a4a44');
+    olive(RB.x,ry+1.05,RB.z,1.25);
+    for(let k=0;k<14;k++){ const a=k/14*Math.PI*2, d=RB.fr*.36; add(new THREE.ConeGeometry(.22,.9,4).translate(RB.x+Math.cos(a)*d,ry+1.5,RB.z+Math.sin(a)*d),'#4f8a3a'); if(k%3===0) add(new THREE.IcosahedronGeometry(.16,0).translate(RB.x+Math.cos(a)*d,ry+2.05,RB.z+Math.sin(a)*d),'#7f7fd6'); } }
+  const ginkgo=(x,y,z,s)=>{ add(new THREE.CylinderGeometry(.12*s,.22*s,6.6*s,7).translate(x,y+3.3*s,z),'#6b5a48');
+    [[0,2.6,0,1.0],[.5,3.6,.2,1.1],[-.4,4.5,-.3,1.05],[.2,5.5,.4,.95],[-.1,6.4,0,.75],[.6,2.9,-.5,.7]].forEach(([dx,dy,dz,r0],k)=>add(new THREE.IcosahedronGeometry(r0*s,1).scale(1,1.05,1).translate(x+dx*s,y+dy*s,z+dz*s),k%2?'#b6cc5e':'#a3bd4f')); };
+  const woodCube=(x,y,z)=>{ add(new THREE.BoxGeometry(.9,.42,.9).translate(x,y+.21,z),'#a8693a'); add(new THREE.BoxGeometry(.92,.06,.92).translate(x,y+.44,z),'#b97a46'); };
+
+  // ---- Kavisli yeşil duvar: kuzeybatı araç bırakma döngüsünü sarar (fotoğraf: yuvarlak kilit parke meydan) ----
+  { const W=S.greenWall, L=S.loop, y=terrainH(L.x,L.z), mid=(W.a0+W.a1)/2;
+    for(let a=W.a0;a<W.a1;a+=4){ const t=(a+2)*Math.PI/180, x=L.x+Math.cos(t)*W.r, z=L.z+Math.sin(t)*W.r, ry=-t-Math.PI/2, ix=-Math.cos(t), iz=-Math.sin(t);
+      const seg=2*W.r*Math.sin(2*Math.PI/180)+.06;
+      add(new THREE.BoxGeometry(seg,4.6,.9).translate(0,2.3,0).rotateY(ry).translate(x,y,z),'#cbc1b0');
+      add(new THREE.BoxGeometry(seg,.22,1.15).translate(0,4.71,0).rotateY(ry).translate(x,y,z),'#b0a693');
+      if(Math.abs(a+2-mid)<7) continue; // ortada kurum adı paneli
+      add(new THREE.BoxGeometry(seg*.4,3.7,.22).translate(0,2.35,0).rotateY(ry).translate(x+ix*.55,y,z+iz*.55),'#4c7a35');
+      for(const hy of [1.25,2.75]){ add(new THREE.BoxGeometry(seg*.55,.36,.62).translate(0,hy,0).rotateY(ry).translate(x+ix*.78,y,z+iz*.78),'#2c2d30');
+        add(new THREE.IcosahedronGeometry(.42,0).scale(1.2,.8,.8).translate(x+ix*.85,y+hy+.42,z+iz*.85),'#5f8f3e'); }
+      add(new THREE.IcosahedronGeometry(.45,0).translate(x+ix*1.7,y+.4,z+iz*1.7),'#3f6f33');
+      upl(x+ix*1.05,y,z+iz*1.05,ry,seg*.75,4.3); }
+    const tm=mid*Math.PI/180; signMesh('TÜRKİYE İŞ BANKASI',5.4,.95,'#cbc1b0','#5a4a2a',L.x+Math.cos(tm)*(W.r-.47),y+3.1,L.z+Math.sin(tm)*(W.r-.47),-tm-Math.PI/2);
+    siteObstacles.push({x:L.x,z:L.z,r:W.r+2}); }
+  // ---- Yönlendirme totemi (fotoğraf: giriş yolu) – döngü girişinde ----
+  { const x=-24, z=-57.5, y=terrainH(x,z);
+    add(new THREE.BoxGeometry(1.5,3.6,.5).translate(x,y+1.8,z),'#7a4a2a');
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(1.2,3.0),new THREE.MeshBasicMaterial({map:totemTex()})); m.position.set(x,y+1.95,z+.26); islandGroup.add(m);
+    const m2=m.clone(); m2.position.z=z-.26; m2.rotation.y=Math.PI; islandGroup.add(m2);
+    add(new THREE.BoxGeometry(4.4,.7,1.4).translate(x+3.3,y+.35,z),'#26292d'); for(let k=0;k<4;k++) add(new THREE.ConeGeometry(.35,1.6,5).translate(x+1.9+k*.95,y+1.4,z),'#9fae4a');
+    upl(x+3.3,y,z+.75,0,4.2,2.2); }
+
+  // ==== ÖN PEYZAJ ŞERİDİ (meydanın güney cephesi): kilit parke kaldırım, LED’li granit saksılar, oturma nişleri,
+  //      Kule Çarşı portalı, üçgen su duvarı + kanal fıskiyeleri + ayaklı kase, saksı kaseler, niwaki ====
+  { const F=S.front, y=terrainH(0,66), z0=F.z0, z1=F.z1, Gt=S.carsiGate, WF=[24.6,37.2];
+    { const t=paverTex(false); t.repeat.set(176/5.7,1); const m=envMat({map:t,roughness:.82},{wet:true}); m.polygonOffset=true; m.polygonOffsetFactor=-2; m.polygonOffsetUnits=-2;
+      const w=new THREE.Mesh(new THREE.PlaneGeometry(176,F.walk[1]-F.walk[0]).rotateX(-Math.PI/2),m); w.position.set(0,y+.03,(F.walk[0]+F.walk[1])/2); w.receiveShadow=true; islandGroup.add(w);
+      add(new THREE.BoxGeometry(176,.06,.25).translate(0,y+.04,F.walk[0]),'#3c3a3e'); }
+    const planter=(xa,xb,za,zb)=>{ if(xb-xa<.4) return; const cx=(xa+xb)/2, cz=(za+zb)/2, w=xb-xa, d=zb-za;
+      add(new THREE.BoxGeometry(w,.85,d).translate(cx,y+.42,cz),'#232427'); add(new THREE.BoxGeometry(w-.3,.04,d-.3).translate(cx,y+.83,cz),'#3b2a1e');
+      if(za<z0+.1) for(let x=xa+1.2;x<xb-.6;x+=2.6) led.push(new THREE.BoxGeometry(.22,.1,.04).translate(x,y+.32,za-.02)); };
+    const cut=[...F.niches.map(c=>[c-5,c+5]),WF];
+    for(const [sa,sb] of F.segs){ let parts=[[sa,sb]];
+      for(const [ca,cb] of cut) parts=parts.flatMap(([a,b])=>(cb<=a||ca>=b)?[[a,b]]:[[a,Math.max(a,ca)],[Math.min(b,cb),b]].filter(([p,q])=>q-p>.3));
+      for(const [a,b] of parts){ planter(a,b,z0,z1);
+        for(let x=a+1.2;x<b-.7;x+=2.4){ const k=((Math.round(x*7)%5)+5)%5;
+          add(new THREE.IcosahedronGeometry(.55,1).scale(1,.85,1).translate(x,y+1.25,z0+1.1),'#3f6f33');
+          if(x+1.2<b-.5){ if(k===0||k===3) cycad(x+1.2,y+.85,z0+3.3,1.05); else if(k===1) carex(x+1.2,y+.85,z0+2.6); else add(new THREE.IcosahedronGeometry(.7,1).scale(1.1,.8,1).translate(x+1.2,y+1.35,z0+3.4),'#4c7a35'); }
+          if(k===2) upl(x,y+.85,z0+1.7,Math.PI,1.6,2.0); }
+        for(let x=a+4.5;x<b-3;x+=13){ niwaki(x,y+.85,z0+4.2,1.05); upl(x,y+.85,z0+3,Math.PI,2.4,4.2); } } }
+    // oturma nişleri: çizgili granit zemin, LED’li ahşap L bank, altıgen tabureler
+    for(const c of F.niches){ const nd=4.4;
+      for(let k=0;k<9;k++) add(new THREE.BoxGeometry(1.11,.12,nd).translate(c-4.995+k*1.11+.555,y+.06,z0+nd/2),k%2?'#55575c':'#2f3034');
+      planter(c-5,c+5,z0+nd,z1);
+      add(new THREE.BoxGeometry(9.4,.48,.95).translate(c,y+.24,z0+nd-.55),'#2c2d30'); add(new THREE.BoxGeometry(9.6,.12,1.1).translate(c,y+.54,z0+nd-.55),'#9a5a32');
+      add(new THREE.BoxGeometry(.95,.48,3.2).translate(c-4.4,y+.24,z0+1.7),'#2c2d30'); add(new THREE.BoxGeometry(1.1,.12,3.3).translate(c-4.4,y+.54,z0+1.7),'#9a5a32');
+      led.push(new THREE.BoxGeometry(9,.05,.05).translate(c,y+.06,z0+nd-1.05), new THREE.BoxGeometry(.05,.05,3).translate(c-3.9,y+.06,z0+1.7));
+      for(const [dx,dz] of [[-2.2,1.1],[-.4,2.4],[1.4,1.0],[3.2,2.3],[.8,.4]]) add(new THREE.CylinderGeometry(.4,.4,.46,6).translate(c+dx,y+.35,z0+dz),'#a0623a');
+      upl(c,y+.85,z0+nd+.25,Math.PI,9,1.6); siteObstacles.push({x:c,z:z0+2,r:5.5}); }
+    // Kule Çarşı portalı: koyu çerçeve, LED çıtalar, iki yüzde tabela, kamera
+    { const gx=Gt.x, gz=Gt.z, gy=y;
+      for(const sx of [-1,1]) add(new THREE.BoxGeometry(1.3,6.2,3.6).translate(gx+sx*4.1,gy+3.1,gz),'#26292d');
+      add(new THREE.BoxGeometry(9.6,1,3.8).translate(gx,gy+6.5,gz),'#26292d');
+      for(let k=0;k<8;k++) led.push(new THREE.BoxGeometry(6.9,.12,.14).translate(gx,gy+5.94,gz-1.6+k*.46));
+      for(const sx of [-1,1]) for(let k=0;k<5;k++) led.push(new THREE.BoxGeometry(.08,5.6,.08).translate(gx+sx*3.43,gy+3.0,gz-1.4+k*.7));
+      signMesh('KULE ÇARŞI',2.6,.5,'#26292d','#d9a066',gx-4.1,gy+3.6,gz+1.82,0); signMesh('KULE ÇARŞI',2.6,.5,'#26292d','#d9a066',gx+4.1,gy+3.6,gz-1.82,Math.PI);
+      add(new THREE.CylinderGeometry(.06,.06,.6,5).rotateZ(Math.PI/2).translate(gx+3.5,gy+6.6,gz+2),'#1b1b1d'); add(new THREE.SphereGeometry(.26,8,6).translate(gx+3.2,gy+6.55,gz+2.1),'#1b1b1d');
+      upl(gx,gy-.3,gz+1.95,0,9,3); upl(gx,gy-.3,gz-1.95,Math.PI,9,3);
+      // portal yanında granit platform üzerinde saksı kaseler (magenta siklamen) ve carex
+      add(new THREE.BoxGeometry(9.6,.12,1.9).translate(28.2,y+.06,62.9),'#2a2b2f');
+      for(let k=0;k<5;k++) bowl(24.4+k*1.9,y+.12,62.9,.6,k%2?'#d6337f':'#e2397a');
+      for(const x of [10.6,12.2]) bowl(x,y+.03,62.9,.55,'#c4cc6e'); }
+    // üçgen su duvarı + kanal fıskiyeleri + ayaklı taş kase + niwaki
+    { const xa=WF[0], xb=WF[1];
+      planter(xa,xb,z0+3.25,z1);
+      const sh=new THREE.Shape(); sh.moveTo(0,0); sh.lineTo(10,0); sh.lineTo(10,4.4); sh.closePath();
+      add(new THREE.ExtrudeGeometry(sh,{depth:.5,bevelEnabled:false}).rotateY(Math.PI).translate(xa+10.8,y,z0+3.2),'#26292d');
+      const film=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateY(Math.PI),waterMat); film.position.set(xa+10.8,y+.02,z0+2.68); islandGroup.add(film);
+      add(new THREE.BoxGeometry(9.6,.55,2.4).translate(xa+5.6,y+.27,z0+1.35),'#2a2b2f');
+      const tw=new THREE.Mesh(new THREE.PlaneGeometry(9.1,2).rotateX(-Math.PI/2),waterMat); tw.position.set(xa+5.6,y+.5,z0+1.35); islandGroup.add(tw);
+      led.push(new THREE.BoxGeometry(9.6,.06,.06).translate(xa+5.6,y+.12,z0+.13), new THREE.BoxGeometry(9.8,.06,.06).translate(xa+5.8,y+.14,z0+2.64));
+      const jm=new THREE.MeshStandardMaterial({color:'#e8f6ff',transparent:true,opacity:.6,roughness:.1,depthWrite:false});
+      for(let k=0;k<5;k++){ const j=new THREE.Mesh(new THREE.ConeGeometry(.14,1.1,6).translate(0,.55,0),jm); j.position.set(xa+1.8+k*1.9,y+.5,z0+1.35); fountainJets.add(j); }
+      const px=xb-1.1, pz=z0+1.35;
+      add(new THREE.BoxGeometry(1.2,1.2,1.2).translate(px,y+.6,pz),'#2a2b2f');
+      add(new THREE.SphereGeometry(1,16,6,0,Math.PI*2,Math.PI/2,Math.PI/2).scale(1,.5,1).translate(px,y+1.7,pz),'#3a3b3f');
+      const bw=new THREE.Mesh(new THREE.CircleGeometry(.92,20).rotateX(-Math.PI/2),waterMat); bw.position.set(px,y+1.68,pz); islandGroup.add(bw);
+      niwaki(xb-1.4,y+.85,z0+4.5,1.1); niwaki(xa+1.6,y+.85,z0+4.6,.9);
+      for(let k=0;k<4;k++) cycad(xa+3.6+k*1.6,y+.85,z0+4.6,.85);
+      upl(xa+5.6,y,z0+2.5,Math.PI,9.6,4.6);
+      siteObstacles.push({x:(xa+xb)/2,z:z0+2,r:7}); } }
+
+  // ==== KESİNTİSİZ KİLİT PARKE YÜRÜYÜŞ HATTI: ön şeritten doğuya (otopark + göbek), batıya (katlı otopark),
+  //      kuleler arasına ve heykel/sigara pavyonu önünden araç bırakma döngüsüne ve Kule 3 girişine ====
+  { let k=0; const y=terrainH(0,0);
+    const brick=(x0,x1,z0,z1)=>{ const w=x1-x0, d=z1-z0, t=paverTex(false); t.repeat.set(w/5.7,d/5.7);
+      const m=envMat({map:t,roughness:.82},{wet:true}); m.polygonOffset=true; m.polygonOffsetFactor=-2-(k%3); m.polygonOffsetUnits=-2-(k%3);
+      const pl=new THREE.Mesh(new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2),m); pl.position.set((x0+x1)/2,y+.03+(k++)*.003,(z0+z1)/2); pl.receiveShadow=true; islandGroup.add(pl);
+      for(const [a,b,c,e] of [[x0,x1,z0,z0],[x0,x1,z1,z1],[x0,x0,z0,z1],[x1,x1,z0,z1]]) add(new THREE.BoxGeometry(Math.max(.12,b-a),.06,Math.max(.12,e-c)).translate((a+b)/2,y+.035,(c+e)/2),'#3c3a3e'); };
+    brick(86,92,-14,64.1);            // doğu kenarı: ön şeritten otoparka
+    brick(92,93.5,3,13);              // göbeğe bağlantı
+    brick(-92,-86,-16,64.1);          // batı kenarı: ön şeritten kuzeye
+    brick(-100,-92,-12,-4);           // katlı otoparka bağlantı (çit açıklığı; rampanın kuzeyinde)
+    brick(-86,-34,-16,-11);           // heykel önünden batı kenarına
+    brick(-38,-34,-55,15.5);          // döngüden heykel/pavyon önünden Kule 3 – podyum girişine
+    brick(-40,-33,15.5,58.4);         // Kule 3 ile Kule 2 arası: açık zemin kat geçidinin altından ön şeride
+    siteObstacles.push({x:89,z:25,r:3},{x:-89,z:25,r:3}); }
+  // ==== -1 KAT YEMEKHANE ORTA AVLUSU (gömülü avlu; fotoğraflar: gri taş zemin, ahşap kenarlı saksılar, zeytin, ginkgo,
+  //      çim, mavi sandalyeler, büyük merdiven, yemekhanenin cam cephesi) ====
+  { const C=S.court, cx=(C.x0+C.x1)/2, cz=(C.z0+C.z1)/2, W=C.x1-C.x0, D=C.z1-C.z0, top=.35, fy=top-C.depth;
+    { const t=tileTex(); t.repeat.set(W/4,D/4); const m=envMat({map:t,roughness:.8},{wet:true});
+      const f=new THREE.Mesh(new THREE.PlaneGeometry(W,D).rotateX(-Math.PI/2),m); f.position.set(cx,fy,cz); f.receiveShadow=true; islandGroup.add(f); }
+    const wallH=C.depth+.55, wy=fy+wallH/2, stone='#b9ad9a', cap='#d6cdbb';
+    add(new THREE.BoxGeometry(W+1.2,wallH,.6).translate(cx,wy,C.z0-.3),stone);
+    add(new THREE.BoxGeometry(.6,wallH,D).translate(C.x0-.3,wy,cz),stone);
+    add(new THREE.BoxGeometry(.6,C.depth,D).translate(C.x1+.3,fy+C.depth/2,cz),stone);
+    add(new THREE.BoxGeometry(.6,.55,D-2.8).translate(C.x1+.3,top+.27,cz+1.4),stone);
+    for(let x=C.x0+1;x<C.x1-.5;x+=2.2) add(new THREE.BoxGeometry(1.6,.5,.04).translate(x,fy+1.4,C.z0+.02),'#8c8172');
+    add(new THREE.BoxGeometry(W+1.3,.08,.75).translate(cx,top+.59,C.z0-.3),cap); add(new THREE.BoxGeometry(.75,.08,D).translate(C.x0-.3,top+.59,cz),cap); add(new THREE.BoxGeometry(.75,.08,D-2.8).translate(C.x1+.3,top+.59,cz+1.4),cap);
+    const rail=(xa,za,xb,zb,ya,yb)=>{ const L=Math.hypot(xb-xa,zb-za), n=Math.max(1,Math.round(L/1.6)), r=Math.atan2(xb-xa,zb-za);
+      for(let i=0;i<=n;i++){ const t=i/n; add(new THREE.BoxGeometry(.06,1.0,.06).translate(xa+(xb-xa)*t,ya+(yb-ya)*t+.5,za+(zb-za)*t),'#3a3f46'); }
+      const sl=Math.atan2(yb-ya,L);
+      for(const hh of [.55,1.0]) add(new THREE.BoxGeometry(.06,.06,Math.hypot(L,yb-ya)).rotateX(-sl).rotateY(r).translate((xa+xb)/2,(ya+yb)/2+hh,(za+zb)/2),'#3a3f46'); };
+    rail(C.x0-.3,C.z0-.3,C.x1+.3,C.z0-.3,top+.6,top+.6); rail(C.x0-.3,C.z0-.3,C.x0-.3,C.z1,top+.6,top+.6); rail(C.x1+.3,C.z0+2.8,C.x1+.3,C.z1,top+.6,top+.6);
+    // büyük merdiven: kuzey duvarı boyunca, üst ucu doğuda (doğu parapetindeki açıklıktan inilir)
+    { const n=20, len=16.5, run=len/n, rise=C.depth/n, sw=2.6, xs=C.x1-len;
+      for(let i=0;i<n;i++){ const h=(i+1)*rise; add(new THREE.BoxGeometry(run+.02,h,sw).translate(xs+(i+.5)*run,fy+h/2,C.z0+sw/2),i%2?'#8e9298':'#9aa0a6');
+        add(new THREE.BoxGeometry(.06,h-.02,.05).translate(xs+(i+1)*run-.02,fy+h/2,C.z0+sw+.01),'#c9b99c'); }
+      rail(xs,C.z0+sw,C.x1,C.z0+sw,fy+.2,top); }
+    // yemekhane cam cephesi ve iç mekân (turuncu sandalyeler)
+    { const gz=C.z1, h=C.depth-.05;
+      const room=new THREE.Mesh(new THREE.BoxGeometry(W,h,5).translate(cx,fy+h/2,gz+2.5),new THREE.MeshStandardMaterial({color:'#efe9df',emissive:new THREE.Color('#fff0d8'),emissiveIntensity:.3,side:THREE.BackSide,roughness:.9})); islandGroup.add(room);
+      const glass=new THREE.Mesh(new THREE.PlaneGeometry(W,h-.3),envMat({color:'#9fc0d4',metalness:.4,roughness:.06,transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide},{keep:true,noSnow:true}));
+      glass.position.set(cx,fy+(h-.3)/2,gz-.03); glass.rotation.y=Math.PI; glass.renderOrder=2; islandGroup.add(glass);
+      for(let x=C.x0;x<=C.x1+.01;x+=1.9) add(new THREE.BoxGeometry(.1,h,.12).translate(x,fy+h/2,gz-.05),'#3a3f46');
+      add(new THREE.BoxGeometry(W,.32,.2).translate(cx,top-.2,gz-.08),'#3a3f46');
+      for(let x=C.x0+2;x<C.x1-1;x+=3.4) for(const tz of [gz+1.6,gz+3.5]){ add(new THREE.BoxGeometry(1.2,.05,.8).translate(x,fy+.75,tz),'#f3f1ec'); add(new THREE.CylinderGeometry(.05,.05,.72,5).translate(x,fy+.37,tz),'#4a4f57');
+        for(const dx of [-.75,.75]) add(new THREE.BoxGeometry(.45,.5,.45).translate(x+dx,fy+.25,tz),'#d4562a'); } }
+    // ekim ve oturma: ahşap kenarlı granit saksılar, zeytin, ginkgo, çim, küp tabureler, masa + mavi sandalyeler
+    const box=(x,z,w,d,h,c='#3c3d41')=>{ add(new THREE.BoxGeometry(w,h,d).translate(x,fy+h/2,z),c); add(new THREE.BoxGeometry(w-.24,.04,d-.24).translate(x,fy+h-.01,z),'#3b2a1e'); };
+    box(-1,-53.4,11,4.4,.6); add(new THREE.BoxGeometry(11.2,.1,.75).translate(-1,fy+.65,-51.55),'#a8693a'); add(new THREE.BoxGeometry(.75,.1,4.5).translate(4.15,fy+.65,-53.4),'#a8693a');
+    olive(1,fy+.6,-53.8,1.05); for(let k=0;k<6;k++) carex(-5.6+k*1.1,fy+.6,-52.6); for(const x of [-5,-3.2,3]) add(new THREE.IcosahedronGeometry(.5,1).translate(x,fy+1.0,-54.6),'#3f6f33');
+    add(new THREE.BoxGeometry(7.2,.12,4.2).translate(11.6,fy+.06,-53.6),'#2c2d30'); add(new THREE.BoxGeometry(6.8,.14,3.8).translate(11.6,fy+.08,-53.6),'#6aa84f');
+    box(-11,-50.2,8,2.2,.55); add(new THREE.BoxGeometry(8.2,.1,.7).translate(-11,fy+.6,-51.0),'#a8693a'); for(let k=0;k<7;k++) carex(-14.2+k*1.05,fy+.55,-49.9);
+    box(-11,-56.2,3,3,.55); add(new THREE.BoxGeometry(3.2,.1,.7).translate(-11,fy+.6,-54.45),'#a8693a'); add(new THREE.BoxGeometry(.7,.1,3.2).translate(-9.25,fy+.6,-56.2),'#a8693a'); ginkgo(-11,fy+.55,-56.2,1);
+    for(const [x,z] of [[3.5,-57.6],[6.2,-49.6],[-5,-49.3],[17.8,-50.4],[-14,-59.2]]) woodCube(x,fy,z);
+    { const tx=16.2, tz=-56.4; add(new THREE.CylinderGeometry(.55,.55,.05,14).translate(tx,fy+.74,tz),'#e9e9e6'); add(new THREE.CylinderGeometry(.05,.05,.72,5).translate(tx,fy+.36,tz),'#7a7d82');
+      for(const [dx,dz,c] of [[.95,0,'#2f63c9'],[-.95,0,'#2f63c9'],[0,.95,'#d8d1a8'],[0,-.95,'#5a6068']]){ add(new THREE.BoxGeometry(.48,.06,.48).translate(tx+dx,fy+.45,tz+dz),c); add(new THREE.BoxGeometry(dz?.48:.06,.45,dz?.06:.48).translate(tx+dx*1.25,fy+.68,tz+dz*1.25),c);
+        for(const [lx,lz] of [[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]]) add(new THREE.BoxGeometry(.04,.44,.04).translate(tx+dx+lx,fy+.22,tz+dz+lz),c); } }
+    for(const [x,z] of [[-15.4,-48.2],[21.4,-48.2],[21.4,-54],[-15.4,-54],[4.8,-48.2]]){ add(new THREE.CylinderGeometry(.09,.09,.9,8).translate(x,fy+.45,z),'#1f2124'); led.push(new THREE.BoxGeometry(.2,.06,.2).translate(x,fy+.86,z)); }
+    upl(1,fy+.6,-55.3,0,4,3.6); upl(-11,fy+.55,-57.6,0,2.6,5); upl(-11,fy+.55,-51.2,Math.PI,7,1.4);
+    siteObstacles.push({x:cx,z:cz,r:22}); }
+
+  // ==== BÜYÜK ÜSTÜ KAPALI SİGARA İÇME ALANI (fotoğraf: camlı pavyon, koyu konsol çatı, LED saçak, eğik beyaz kolonlar,
+  //      ısıtıcılar, ayaklı masalar; dışında LED’li ahşap oturma ve kademeli deck) ====
+  { const SP=S.smokePav, x=SP.x, z=SP.z, w=SP.w, d=SP.d, y=terrainH(x,z), ry=y+4.4;
+    add(new THREE.BoxGeometry(w,.12,d).translate(x,y+.06,z),'#d9d6cf');
+    add(new THREE.BoxGeometry(w+2.4,.75,d+2.4).translate(x,ry+.37,z),'#26292d'); add(new THREE.BoxGeometry(w+1.9,.04,d+1.9).translate(x,ry-.02,z),'#e9e5dc');
+    led.push(new THREE.BoxGeometry(w+2.4,.09,.09).translate(x,ry+.02,z-d/2-1.2), new THREE.BoxGeometry(w+2.4,.09,.09).translate(x,ry+.02,z+d/2+1.2), new THREE.BoxGeometry(.09,.09,d+2.4).translate(x-w/2-1.2,ry+.02,z), new THREE.BoxGeometry(.09,.09,d+2.4).translate(x+w/2+1.2,ry+.02,z));
+    for(let zz=z-d/2+1.6; zz<=z+d/2-1.4; zz+=5) for(const sx of [-1,1]) for(const lean of [-.18,.18]) add(new THREE.CylinderGeometry(.16,.24,4.5,10).rotateX(lean).translate(x+sx*(w/2-.7),y+2.2,zz-lean*1.1),'#f1efe9');
+    { const gm=envMat({color:'#cfe4ef',metalness:.2,roughness:.04,transparent:true,opacity:.2,depthWrite:false,side:THREE.DoubleSide},{keep:true,noSnow:true}), gh=4.3;
+      const gg=mergeGeometries([new THREE.BoxGeometry(w,gh,.06).translate(x,y+gh/2,z-d/2),new THREE.BoxGeometry(w,gh,.06).translate(x,y+gh/2,z+d/2),new THREE.BoxGeometry(.06,gh,d).translate(x-w/2,y+gh/2,z),new THREE.BoxGeometry(.06,gh,d).translate(x+w/2,y+gh/2,z)]);
+      const g=new THREE.Mesh(gg,gm); g.renderOrder=2; islandGroup.add(g); }
+    for(let k=0;k<4;k++){ const tz=z-d/2+3.2+k*5.4, tx=x+(k%2?1.8:-1.8);
+      add(new THREE.CylinderGeometry(.4,.4,.05,14).translate(tx,y+1.12,tz),'#efede8'); add(new THREE.CylinderGeometry(.05,.05,1.1,6).translate(tx,y+.56,tz),'#2a2d31'); add(new THREE.CylinderGeometry(.3,.3,.04,10).translate(tx,y+.03,tz),'#2a2d31');
+      add(new THREE.BoxGeometry(.28,1,.28).translate(tx+(k%2?-1.4:1.4),y+.5,tz+1.2),'#2a2d31'); add(new THREE.BoxGeometry(.32,.05,.32).translate(tx+(k%2?-1.4:1.4),y+1.02,tz+1.2),'#9aa0a6');
+      add(new THREE.BoxGeometry(1.1,.18,.32).translate(x,ry-.18,tz),'#2a2a2c'); led.push(new THREE.BoxGeometry(.9,.05,.2).translate(x,ry-.28,tz)); }
+    for(const [dx,dz] of [[-3.6,-d/2+1.2],[3.6,-d/2+1.2],[-3.6,d/2-1.2],[3.6,d/2-1.2],[-3.8,0],[3.8,1.5]]){ add(new THREE.CylinderGeometry(.6,.48,.9,14).translate(x+dx,y+.45,z+dz),'#efede8');
+      add(new THREE.IcosahedronGeometry(.85,1).scale(1,1.15,1).translate(x+dx,y+1.6,z+dz),'#3f7a35'); add(new THREE.ConeGeometry(.45,1.3,5).translate(x+dx+.4,y+1.5,z+dz+.3),'#4f8f3c'); }
+    // doğu cephesi boyunca LED’li ahşap oturma
+    { const bx=x+w/2+1.9; add(new THREE.BoxGeometry(1.3,.42,d-2).translate(bx,y+.21,z),'#2c2d30'); add(new THREE.BoxGeometry(1.5,.1,d-1.8).translate(bx,y+.47,z),'#8a5530');
+      add(new THREE.BoxGeometry(.55,.55,7).translate(bx+.35,y+.8,z+3),'#8a5530'); led.push(new THREE.BoxGeometry(.05,.05,d-2.4).translate(bx+.66,y+.07,z)); }
+    // kademeli ahşap deck + zeytin saksısı
+    { const dx=-57, dz=-41; // pavyonun batısında (doğu tarafı parke yürüyüş yoluna ayrıldı); basamaklar pavyona bakar
+      add(new THREE.BoxGeometry(4.6,.42,8.4).translate(dx,y+.21,dz),'#2c2d30'); add(new THREE.BoxGeometry(4.8,.1,8.6).translate(dx,y+.47,dz),'#8a5530');
+      add(new THREE.BoxGeometry(2.6,.42,5).translate(dx-.9,y+.73,dz),'#2c2d30'); add(new THREE.BoxGeometry(2.8,.1,5.2).translate(dx-.9,y+.99,dz),'#8a5530');
+      led.push(new THREE.BoxGeometry(.05,.05,8.2).translate(dx+2.38,y+.06,dz), new THREE.BoxGeometry(.05,.05,4.8).translate(dx+.48,y+.55,dz));
+      add(new THREE.BoxGeometry(1.5,.7,2.4).translate(dx-1.45,y+1.39,dz+1.6),'#2c2d30'); olive(dx-1.45,y+1.74,dz+1.6,.7); carex(dx-1.3,y+1.04,dz-1.6); carex(dx-1.6,y+1.04,dz-.4); }
+    add(new THREE.CylinderGeometry(.06,.06,2.4,6).translate(x+w/2+3.6,y+1.2,z-d/2+.6),'#5a5f66');
+    signMesh('🚬 SİGARA İÇME ALANI',3.4,.7,'#2b2f36','#ffd76a',x+w/2+3.6,y+2.5,z-d/2+.6,Math.PI/2);
+    siteObstacles.push({x,z,r:14}); }
+  // ---- Zeytinli saksı-banklar (avlu girişi çevresi) ----
+  for(const [x,z] of [[-20,-67],[25,-66.5]]){ const y=terrainH(x,z);
+    add(new THREE.BoxGeometry(5.4,.75,3.4).translate(x,y+.37,z),'#3c3d41'); add(new THREE.BoxGeometry(5,.06,3).translate(x,y+.76,z),'#4c7a35');
+    add(new THREE.BoxGeometry(5.6,.12,.8).translate(x,y+.82,z+2.05),'#a8693a'); add(new THREE.BoxGeometry(5.4,.7,.1).translate(x,y+.36,z+2.4),'#3c3d41');
+    olive(x+.6,y+.78,z-.3,.95); for(let k=0;k<4;k++) carex(x-1.9+k*.6,y+.78,z+1.0);
+    siteObstacles.push({x,z,r:5}); }
+  // ---- Bollard aydınlatmaları: ana güney yaya yolu ----
+  { const c=new THREE.CatmullRomCurve3(PATHS[1].pts.map(q=>V(q[0],0,q[1]))), L=c.getLength();
+    for(let s=3;s<L-1;s+=5.5){ const u=s/L, q=c.getPointAt(u), t=c.getTangentAt(u); for(const sd of [-1,1]) bollard(q.x-t.z*2.5*sd,q.z+t.x*2.5*sd); } }
+  // ---- Çit aydınlatmaları (meydan güney çiti) ----
+  { const zS=CONFIG.plaza.cz+CONFIG.plaza.hz+1.6; for(const [x0,x1] of [[-88,-59.6],[-50.4,13],[23,64],[76,81.6]]) for(let x=x0+2;x<x1-1;x+=5) upl(x,.35,zS+.75,0,2,2.2); }
+  if(led.length){ const lm=new THREE.Mesh(mergeGeometries(led),ledMat); islandGroup.add(lm); }
+  if(ups.length){ const um=new THREE.Mesh(mergeGeometries(ups),uplightMat); um.renderOrder=3; islandGroup.add(um); }
+}
 /* ---- Ortak alanlar (seçilebilir birimler) + harita etiketleri ---- */
 const SPACE_TW={id:'A',name:'Ortak Alanlar',labels:{}};
 const spaces=[]; const pinGroup=new THREE.Group(); scene.add(pinGroup);
@@ -1544,13 +1875,13 @@ function helipadTex(){ const c=document.createElement('canvas'); c.width=c.heigh
   g.fillStyle='#f0f0ea'; g.font='700 78px Inter,Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('H',128,150);
   const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; }
 
-buildTowers(); buildPodium(); buildIsland(); buildPaths(); buildWater(); buildVegetation(); buildLamps(); buildSiteDetails(); buildSpaces(); buildSatellites();
+buildTowers(); buildPodium(); buildIsland(); buildPaths(); buildWater(); buildVegetation(); buildLamps(); buildSiteDetails(); carveTerrain(); buildSpaces(); buildHolidayFlag(); buildSatellites();
 
 /* ===================== Gökyüzü, yıldızlar, ay ===================== */
-const skyU = { uFlash:{value:0}, uTop:{value:col('#3274d2')}, uHorizon:{value:col('#bcd7f0')}, uBottom:{value:col('#a8bdd4')}, uSunDir:{value:V(0,1,0)}, uSunColor:{value:col('#ffffff')}, uSunAmt:{value:1}, uMoonDir:{value:V(0,1,0)}, uNight:G.uNight, uClay:G.uClay, uCyber:G.uCyber };
+const skyU = { uFlash:{value:0}, uTop:{value:col('#3274d2')}, uHorizon:{value:col('#bcd7f0')}, uBottom:{value:col('#a8bdd4')}, uSunDir:{value:V(0,1,0)}, uSunColor:{value:col('#ffffff')}, uSunAmt:{value:1}, uMoonDir:{value:V(0,1,0)}, uNight:G.uNight, uClay:G.uClay, uCyber:G.uCyber, uSteam:G.uSteam };
 const skyMat = new THREE.ShaderMaterial({ uniforms:skyU, side:THREE.BackSide, depthWrite:false, fog:false,
   vertexShader:`varying vec3 vDir; void main(){ vDir=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.0); gl_Position=p.xyww; }`,
-  fragmentShader:`uniform vec3 uTop,uHorizon,uBottom,uSunColor,uSunDir,uMoonDir; uniform float uNight,uClay,uCyber,uSunAmt,uFlash; varying vec3 vDir;
+  fragmentShader:`uniform vec3 uTop,uHorizon,uBottom,uSunColor,uSunDir,uMoonDir; uniform float uNight,uClay,uCyber,uSteam,uSunAmt,uFlash; varying vec3 vDir;
   void main(){
     vec3 d=normalize(vDir); float h=d.y;
     vec3 c=mix(uHorizon,uTop,pow(clamp(h,0.0,1.0),0.5));
@@ -1563,6 +1894,10 @@ const skyMat = new THREE.ShaderMaterial({ uniforms:skyU, side:THREE.BackSide, de
     float hb=1.0-abs(h);
     vec3 cy=mix(vec3(0.012,0.004,0.035),vec3(0.30,0.05,0.40),pow(hb,5.0))+vec3(0.0,0.30,0.42)*pow(hb,22.0)*0.7;
     c=mix(c,cy,uCyber*0.9);
+    float lc=dot(c,vec3(0.3,0.59,0.11));
+    vec3 stc=mix(vec3(0.95,0.66,0.36),vec3(0.36,0.25,0.18),pow(clamp(h,0.0,1.0),0.6))*mix(1.0,0.08,uNight)+vec3(1.0,0.55,0.2)*pow(hb,9.0)*0.25*(1.0-uNight*0.6);
+    stc=mix(stc,stc*(0.6+lc*0.8),0.5); stc=mix(stc,vec3(0.22,0.16,0.12),smoothstep(0.0,-0.3,h));
+    c=mix(c,stc,uSteam*0.92);
     vec3 bl=mix(vec3(0.16),vec3(0.26),clamp(h*0.8+0.5,0.0,1.0));
     c=mix(c,bl,uClay);
     gl_FragColor=vec4(c,1.0);
@@ -1798,6 +2133,101 @@ function updateGizmo(){
   gizmoEl.innerHTML=s;
 }
 
+/* ===================== Steampunk öğeleri: dişliler, kule saati, zeplinler, buhar ===================== */
+const steamGroup=new THREE.Group(); steamGroup.visible=false; scene.add(steamGroup);
+const brassMat=envMat({color:'#b8873a',metalness:.9,roughness:.3},{keep:true,noSnow:true});
+const copperMat=envMat({color:'#a4552c',metalness:.85,roughness:.38},{keep:true,noSnow:true});
+const ironMat=envMat({color:'#2e2824',metalness:.6,roughness:.55},{keep:true,noSnow:true});
+const steamGears=[], airships=[], clockHands=[];
+function gearGeo(R,teeth,th){ const parts=[new THREE.TorusGeometry(R*.84,R*.09,6,Math.max(28,teeth*2))];
+  for(let i=0;i<teeth;i++) parts.push(new THREE.BoxGeometry(R*.2,R*.24,th).translate(0,R*.98,0).rotateZ(i/teeth*Math.PI*2));
+  for(let i=0;i<3;i++) parts.push(new THREE.BoxGeometry(R*.09,R*1.62,th*.55).rotateZ(i/3*Math.PI));
+  parts.push(new THREE.CylinderGeometry(R*.2,R*.2,th*1.5,18).rotateX(Math.PI/2));
+  return mergeGeometries(parts); }
+function addGear(R,teeth,x,y,z,ry,sp,mat=brassMat){ const holder=new THREE.Group(); holder.position.set(x,y,z); holder.rotation.y=ry;
+  const g=new THREE.Mesh(gearGeo(R,teeth,R*.2),mat); g.castShadow=true; g.rotation.z=Math.random()*6; holder.add(g); steamGroup.add(holder); steamGears.push({g,sp}); return g; }
+function gearTrain(x,y,z,ry,R,sp){ // birbirine geçen üç dişli
+  addGear(R,16,x,y,z,ry,sp);
+  const R2=R*.62, d2=(R+R2)*.93, a2=-.55; const lx=Math.cos(ry), lz=-Math.sin(ry);
+  addGear(R2,10,x+lx*Math.cos(a2)*d2,y+Math.sin(a2)*d2,z+lz*Math.cos(a2)*d2,ry,-sp*R/R2,copperMat);
+  const R3=R*.45, d3=(R+R3)*.93, a3=2.3; addGear(R3,8,x+lx*Math.cos(a3)*d3,y+Math.sin(a3)*d3,z+lz*Math.cos(a3)*d3,ry,-sp*R/R3); }
+function clockFaceTex(){ const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d'), m=128;
+  g.fillStyle='#efe3c4'; g.beginPath(); g.arc(m,m,124,0,7); g.fill(); g.lineWidth=10; g.strokeStyle='#8a6a2e'; g.stroke();
+  g.fillStyle='#2a2018'; g.textAlign='center'; g.textBaseline='middle'; g.font='600 26px Georgia,serif';
+  ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'].forEach((t,i)=>{ const a=i/12*Math.PI*2-Math.PI/2; g.fillText(t,m+Math.cos(a)*92,m+Math.sin(a)*92); });
+  for(let i=0;i<60;i++){ const a=i/60*Math.PI*2, r0=i%5?112:106; g.lineWidth=i%5?2:4; g.beginPath(); g.moveTo(m+Math.cos(a)*r0,m+Math.sin(a)*r0); g.lineTo(m+Math.cos(a)*118,m+Math.sin(a)*118); g.stroke(); }
+  g.strokeStyle='rgba(138,106,46,.6)'; g.lineWidth=2; g.beginPath(); g.arc(m,m,60,0,7); g.stroke();
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; }
+function buildSteamClock(x,y,z,ry,R){ const holder=new THREE.Group(); holder.position.set(x,y,z); holder.rotation.y=ry; steamGroup.add(holder);
+  clockTex=clockTex||clockFaceTex();
+  const face=new THREE.Mesh(new THREE.CircleGeometry(R,40),new THREE.MeshStandardMaterial({map:clockTex,emissiveMap:clockTex,roughness:.7,emissive:new THREE.Color('#ffcf7a'),emissiveIntensity:0}));
+  face.position.z=.12; holder.add(face); clockFaces.push(face.material);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(R+.15,.3,8,40),brassMat); rim.position.z=.15; holder.add(rim);
+  const hm=new THREE.MeshStandardMaterial({color:'#1c1612',metalness:.6,roughness:.4});
+  const hour=new THREE.Mesh(new THREE.BoxGeometry(.32,R*.55,.1).translate(0,R*.25,0),hm), min=new THREE.Mesh(new THREE.BoxGeometry(.2,R*.85,.1).translate(0,R*.4,0),hm);
+  hour.position.z=.3; min.position.z=.36; holder.add(hour,min); clockHands.push({hour,min}); }
+const clockFaces=[]; let clockTex=null;
+function makeAirship(s){ const g=new THREE.Group();
+  const canvas=envMat({color:'#cdb68a',roughness:.78},{keep:true,noSnow:true});
+  const env=new THREE.Mesh(new THREE.SphereGeometry(1,30,14).scale(11,3.5,3.5),canvas); env.castShadow=true; g.add(env);
+  for(const x of [-7.5,-3.8,0,3.8,7.5]){ const r=3.5*Math.sqrt(1-(x/11)**2); const b=new THREE.Mesh(new THREE.TorusGeometry(r+.05,.1,5,28).rotateY(Math.PI/2),brassMat); b.position.x=x; g.add(b); }
+  const gon=new THREE.Mesh(new THREE.BoxGeometry(6,1.5,1.8),envMat({color:'#5a3a22',roughness:.6},{keep:true,noSnow:true})); gon.position.y=-4.6; g.add(gon);
+  const win=new THREE.Mesh(new THREE.BoxGeometry(5,.45,1.85),ledMat); win.position.y=-4.45; g.add(win);
+  for(const sx of [-2.2,2.2]) for(const sz of [-.7,.7]){ const st=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,1.6,4),brassMat); st.position.set(sx,-3.4,sz); g.add(st); }
+  for(const [ry,rx] of [[0,0],[0,Math.PI/2],[0,Math.PI],[0,-Math.PI/2]]){ const fin=new THREE.Mesh(new THREE.BoxGeometry(3.2,2.4,.12).translate(0,2.6,0),copperMat); fin.position.x=-9.2; fin.rotation.x=rx; g.add(fin); }
+  const prop=new THREE.Group(); prop.position.x=-11.4; g.add(prop);
+  for(let k=0;k<3;k++){ const b=new THREE.Mesh(new THREE.BoxGeometry(.12,3.4,.5),brassMat); b.rotation.x=k/3*Math.PI; prop.add(b); }
+  const hub=new THREE.Mesh(new THREE.ConeGeometry(.4,1,10).rotateZ(Math.PI/2),brassMat); hub.position.x=-11; g.add(hub);
+  g.scale.setScalar(s); steamGroup.add(g); return {g,prop}; }
+let steamPuffs=null;
+function buildSteamWorld(){
+  const K1=towerInfo.K1, tw1=CONFIG.towers[0];
+  // Kule 1: güney ve doğu cephelerinde dişli takımları
+  gearTrain(K1.x-9,52,K1.z+K1.half+1.3,0,8.5,.22);
+  gearTrain(K1.x+K1.half+1.3,74,K1.z+4,Math.PI/2,7,-.18);
+  for(const id of ['K2','K3']){ const I=towerInfo[id]; gearTrain(I.x+(id==='K2'?5:-5),58,I.z+I.half+1.3,0,6,id==='K2'?.25:-.25); }
+  // Kule 1 makine dairesi: dört yönde kule saati
+  if(K1.lowRoof){ const h2=10.6+.45, y=K1.lowRoof+3.2; for(const [dx,dz,ry] of [[0,h2,0],[h2,0,Math.PI/2],[0,-h2,Math.PI],[-h2,0,-Math.PI/2]]) buildSteamClock(K1.x+dx,y,K1.z+dz,ry,3.2); }
+  // podyum çatısı: bakır bacalar
+  const chimneys=[[-26,14.9,-42],[-22,14.9,-39],[-27,14.9,-36],[20,16.9,44],[24,16.9,43],[74,16.9,42]].map(([x,y,z])=>[x,y,z,5+Math.random()*3]);
+  for(const [x,y,z,h] of chimneys){ const c=new THREE.Mesh(new THREE.CylinderGeometry(.55,.7,h,12),copperMat); c.position.set(x,y+h/2,z); c.castShadow=true; steamGroup.add(c);
+    for(const k of [.25,.7]){ const b=new THREE.Mesh(new THREE.TorusGeometry(.66,.1,5,16).rotateX(Math.PI/2),brassMat); b.position.set(x,y+h*k,z); steamGroup.add(b); }
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(.85,.6,.5,12),brassMat); cap.position.set(x,y+h+.25,z); steamGroup.add(cap); }
+  // buhar bulutçukları
+  const em=[...chimneys.map(([x,y,z,h])=>[x,y+h+.6,z]),[K1.x,K1.crownTop+1,K1.z],...['K2','K3'].map(id=>[towerInfo[id].x,towerInfo[id].crownTop+.5,towerInfo[id].z])];
+  const per=26, pos=[], seed=[]; em.forEach(([x,y,z])=>{ for(let i=0;i<per;i++){ pos.push(x+(Math.random()-.5),y,z+(Math.random()-.5)); seed.push(Math.random()); } });
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aSeed',new THREE.Float32BufferAttribute(seed,1));
+  const pm=new THREE.ShaderMaterial({ transparent:true, depthWrite:false, fog:true,
+    uniforms:THREE.UniformsUtils.merge([THREE.UniformsLib.fog,{ uMap:{value:radialTex('rgba(255,255,255,1)','rgba(255,255,255,0)',64)}, uPR:{value:renderer.getPixelRatio()} }]),
+    vertexShader:`attribute float aSeed; uniform float uTime,uPR; varying float vA;
+#include <fog_pars_vertex>
+void main(){ float t=fract(uTime*0.085+aSeed); vec3 p=position;
+  p+=vec3(t*t*18.0+sin(aSeed*40.0+uTime*0.7)*t*4.0, t*36.0, cos(aSeed*31.0+uTime*0.6)*t*4.0);
+  vec4 mvPosition=modelViewMatrix*vec4(p,1.0); gl_Position=projectionMatrix*mvPosition;
+  vA=smoothstep(0.0,0.08,t)*(1.0-t);
+  gl_PointSize=clamp((3.0+t*17.0)*uPR*(420.0/-mvPosition.z),1.0,240.0);
+#include <fog_vertex>
+}`,
+    fragmentShader:`uniform sampler2D uMap; uniform float uNight; varying float vA;
+#include <fog_pars_fragment>
+void main(){ float a=texture2D(uMap,gl_PointCoord).a*vA*0.5; vec3 c=mix(vec3(0.93,0.87,0.78),vec3(0.30,0.25,0.22),uNight*0.8); gl_FragColor=vec4(c,a);
+#include <fog_fragment>
+}`});
+  pm.uniforms.uTime=G.uTime; pm.uniforms.uNight=G.uNight;
+  steamPuffs=new THREE.Points(g,pm); steamPuffs.frustumCulled=false; steamGroup.add(steamPuffs);
+  // zeplinler
+  airships.push({...makeAirship(1.6),R:280,y:150,sp:.035,ph:0},{...makeAirship(1.1),R:215,y:105,sp:-.05,ph:2.5});
+}
+function updateSteam(dt){
+  for(const g of steamGears) g.g.rotation.z+=g.sp*dt;
+  for(const a of airships){ a.ph+=a.sp*dt; const c=Math.cos(a.ph), s=Math.sin(a.ph), dir=Math.sign(a.sp)||1;
+    a.g.position.set(c*a.R,a.y+Math.sin(elapsed*.3+a.R)*4,s*a.R*.85); const tx=-s*dir, tz=c*.85*dir; a.g.rotation.set(0,Math.atan2(-tz,tx),Math.sin(elapsed*.4)*.03); a.prop.rotation.x+=dt*6; }
+  const h=timeState.hour, hr=(h%12)/12*Math.PI*2, mn=(h%1)*Math.PI*2;
+  for(const c of clockHands){ c.hour.rotation.z=-hr; c.min.rotation.z=-mn; }
+  for(const m of clockFaces) m.emissiveIntensity=G.uNight.value*.55;
+}
+buildSteamWorld();
+
 /* ===================== Işıklar ===================== */
 const sun=new THREE.DirectionalLight(0xffffff,3); sun.castShadow=true;
 { const sc=sun.shadow.camera; sc.left=-260; sc.right=260; sc.top=260; sc.bottom=-260; sc.near=50; sc.far=1700; }
@@ -1811,7 +2241,7 @@ const renderPass=new RenderPass(scene,camera);
 const ssaoPass=new SSAOPass(scene,camera,innerWidth,innerHeight); ssaoPass.kernelRadius=6; ssaoPass.minDistance=.00008; ssaoPass.maxDistance=.0012; ssaoPass.enabled=false;
 // SSAO normal/derinlik geçişinde gökyüzü, bulut ve şeffaf efektleri gizle (artefakt önler)
 { const _ov=ssaoPass.overrideVisibility.bind(ssaoPass);
-  ssaoPass.overrideVisibility=function(){ _ov(); for(const o of [sky,skyGroup,moon,cloudGroup,cloudSea,grid,cyberGroup,birds,dust,...islandGroup.children.filter(c=>c.material===fallMat||c.material===lampGlowMat)]) o.visible=false; }; }
+  ssaoPass.overrideVisibility=function(){ _ov(); for(const o of [sky,skyGroup,moon,cloudGroup,cloudSea,grid,cyberGroup,birds,dust,...islandGroup.children.filter(c=>c.material===fallMat||c.material===lampGlowMat||c.material===uplightMat),steamPuffs].filter(Boolean)) o.visible=false; }; }
 const outlinePass=new OutlinePass(new THREE.Vector2(innerWidth,innerHeight),scene,camera);
 outlinePass.edgeStrength=4.5; outlinePass.edgeGlow=.6; outlinePass.edgeThickness=1.6; outlinePass.visibleEdgeColor.set('#ffffff'); outlinePass.hiddenEdgeColor.set('#22324d');
 const bloomPass=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.2,.55,.95);
@@ -1824,9 +2254,22 @@ const CyberShader={ uniforms:{ tDiffuse:{value:null}, uAmt:{value:1}, uTime:{val
       col.rgb*=1.0-uAmt*0.45*d*d; col.rgb+=uAmt*0.012*vec3(0.2,0.0,0.4);
       gl_FragColor=col; }` };
 const cyberPass=new ShaderPass(CyberShader); cyberPass.enabled=false;
+// Steampunk: sepya tonlama, eski fotoğraf vinyeti, film greni ve hafif toz/çizik
+const SteamShader={ uniforms:{ tDiffuse:{value:null}, uTime:{value:0}, uRes:{value:new THREE.Vector2(innerWidth,innerHeight)} },
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`uniform sampler2D tDiffuse; uniform float uTime; uniform vec2 uRes; varying vec2 vUv;
+    float hs(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
+    void main(){ vec4 c=texture2D(tDiffuse,vUv); vec3 o=c.rgb;
+      vec3 sep=vec3(dot(o,vec3(0.393,0.769,0.189)),dot(o,vec3(0.349,0.686,0.168)),dot(o,vec3(0.272,0.534,0.131)));
+      o=mix(o,sep,0.38); o=mix(o,o*vec3(1.06,0.98,0.86),0.6);
+      vec2 d=vUv-0.5; float v=1.0-dot(d,d)*1.25; o*=mix(0.55,1.0,smoothstep(0.0,1.0,v));
+      float gr=hs(vUv*uRes+fract(uTime*7.3)*91.0)-0.5; o+=gr*0.035;
+      float sc=step(0.9985,hs(vec2(floor(vUv.x*uRes.x*0.5),floor(uTime*12.0)))); o=mix(o,o*0.82,sc*0.5);
+      gl_FragColor=vec4(o,c.a); }` };
+const steamPass=new ShaderPass(SteamShader); steamPass.enabled=false;
 const outputPass=new OutputPass();
 const smaaPass=new SMAAPass(innerWidth*renderer.getPixelRatio(),innerHeight*renderer.getPixelRatio());
-composer.addPass(renderPass); composer.addPass(ssaoPass); composer.addPass(outlinePass); composer.addPass(bloomPass); composer.addPass(cyberPass); composer.addPass(outputPass); composer.addPass(smaaPass);
+composer.addPass(renderPass); composer.addPass(ssaoPass); composer.addPass(outlinePass); composer.addPass(bloomPass); composer.addPass(cyberPass); composer.addPass(steamPass); composer.addPass(outputPass); composer.addPass(smaaPass);
 
 /* ===================== Günün saati ===================== */
 const TK=[
@@ -1854,6 +2297,7 @@ if(DB.view.time==='real') timeState.hour=nowHour();
 function tweenHour(target,dur=1.6){ const diff=((target-timeState.hour)%24+36)%24-12; timeState.tween={from:timeState.hour,diff,t:0,dur}; }
 const sunDir=V(0,1,0), moonDir=V(0,1,0), _wxC=new THREE.Color();
 const CY_FOG=col('#1d0b30'), CY_CL=col('#5a2a7a'), CY_CS=col('#120a24'), BL_FOG=col('#2b2b2b');
+const ST_FOG=col('#a07a52'), ST_CL=col('#f0c48a'), ST_CS=col('#6a4a34'), _stC=new THREE.Color();
 function updateTime(dt){
   const ts=timeState;
   if(ts.tween){ ts.tween.t+=dt; const k=Math.min(1,ts.tween.t/ts.tween.dur), e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2; ts.hour=ts.tween.from+ts.tween.diff*e; if(k>=1) ts.tween=null; }
@@ -1864,7 +2308,7 @@ function updateTime(dt){
 }
 let clockText='';
 function applyTimeOfDay(h){
-  const P=sampleTK(h); const cy=G.uCyber.value, cl=G.uClay.value;
+  const P=sampleTK(h); const cy=G.uCyber.value, cl=G.uClay.value, st=G.uSteam.value;
   // hava durumu: kapalı gök (gri tonlar)
   const oc=clamp(Math.max(WX.rain*.85,WX.snow*.7,WX.fog*.6,WX.storm),0,1);
   if(oc>.001) for(const k of ['top','hor','bot','fog','cl','cs']){ const c=P[k]; const g=(c.r+c.g+c.b)/3*(1+WX.snow*.3+WX.fog*.25)*(1-.3*WX.rain-.35*WX.storm); _wxC.setRGB(g,g,g*1.05); c.lerp(_wxC,oc*.85); }
@@ -1876,8 +2320,8 @@ function applyTimeOfDay(h){
   const night = Math.max(P.night, cy*.72);
   G.uNight.value=night;
   // sis
-  scene.fog.color.copy(P.fog).lerp(CY_FOG,cy*.88).lerp(BL_FOG,cl);
-  scene.fog.near=lerp(lerp(700,420,P.night),260,cy); scene.fog.far=lerp(lerp(3400,2600,P.night),1750,cy);
+  scene.fog.color.copy(P.fog).lerp(CY_FOG,cy*.88).lerp(_stC.copy(ST_FOG).multiplyScalar(lerp(1,.14,P.night)),st*.85).lerp(BL_FOG,cl);
+  scene.fog.near=lerp(lerp(lerp(700,420,P.night),260,cy),330,st*.8); scene.fog.far=lerp(lerp(lerp(3400,2600,P.night),1750,cy),1900,st*.8);
   scene.fog.near*=clamp(1-.75*WX.fog-.35*WX.rain-.3*WX.snow,.08,1); scene.fog.far*=clamp(1-.68*WX.fog-.4*WX.rain-.35*WX.snow,.2,1);
   if(cl>.5){ scene.fog.near=2400; scene.fog.far=8000; }
   // ışık
@@ -1885,7 +2329,9 @@ function applyTimeOfDay(h){
   sun.position.copy(sun.target.position).addScaledVector(L,800);
   sun.color.copy(P.sun); sun.intensity=P.sunI*lerp(1,.35,cy);
   if(cy>0) sun.color.lerp(col('#b48cff'),.5*cy);
+  if(st>0){ sun.color.lerp(_stC.set('#ffb867'),.55*st); sun.intensity*=lerp(1,.85,st); }
   hemi.color.copy(P.hs); hemi.groundColor.copy(P.hg); hemi.intensity=P.hi;
+  if(st>0){ hemi.color.lerp(_stC.set('#e0b07a').multiplyScalar(lerp(1,.35,P.night)),.6*st); hemi.groundColor.lerp(_stC.set('#4a3020').multiplyScalar(lerp(1,.4,P.night)),.6*st); }
   if(cy>0){ hemi.color.lerp(col('#6a3aa0'),cy*.8); hemi.groundColor.lerp(col('#0a2a3a'),cy*.8); hemi.intensity=lerp(P.hi,.55,cy); }
   sun.intensity*=1-.78*oc; hemi.intensity*=1-.15*oc+WX.snow*.25-.2*WX.rain-.25*WX.storm; hemi.intensity+=WX.flash*3.5;
   if(cl>0){ const sub=DB.view.blenderSub, lit=sub==='clay'||sub==='material';
@@ -1893,14 +2339,17 @@ function applyTimeOfDay(h){
     hemi.color.lerp(col('#e6eaf0'),cl); hemi.groundColor.lerp(col(sub==='material'?'#6b6656':'#5a5a5a'),cl); hemi.intensity=lerp(hemi.intensity,sub==='clay'?.9:sub==='material'?1.05:1.5,cl*.85); }
   renderer.toneMappingExposure=lerp(P.exp*(1-.12*WX.rain-.18*WX.storm),1.0,cl)+WX.flash*.6;
   // bulutlar
-  cloudU.uLit.value.copy(P.cl).lerp(CY_CL,cy*.85); cloudU.uShade.value.copy(P.cs).lerp(CY_CS,cy*.85);
+  cloudU.uLit.value.copy(P.cl).lerp(CY_CL,cy*.85).lerp(_stC.copy(ST_CL).multiplyScalar(lerp(1,.12,P.night)),st*.8); cloudU.uShade.value.copy(P.cs).lerp(CY_CS,cy*.85).lerp(_stC.copy(ST_CS).multiplyScalar(lerp(1,.18,P.night)),st*.8);
   if(fallMat) fallMat.uniforms.uLight.value.setScalar(clamp(.25+P.sunI*.25+P.hi*.2,0,1.1)).lerp(col('#7fa0ff'),P.night*.4);
   // lambalar, yıldızlar, ay
   lampHeadMat.emissiveIntensity=night*4.5; lampGlowMat.opacity=night*.55*(1-cl);
-  lampHeadMat.emissive.set(cy>.5?'#ff4fd8':'#ffc46b'); lampGlowMat.color.set(cy>.5?'#ff6ae0':'#ffffff');
+  if(holidayFlagMat) holidayFlagMat.emissiveIntensity=night*.32*(1-cl);
+  ledMat.emissiveIntensity=night*(cy>.5?3.2:2.6)*(1-cl*.7); ledMat.emissive.set(cy>.5?'#ff4fd8':st>.5?'#ffb24a':'#ffc070');
+  uplightMat.opacity=night*.6*(1-cl);
+  lampHeadMat.emissive.set(cy>.5?'#ff4fd8':st>.5?'#ff9a3a':'#ffc46b'); lampGlowMat.color.set(cy>.5?'#ff6ae0':st>.5?'#ffb060':'#ffffff');
   moon.material.opacity=P.night*(1-cl)*(1-cy*.4);
   // bloom
-  bloomPass.strength = lerp(lerp(.14,.42,night),.75,cy)*(1-cl*.7); bloomPass.threshold=lerp(lerp(1.0,.9,night),.72,cy); bloomPass.radius=lerp(.45,.6,cy);
+  bloomPass.strength = lerp(lerp(.14,.42,night),.75,cy)*(1-cl*.7)*(1+st*.35); bloomPass.threshold=lerp(lerp(1.0,.9,night),.72,cy); bloomPass.radius=lerp(.45,.6,cy);
   bloomPass.enabled = bloomPass.strength>.02 && (DB.settings.quality!=='low' || cy>0) && !(cl>.5 && DB.view.blenderSub==='wire');
   // ortam yansıması
   const now=performance.now();
@@ -1926,25 +2375,25 @@ function snapshotFade(){
 }
 function applyStyle(){
   const s=DB.view.style, sub=DB.view.blenderSub, S=DB.settings;
-  G.uClay.value=s==='blender'?1:0; G.uCyber.value=s==='cyber'?1:0;
+  G.uClay.value=s==='blender'?1:0; G.uCyber.value=s==='cyber'?1:0; G.uSteam.value=s==='steam'?1:0;
   G.uClayColor.value.set(sub==='clay'?CONFIG.palettes.clayWarm:CONFIG.palettes.claySolid);
   G.uClayGray.value={material:0,solid:.12,clay:1,wire:0}[sub]??0;
-  G.uLitRatio.value=s==='cyber'?.6:.36;
+  G.uLitRatio.value=s==='cyber'?.6:s==='steam'?.5:.36;
   const wire=s==='blender'&&sub==='wire';
   for(const m of towerMaterials) m.wireframe=wire;
   for(const m of envMaterials){ if(m.userData.flat===undefined) m.userData.flat=m.flatShading;
     m.wireframe=wire; const fs=wire?false:m.userData.flat; if(m.flatShading!==fs){ m.flatShading=fs; m.needsUpdate=true; } }
   cloudGroup.visible=s!=='blender'; cloudSea.visible=s!=='blender';
-  birds.visible=s==='normal';
+  birds.visible=s==='normal'||s==='steam';
   dust.visible=s!=='blender' && S.particles;
-  cyberGroup.visible=s==='cyber';
+  cyberGroup.visible=s==='cyber'; steamGroup.visible=s==='steam'; if(steamPuffs) steamPuffs.visible=S.particles;
   grid.visible=s==='blender'; gizmoEl.classList.toggle('hidden',s!=='blender');
   skyGroup.visible=s!=='blender'; moon.visible=s!=='blender';
   if(s==='blender' && DB.view.wireOverlay && sub!=='wire') ensureOverlays();
   overlays.forEach(o=>o.visible=s==='blender'&&DB.view.wireOverlay&&sub!=='wire');
-  outlinePass.visibleEdgeColor.set(s==='blender'?'#ffa31a':s==='cyber'?'#ff2bd6':'#ffffff');
+  outlinePass.visibleEdgeColor.set(s==='blender'?'#ffa31a':s==='cyber'?'#ff2bd6':s==='steam'?'#ffc66b':'#ffffff');
   outlinePass.edgeGlow=s==='blender'?0:.6; outlinePass.edgeThickness=s==='blender'?1:1.6; outlinePass.edgeStrength=s==='blender'?6:4.5;
-  cyberPass.enabled=s==='cyber';
+  cyberPass.enabled=s==='cyber'; steamPass.enabled=s==='steam';
   applyShadows(); applySSAO();
   envDirty=true;
   if(typeof refreshTopbar==='function') refreshTopbar();
@@ -2121,9 +2570,9 @@ const PANTS=['#2b2f36','#3b4250','#1f2a3a','#5a4a3a','#6b6f78','#252525'];
 const SKINS=['#f1c7a5','#e0ac85','#c68a62','#a8714a','#f5d6bd','#8d5a3b'];
 const UMBS=['#d63a3a','#2f6fd6','#f2c200','#2d2d2d','#3fae6b','#8e44ad'];
 const ENT={ K2:{door:[-13.5,46.6],front:[-13.5,57]}, K3:{door:[-63,46.6],front:[-63,57]}, MAIN:{door:[18,47.6],front:[18,59]}, K1:{door:[55,-47.6],front:[55,-57]} };
-const WALK_ROUTES={ south:[ [[18,69],[18,88],[19,102]], [[88,60],[93,24],[118,22],[132,15],[140,6],[152,10],[160,13]], [[88,60],[92,24],[88,8],[90,-8],[112,-6]], [[-88,60],[-100,62],[-104,68]], [[-88,60],[-97,29],[-114,30],[-126,28]], [[70,66],[86,98],[96,110]],
-    [[18,69],[30,79],[34,82]], [[-55,64],[-55,74],[-46,78]], [[-55,64],[-55,74],[-48,78]], [[-88,64],[-100,64],[-104,61]], [[24,64],[44,64],[44,58]] ],
-  north:[ [[30,-60],[2,-66],[2,-82],[0,-96]], [[30,-60],[-30,-62],[-60,-70],[-60,-80],[-80,-100],[-94,-116]], [[88,-58],[90,-12],[112,-6]], [[30,-60],[-20,-62],[-37,-52],[-38,-28]], [[30,-60],[12,-57],[6,-55]], [[30,-60],[-6,-57],[-10,-55]] ] };
+const WALK_ROUTES={ south:[ [[18,62],[18,69],[18,88],[19,102]], [[18,61],[48,61],[48,65.6]], [[18,61],[-22,61],[-22,65.6]], [[18,61],[-72,61],[-72,65.6]], [[84,62],[84,72],[84.2,80]],
+    [[18,61],[30,61.5],[31,62.6]], [[-55,61],[-55,63.6]], [[-56,61],[-53,63.4]], [[60,60],[84,58],[89,30],[93,8]], [[18,62],[18,72],[8,73]], [[-37,58],[-37,30],[-36,10],[-36,-13]], [[-63,59],[-89,61],[-89,-8],[-97,-8]], [[-63,59],[-89,61],[-89,-13.5],[-36,-13.5],[-36,13]] ],
+  north:[ [[30,-64],[2,-64],[2,-82],[0,-96]], [[30,-64],[-30,-64],[-36,-54],[-36,-40]], [[84,-58],[84,-12],[90,-8]], [[30,-64],[-20,-64],[-36,-58],[-36,-30]], [[30,-64],[23.5,-64],[23.6,-60.4]], [[30,-64],[-18,-64],[-24,-60],[-30,-48]] ] };
 const agents=[], freeSlots=[...Array(MAXP).keys()].reverse(), groups=[];
 let lifeT=0, nextSpawn=2, lifeInit=false;
 function newAgent(kind,x,z){
@@ -2279,7 +2728,7 @@ function updateLife(dt){
 }
 
 /* ---- Hayvanlar: Paşa, diğer köpek ve kediler ---- */
-const AREAS={ south:[-86,86,54,66], lawnS:[-78,78,78,100], east:[83,93,-40,50], north:[-24,88,-62,-51], west:[-93,-84,-50,50], cafe:[-15,21,-60,-50] };
+const AREAS={ south:[-86,86,53,62.5], lawnS:[-78,78,78,100], east:[82,90,-12,50], north:[25,88,-62,-51], west:[-93,-84,-50,50], cafe:[-92,-56,-58,8] }; // cafe: batı meydanı (sigara pavyonu çevresi)
 const dogGeo=mergeGeometries([colGeo(new THREE.BoxGeometry(.34,.34,.86).translate(0,.56,0),'#ffffff'),colGeo(new THREE.BoxGeometry(.3,.3,.32).translate(0,.82,.52),'#ffffff'),colGeo(new THREE.BoxGeometry(.16,.13,.2).translate(0,.75,.74),'#cfc6b8'),
   colGeo(new THREE.BoxGeometry(.08,.14,.06).translate(-.11,1.0,.48),'#8a7b6a'),colGeo(new THREE.BoxGeometry(.08,.14,.06).translate(.11,1.0,.48),'#8a7b6a'),colGeo(new THREE.BoxGeometry(.06,.06,.05).translate(0,.78,.85),'#222222'),
   ...[[-.11,.3],[.11,.3],[-.11,-.3],[.11,-.3]].map(([x,z])=>colGeo(new THREE.BoxGeometry(.09,.42,.09).translate(x,.21,z),'#ffffff')),colGeo(new THREE.BoxGeometry(.07,.07,.36).rotateX(.7).translate(0,.78,-.52),'#ffffff')]);
@@ -2312,7 +2761,7 @@ function updateAnimals(dt){
 const _s4b=new THREE.Vector3();
 const PASA_Q=['Ben Paşa. Bu adanın gayriresmî güvenlik şefiyim; turnike bana açılmasa da olur.','Kafe terasından düşen simit benim maaşım; zammı yoktur, ama düzenli gelir.','Kibele’nin aslanlarına havladım; cevap vermediler. Bence ben kazandım.','Sigara içme alanını denetliyorum: izmaritler bana, sohbetler size.','Herkes 38. kata çıkamıyor; ben de çıkmıyorum ama lobide en iyi yer benim.','Oditoryumda etkinlik varmış; İŞİM’den bilet alamıyorum ama kapıda karşılama yapıyorum.','Kuyruk sallama performansım bu çeyrek hedefin üstünde.'];
 const DOG_Q=['Biri “Paşa!” diye seslendi, ben de koştum. Ben Paşa değilim ama ilgi güzel.','Otoparkta EV şarj ünitesini kokladım; elektrik kokuyor, mama kokmuyor.','Paşa ile vardiyalı çalışıyoruz: o güneyi, ben doğuyu koruyorum.','Kafe terası kapanınca bütün masalar benim.'];
-const CAT_Q=['Çarşıdaki market kasiyeri bana mama veriyor; yani resmen çarşı çalışanıyım.','Yemekhane avlusunun en güneşli köşesi benim. Rezervasyonsuz toplantı odası gibi.','İşmekan’ın klavyeleri sıcak; girişimcilik ruhum oradan geliyor.','Revirdeki hemşire beni de muayene etti: sağlıklıyım, sadece biraz tembelim.','Eczanenin önündeki karton kutu benim ofisim; kapı her zaman açık.','Kuaförden çıkan herkes bana bakıyor; ama tüylerim onlarınkinden güzel.','Paşa ile anlaşmamız var: o havlar, ben görmezden gelirim.','Kibele’nin aslanları akrabalarım. Biraz fazla büyümüşler.','Kafe terasında masa yoksa sebebi benim; en güzel sandalyede uyuyorum.','Turnikeden geçmiyorum, altından geçiyorum. Kart gerekmiyor.','Spor salonunu camdan izliyorum; benim antrenmanım 16 saat uyku.','Temiz hava sahası bana göre; sigara dumanı tüylerime sinmesin.'];
+const CAT_Q=['Çarşıdaki market kasiyeri bana mama veriyor; yani resmen çarşı çalışanıyım.','Yemekhane avlusunun en güneşli köşesi benim. Rezervasyonsuz toplantı odası gibi.','İşmekan’ın klavyeleri sıcak; girişimcilik ruhum oradan geliyor.','Revirdeki hemşire beni de muayene etti: sağlıklıyım, sadece biraz tembelim.','Eczanenin önündeki karton kutu benim ofisim; kapı her zaman açık.','Kuaförden çıkan herkes bana bakıyor; ama tüylerim onlarınkinden güzel.','Paşa ile anlaşmamız var: o havlar, ben görmezden gelirim.','Kibele’nin aslanları akrabalarım. Biraz fazla büyümüşler.','Kafe terasında masa yoksa sebebi benim; en güzel sandalyede uyuyorum.','Turnikeden geçmiyorum, altından geçiyorum. Kart gerekmiyor.','Spor salonunu camdan izliyorum; benim antrenmanım 16 saat uyku.','Ben su duvarının yanındaki saksılara yakın dururum; sigara dumanı tüylerime sinmesin.'];
 
 /* ---- Tıklama: konuşma balonu ---- */
 const bubbleEl=document.createElement('div'); bubbleEl.className='bubble hidden'; document.body.appendChild(bubbleEl); let bubbleTarget=null, bubbleT=0;
@@ -2344,6 +2793,16 @@ function dataQuip(){
 }
 const THOUGHTS=['Tatile 47 gün var. Saymıyorum ama 47.','Akşam ne yesem... Yemekhanede kalan börek mi, yine börek mi?','Excel neden #REF! veriyor? Evren neden bu kadar karmaşık?','Şu kuşlar nereye gidiyor? Ben de gitsem mi acaba?','Müdür “kısa bir toplantı” dedi. Toplantı bitti ama ben hâlâ içinden çıkamadım.','Bugün 10 bin adım hedefim vardı: 3 bini koridor, 7 bini asansör beklemek.','Bir gün ben de 41. kata çıkacağım. Terfiyle ya da yanlış asansörle.','Ada uçuyor ama maaş yerinde sayıyor.','Şelaleyi izlerken bütün maillerimi unuttum. Bu bir terapi mi, kaçış mı?','Acaba çıkışta trafik olur mu? Ada tek yollu zaten.'];
 const CRITIQUES=['Asansör yine 23. katta bekletiyor. Merdivenden insem 41 kat kardiyo.','Klima ya Sibirya ya Sahra. Ofiste mevsim geçişi saatlik.','Turnike kartımı tanımıyor. Ben de artık kendimi tanımıyorum.','Kule 2 ile Kule 3’ü karıştıran stajyer yanlış toplantıya 40 dakika katıldı. Kimse fark etmedi.','Wi-Fi şifresi değişmiş. Yeni şifre: “ŞifreyiSorma2026!”. Gerçekten.','Toplantı odası “dolu” görünüyor, içeride kimse yok. Klasik.','Kahve makinesinde “bakımda” yazıyor. Ben de bakımdayım aslında.','Yazıcı yine kâğıt sıkıştırdı. Dijitale geçelim dedim, “onay için çıktı alın” dediler.','Pencereler açılmıyor ama fikirler de açılmıyor; en azından tutarlıyız.','Otoparkta yer yok, adada tek yol var. Trafik dairesel, sorunlar da.','Teknik hacimler 41. kattan sonra başlıyormuş. Bizim teknik borç 1. kattan başlıyor.','Şelale güzel ama bizim kattaki lavabo da şelale gibi akıyor, kimse bakmıyor.','Kuşlar bizden düzenli toplantı yapıyor. Hem de V formasyonunda.','Lobi o kadar büyük ki karşıdaki arkadaşa mail atmak daha hızlı.'];
+// Çarşı mekânları (kahve, restoran, market, eczane, kuaför, İşmekan, Girişimcilik Şubesi) üzerine ek düşünceler
+THOUGHTS.push('Çarşıdaki kahveciye “her zamankinden” dedim, “hangisi?” dedi. Demek ki fazla geliyorum.',
+  'Öğle arasında restoranda sıra, toplantı odası rezervasyonundan daha uzun.','Marketten sakız aldım, kasada üç kat müdürüyle toplantı yapmış oldum.',
+  'Eczacı beni görünce baş ağrısı ilacını hazırlamış; o da benim Excel’imi biliyor demek.','Kuaföre randevu aldım; takvimime “cephe yenileme” diye yazdım.',
+  'İşmekan’da çalışmak güzel; masa rezervasyonu, kahve ve priz aynı yerde.','Girişimcilik Şubesi’nde start-up’lar “ölçeklenme” diyor; biz asansörde ölçekleniyoruz.',
+  'Kule Çarşı girişindeki LED’li kapıdan geçince sahneye çıkıyormuş gibi hissediyorum.','Su duvarının sesi o kadar sakinleştirici ki toplantıya gitmeyi unuttum.',
+  'Kavisli yeşil duvar gece öyle aydınlanıyor ki gören konser var sanıyor.');
+CRITIQUES.push('Çarşıdaki kahve kuyruğu öyle uzun ki sona girince ayrı bir kat numarası veriliyor.','Restoranda “günün yemeği” her gün aynı; demek ki gün hiç değişmiyor.',
+  'Eczane, market ve kuaför aynı koridorda: grip olup saç kestirip ekmek alabiliyorsun, ama asansörü yine bekliyorsun.','İşmekan’da priz bulmak, otoparkta yer bulmaktan zor.',
+  'Girişimcilik Şubesi’ne fikrimi anlattım; “önce asansör sorununu çözün, yatırımcı sizi bekler” dediler.');
 const SMOKER_Q=['Sadece bir tane içip döneceğim dedim. Bu üçüncü “bir tane”.','Bu sigara molası değil, gayriresmî koordinasyon toplantısı.','Burada alınan kararlar 41. kattakilerden daha hızlı uygulanıyor.','Duman yukarı çıkıyor ama kararlar aşağı inmiyor.','Bırakacağım. Pazartesi. Hangi pazartesi olduğunu söylemedim.'];
 const JOGGER_Q=['Koşuyorum çünkü asansör beklemekten hızlı.','Bu yolda 3. tur. Arabalar da 3. turda, demek ki aynı otopark sorunu.'];
 const DRIVER_Q=['Bu adada tek bir yol var ve ben yine kaybolmayı başardım.','Navigasyon “sağa dönün” diyor. Sağda boşluk var. Ada bitiyor.','Dördüncü tur. Ne zaman çıkacağıma yönetim kurulu karar verecek.','Otoparkta yer bulmak, boş toplantı odası bulmaktan kolay. Yani imkânsız değil, sadece çok zor.','Taksimetre açık, hedef “kuleler”. Hangisi? Hepsi aynı yerde zaten.'];
@@ -2354,6 +2813,8 @@ function weatherQuip(){ const o=[];
   if(WX.fog>.5) o.push('Sisten kuleleri göremiyorum. İyi ki deadline’ları da göremiyorum.');
   if(G.uNight.value>.7) o.push('Saat kaç olmuş! Benim ışığım hâlâ yanıyor, yukarıdan bakan “çalışkan” sanıyor.');
   if(DB.view.style==='cyber') o.push('Bu neon ışıklar yüzünden kahve makinesi bile synthwave çalıyor.');
+  if(DB.view.style==='steam') o.push('Kule 1’in tepesine saat koymuşlar; artık “toplantıya geç kaldım” bahanesi kalmadı.','Zeplinle gelen kargo asansörden hızlı çıktı, buna da şükür.','Buhar makinesi çalışınca klima da çalışıyor sandık, değilmiş.','Pirinç dişliler dönüyor ama Excel hâlâ donuyor.');
+  { const hd=todayHoliday(); if(hd||holidayShown) o.push(hd?`${hd.name} kutlu olsun! Kule 1’deki dev bayrağı görünce içim kıpır kıpır oldu.`:'Kule 1’deki dev bayrak rüzgârda dalgalanınca herkes cama koştu.'); }
   if(DB.view.style==='blender') o.push('Neden her şey kil gibi? Biri bizi render etmeyi unuttu galiba.');
   return o; }
 /* ---- Daha fazla ve daha çeşitli yorum ---- */
@@ -2363,9 +2824,9 @@ SMOKER_Q.push('Bu çember toplantısının gündem maddesi yok ama karar çok.',
 JOGGER_Q.push('Göbekte üç tur attım, çeşme benden yorulmuş.','Koşarken kafe terasının kokusu beni geri çağırıyor.','Nabız 150, gelen kutusu 300. İkisi de yüksek.');
 DRIVER_Q.push('Otopark binasına girdim, çıkış rampasını bulamadım; şimdi burası evim.','Çeşmeli göbekte iki tur attım, sonra karar verdim: üçüncü tur.','Helikopter pistine park etmeyi düşündüm; güvenlik “hayır” dedi.','Bu sarı taksi her sabah aynı tur atıyor; artık rehber gibi.','Navigasyon “hedefe vardınız” dedi. Hedef 41 kat yukarıda.');
 /* ---- Mekânlara özel yorumlar (çarşı, -1 kat, kısıtlı katlar, oditoryum, hayvanlar...) ---- */
-THOUGHTS.push('Öğle arasında çarşıda kahve mi, -1’deki yemekhane mi? Avluda güneş varsa yemekhane.','İşmekan’da bir fikir buldum; Girişimcilik Şube de yan tarafta. Kader mi bu?','Spor salonuna yazıldım. Kule 2 asma kata kadar yürüdüm, bugünlük yeter.','İŞİM’den oditoryum etkinliğine bilet aldım; ön sıra, sahneye üç adım.','Kibele heykeline her sabah selam veriyorum; aslanları hâlâ cevap vermiyor.','Paşa bugün yine kapıda karşıladı; güvenlikten önce o tanıyor beni.','Eczaneden vitamin aldım, kuaförden randevu, marketten simit. Çarşı her şeyi çözüyor.','40. kattaki yemek salonundan şehir manzarası... bir gün oraya davet edileceğim.','21. katta toplantı odası buldum! Rezervasyonu yapan çıkana kadar benim.','Temiz hava sahasında beş dakika durdum; ciğerlerim teşekkür etti, gelen kutum etmedi.','Elektrikli aracımı -4’te şarja taktım; benim şarjım ise kahveye bağlı.');
-CRITIQUES.push('Turnikede kartım okunmadı; arkamdaki kedi geçti, ben kaldım.','Lobideki bekleme alanı o kadar rahat ki misafirler gitmek istemiyor.','38. kata çıkmak için kartım yetmedi; asansör 37’de bile durmadı.','36, 37, 38... Bu katlar “herkes çıkamaz” listesinde. Benim için asansörde o tuşlar dekor.','Kat 41’deki konferansa yetiştim ama konferans çoktan 40’taki yemek salonuna geçmişti.','21. kattaki toplantı odalarından biri boşsa haber verin, efsane diye anlatacağız.','-1 kattaki yemekhanede kuyruk avluya taştı; avlu da kuyruğa doymuyor.','Revirde tansiyonumu ölçtüler, Excel’i kapatınca düştü.','Diş hekimi “gülümseyin” dedi; maaş günü değildi, zorlandım.','Çarşıdaki kafelerin hepsini denedim; en iyi kahve hâlâ arkadaşın getirdiği.','Kuaförde sıra beklerken üç toplantıya katıldım; saçım değil, takvimim kısaldı.','Market kasasındaki kedi poşet istemiyor, o yüzden çevreci.','İşmekan’da yer bulmak, otoparkta EV şarj yeri bulmaktan kolay.','Açık otoparktaki EV şarj üniteleri dolu; benim telefonum da yüzde 3.','Oditoryum biletleri İŞİM’de üç dakikada tükendi; konser değil, bütçe sunumuydu.','Kibele heykeli binlerce yıldır oturuyor; toplantıda bunu ilk ben başardım sanmıştım.','Sigara içme alanının sundurması yağmuru tutuyor, dedikoduyu tutmuyor.','Temiz hava sahası yazıyor ama yanından geçen arabaların fikri farklı.','Paşa sabah turunu bitirmeden kimse lobiye girmiyor; gayriresmî güvenlik prosedürü.','Kediler yemekhanenin avlusunu kiralamış; biz misafiriz.','Spor salonunda koşu bandı dolu; ben de merdivenden 41 kat çıktım. Şaka, asansörü bekledim.');
-SMOKER_Q.push('Sigara alanı burası; temiz hava sahası öbür tarafta. Ortada da vicdanım var.','Sundurmanın altında beş kişi, dört fikir, bir çakmak.','Paşa izmarit kontrolüne geldi; buradaki en disiplinli denetçi o.');
+THOUGHTS.push('Öğle arasında çarşıda kahve mi, -1’deki yemekhane mi? Avluda güneş varsa yemekhane.','İşmekan’da bir fikir buldum; Girişimcilik Şube de yan tarafta. Kader mi bu?','Spor salonuna yazıldım. Kule 2 asma kata kadar yürüdüm, bugünlük yeter.','İŞİM’den oditoryum etkinliğine bilet aldım; ön sıra, sahneye üç adım.','Kibele heykeline her sabah selam veriyorum; aslanları hâlâ cevap vermiyor.','Paşa bugün yine kapıda karşıladı; güvenlikten önce o tanıyor beni.','Eczaneden vitamin aldım, kuaförden randevu, marketten simit. Çarşı her şeyi çözüyor.','40. kattaki yemek salonundan şehir manzarası... bir gün oraya davet edileceğim.','21. katta toplantı odası buldum! Rezervasyonu yapan çıkana kadar benim.','Oturma nişinde beş dakika durdum; ciğerlerim teşekkür etti, gelen kutum etmedi.','Elektrikli aracımı -4’te şarja taktım; benim şarjım ise kahveye bağlı.');
+CRITIQUES.push('Turnikede kartım okunmadı; arkamdaki kedi geçti, ben kaldım.','Lobideki bekleme alanı o kadar rahat ki misafirler gitmek istemiyor.','38. kata çıkmak için kartım yetmedi; asansör 37’de bile durmadı.','36, 37, 38... Bu katlar “herkes çıkamaz” listesinde. Benim için asansörde o tuşlar dekor.','Kat 41’deki konferansa yetiştim ama konferans çoktan 40’taki yemek salonuna geçmişti.','21. kattaki toplantı odalarından biri boşsa haber verin, efsane diye anlatacağız.','-1 kattaki yemekhanede kuyruk avluya taştı; avlu da kuyruğa doymuyor.','Revirde tansiyonumu ölçtüler, Excel’i kapatınca düştü.','Diş hekimi “gülümseyin” dedi; maaş günü değildi, zorlandım.','Çarşıdaki kafelerin hepsini denedim; en iyi kahve hâlâ arkadaşın getirdiği.','Kuaförde sıra beklerken üç toplantıya katıldım; saçım değil, takvimim kısaldı.','Market kasasındaki kedi poşet istemiyor, o yüzden çevreci.','İşmekan’da yer bulmak, otoparkta EV şarj yeri bulmaktan kolay.','Açık otoparktaki EV şarj üniteleri dolu; benim telefonum da yüzde 3.','Oditoryum biletleri İŞİM’de üç dakikada tükendi; konser değil, bütçe sunumuydu.','Kibele heykeli binlerce yıldır oturuyor; toplantıda bunu ilk ben başardım sanmıştım.','Sigara içme alanının sundurması yağmuru tutuyor, dedikoduyu tutmuyor.','Oditoryum girişi artık ön peyzajda; bilet kuyruğu saksıların arasından kıvrılıyor.','Paşa sabah turunu bitirmeden kimse lobiye girmiyor; gayriresmî güvenlik prosedürü.','Kediler yemekhanenin avlusunu kiralamış; biz misafiriz.','Spor salonunda koşu bandı dolu; ben de merdivenden 41 kat çıktım. Şaka, asansörü bekledim.');
+SMOKER_Q.push('Sigara alanı burası; bahçenin geri kalanı temiz hava. Ortada da vicdanım var.','Sundurmanın altında beş kişi, dört fikir, bir çakmak.','Paşa izmarit kontrolüne geldi; buradaki en disiplinli denetçi o.');
 DRIVER_Q.push('EV şarj ünitesine yer bulamadım; aracım da ben de düşük bataryayla dolaşıyoruz.','-4’e indim, park yeri yok; açık otoparka çıktım, Paşa yerimi tutmuş.','Bu tur oditoryum etkinliği için; bilet İŞİM’de, park yeri kaderde.');
 /* ---- Ekip üyelerine özel (kişiselleştirilmiş) yorumlar ---- */
 const TEAM_ABOUT={
@@ -2470,7 +2931,7 @@ const clock=new THREE.Clock(); let elapsed=0, firstFrame=true, viewShift=0, view
 function damp(a,b,l,dt){ return lerp(a,b,1-Math.exp(-l*dt)); }
 function frame(){
   if(innerWidth&&innerHeight&&(innerWidth!==lastW||innerHeight!==lastH)) onResize();
-  const dt=Math.min(clock.getDelta(),.1); elapsed+=dt; G.uTime.value=elapsed; CyberShader.uniforms.uTime.value=elapsed; cyberPass.uniforms.uTime.value=elapsed;
+  const dt=Math.min(clock.getDelta(),.1); elapsed+=dt; G.uTime.value=elapsed; CyberShader.uniforms.uTime.value=elapsed; cyberPass.uniforms.uTime.value=elapsed; steamPass.uniforms.uTime.value=elapsed;
   updateWeather(dt); updateTime(dt); updateFlight(dt);
   // otomatik dönüş
   if(DB.settings.autoRotate && !flight && !selected && !downInfo && performance.now()-lastInteract>DB.settings.idleSeconds*1000) controls.autoRotate=true;
@@ -2490,6 +2951,7 @@ function frame(){
   if(birds.visible) updateBirds(elapsed);
   updateLife(dt); updateBubble(dt); updateReminders();
   if(fountainJets) fountainJets.children.forEach((j,i)=>{ j.scale.y=.8+.22*Math.sin(elapsed*5+i*1.7); });
+  if(steamGroup.visible) updateSteam(dt);
   if(cyberGroup.visible){ for(const h of holoRings){ h.ring.rotation.y+=h.sp*dt; h.ring.position.y=h.y+Math.sin(elapsed*.5+h.ph)*3; }
     for(const h of holoSigns){ h.mesh.position.y=h.y+Math.sin(elapsed*.6+h.ph)*1.5; } }
   const bl=(Math.sin(elapsed*3)>.6?1:.12)*(.25+G.uNight.value*.75); for(const b of beacons) b.material.color.setRGB(4*bl,.2*bl,.15*bl);
@@ -2510,7 +2972,7 @@ function onResize(){
   const w=innerWidth, h=innerHeight; if(!w||!h) return; lastW=w; lastH=h; camera.aspect=w/h;
   camera.fov = camera.aspect<1 ? Math.min(72, CONFIG.camera.fov*Math.pow(1/camera.aspect,.6)) : CONFIG.camera.fov; camera.updateProjectionMatrix();
   renderer.setSize(w,h,false); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w,h);
-  CyberShader.uniforms.uRes.value.set(w,h); cyberPass.uniforms.uRes.value.set(w,h);
+  CyberShader.uniforms.uRes.value.set(w,h); cyberPass.uniforms.uRes.value.set(w,h); steamPass.uniforms.uRes.value.set(w,h);
 }
 addEventListener('resize',onResize);
 
@@ -2543,6 +3005,7 @@ const IC={
   heat:'<path d="M12 2s5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 1-3s1 2 2 2c0-4 2-9 2-9z"/>',
   cube:'<path d="M21 16V8l-9-5-9 5v8l9 5z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/>',
   bolt:'<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/>',
   wire:'<path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l18 10M21 7L3 17"/>',
   home:'<path d="M3 11l9-8 9 8M5 10v10h14V10"/>', tower:'<rect x="8" y="3" width="8" height="18" rx="1"/><path d="M4 21h16M12 1v2"/>',
   bird:'<path d="M2 13c4-5 7-5 10 0 3-5 6-5 10 0"/>', reset:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
@@ -2683,7 +3146,7 @@ function confirmBox(text,okLabel='Onayla',danger=true){
    ÜST BAR, GÖRÜNÜMLER, ÖZET, LEJANT
    ========================================================================== */
 const TIME_BTNS=[['day','sun','Gündüz','1'],['noon','noon','Öğle','2'],['evening','sunset','Akşam','3'],['night','moon','Gece','4'],['auto','cycle','Otomatik döngü',''],['real','clock','Gerçek saat','']];
-const STYLE_BTNS=[['normal','eye','Normal','Q'],['blender','cube','Blender','W'],['cyber','bolt','Cyberpunk','E']];
+const STYLE_BTNS=[['normal','eye','Normal','Q'],['blender','cube','Blender','W'],['cyber','bolt','Cyberpunk','E'],['steam','gear','Steampunk','P']];
 const VIEW_BTNS=[['normal','tower','Normal','N'],['xray','xray','X-Ray','X'],['heat','heat','Isı Haritası','H']];
 function initTopbar(){
   $('#seg-time').innerHTML=TIME_BTNS.map(([k,i,l,s])=>`<button data-time="${k}" title="${l}${s?' ('+s+')':''}">${ic(i)}</button>`).join('');
@@ -3212,6 +3675,8 @@ function openSettings(){
     <div class="lbl"><b>Gölgeler</b><small>Yumuşak güneş gölgeleri</small></div>${sw('st-sh',S.shadows)}
     <div class="lbl"><b>Partiküller</b><small>Toz/polen, ateşböcekleri, yağmur</small></div>${sw('st-pa',S.particles)}
     <div class="lbl"><b>Yaşam</b><small>Yürüyen insanlar, sigara molası grupları, araçlar, Paşa ve kediler</small></div>${sw('st-life',S.life)}    <div class="lbl"><b>SSAO (ortam kapatma)</b><small>İsteğe bağlı, GPU yükünü artırır</small></div>${sw('st-ao',S.ssao)}
+    <div class="lbl"><b>Özel gün bayrağı</b><small>Millî bayramlarda ve 26 Ağustos’ta Kule 1 cephesine dev Türk bayrağı</small></div>
+    <div class="seg" id="st-hf">${[['auto','Otomatik'],['on','Her zaman'],['off','Kapalı']].map(([k,l])=>`<button data-hf="${k}" class="${S.holidayFlag===k?'active':''}">${l}</button>`).join('')}</div>
     <div class="set-sec">Kamera ve zaman</div>
     <div class="lbl"><b>Boşta otomatik dönüş</b><small>Etkileşimde durur</small></div>${sw('st-ar',S.autoRotate)}
     <div class="lbl"><b>Dönüş için bekleme (sn)</b></div><input class="inp" type="number" id="st-idle" min="3" max="300" value="${S.idleSeconds}" style="width:90px">
@@ -3228,6 +3693,7 @@ function openSettings(){
   const save=()=>persist(true);
   $('#st-q',E).onclick=e=>{ const b2=e.target.closest('[data-q]'); if(!b2) return; S.quality=b2.dataset.q; $$('#st-q button',E).forEach(x=>x.classList.toggle('active',x===b2)); applyQuality(); save(); };
   $('#st-sh',E).onchange=e=>{ S.shadows=e.target.checked; applyShadows(); save(); };
+  $('#st-hf',E).onclick=e=>{ const b2=e.target.closest('[data-hf]'); if(!b2) return; S.holidayFlag=b2.dataset.hf; $$('#st-hf button',E).forEach(x=>x.classList.toggle('active',x===b2)); updateHolidayFlag(true); save(); };
   $('#st-pa',E).onchange=e=>{ S.particles=e.target.checked; applyStyle(); save(); };
   $('#st-life',E).onchange=e=>{ S.life=e.target.checked; if(!S.life) closeBubble(); save(); };  $('#st-ao',E).onchange=e=>{ S.ssao=e.target.checked; applySSAO(); save(); if(S.ssao&&S.quality==='low') toast('SSAO düşük kalitede devre dışıdır','info'); };
   $('#st-ar',E).onchange=e=>{ S.autoRotate=e.target.checked; if(!S.autoRotate) controls.autoRotate=false; save(); };
@@ -3241,7 +3707,7 @@ function openSettings(){
 }
 function openHelp(){
   if(modalStack.some(m=>m.el.querySelector('.help'))) return;
-  const K=[['Sol tık + sürükle','Döndür'],['Sağ tık + sürükle','Kaydır'],['Tekerlek','Yakınlaştır / uzaklaştır'],['Tık','Katı seç, detay panelini aç'],['↑ / ↓','Seçili kuledeki üst / alt kat'],['Esc','Paneli / pencereyi kapat'],['1 · 2 · 3 · 4','Gündüz · Öğle · Akşam · Gece'],['Q · W · E','Normal · Blender · Cyberpunk tarzı'],['N · X · H','Normal · X-Ray · Isı haritası'],['Y','Hava durumu değiştir'],['D','Yönetim paneli (görev dağılımı, ajanda, ekip)'],['A','Alanlar ve kat rehberi'],['T','Hatırlatmalar'],['F','Seçili kata odaklan'],['R','Görünümü sıfırla'],['Ctrl + K','Tüm katlarda ara'],['Ctrl + Z','Geri al'],['?','Bu yardım penceresi']];
+  const K=[['Sol tık + sürükle','Döndür'],['Sağ tık + sürükle','Kaydır'],['Tekerlek','Yakınlaştır / uzaklaştır'],['Tık','Katı seç, detay panelini aç'],['↑ / ↓','Seçili kuledeki üst / alt kat'],['Esc','Paneli / pencereyi kapat'],['1 · 2 · 3 · 4','Gündüz · Öğle · Akşam · Gece'],['Q · W · E · P','Normal · Blender · Cyberpunk · Steampunk tarzı'],['N · X · H','Normal · X-Ray · Isı haritası'],['Y','Hava durumu değiştir'],['D','Yönetim paneli (görev dağılımı, ajanda, ekip)'],['A','Alanlar ve kat rehberi'],['T','Hatırlatmalar'],['F','Seçili kata odaklan'],['R','Görünümü sıfırla'],['Ctrl + K','Tüm katlarda ara'],['Ctrl + Z','Geri al'],['?','Bu yardım penceresi']];
   const m=openModal({ wide:true, title:'Yardım ve kısayollar', body:`<div class="help" style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px">
     <div><h4>Nasıl kullanılır?</h4><ul>
       <li><b>Kat seçimi:</b> Fareyle bir katın üzerine gelin; kat parlar ve dışarı çıkar. Tıklayınca sağda <b>kat detay paneli</b> açılır.</li>
@@ -3249,7 +3715,8 @@ function openHelp(){
       <li><b>Notlar:</b> Markdown destekli renkli yapışkan notlar, sabitleme ve arama.</li>
       <li><b>Aktivite:</b> Kattaki tüm değişikliklerin zaman çizelgesi.</li>
       <li><b>Görünüm modları:</b> X-Ray kat dilimlerini gösterir; Isı haritası katları açık/gecikmiş görev veya ilerleme yüzdesine göre renklendirir.</li>
-      <li><b>Zaman ve tarz:</b> Gündüz/Öğle/Akşam/Gece, otomatik döngü veya gerçek saat; Normal, Blender (Malzeme/Solid/Clay/Wireframe) ve Cyberpunk tarzları birlikte kullanılabilir.</li>
+      <li><b>Zaman ve tarz:</b> Gündüz/Öğle/Akşam/Gece, otomatik döngü veya gerçek saat; Normal, Blender (Malzeme/Solid/Clay/Wireframe), Cyberpunk ve Steampunk (pirinç kaplama, dönen dişliler, kule saati, zeplinler, buhar) tarzları birlikte kullanılabilir.</li>
+      <li><b>Özel günler:</b> Millî bayramlarda ve 26 Ağustos’ta (İş Bankası’nın kuruluşu) Kule 1’in cephesine dev Türk bayrağı asılır. Ayarlar’dan “Her zaman” ya da “Kapalı” seçilebilir.</li>
       <li><b>Kayıt:</b> Her değişiklik tarayıcıya otomatik kaydedilir. Kalıcı yedek için <b>Dışa Aktar → JSON</b>; Excel için <b>CSV</b>. İçe aktarırken önizleme görür, “Üzerine yaz” veya “Birleştir” seçersiniz.</li>
       <li><b>Görev dağılımı:</b> Görevlere disiplin (Mimari, İnşaat, Elektrik, Mekanik, Bakım-Onarım…) verin; “Otomatik” düğmesi o disiplinde iş yükü en az olan ekip üyesine atar. <b>Yönetim Paneli</b> (<kbd>D</kbd>): özet, kişi bazında iş yükü, toplu otomatik dağıtım, 30 günlük ajanda ve ekip düzenleme.</li>
       <li><b>Hatırlatıcılar:</b> Görev düzenleyicisinde tarih/saat girin veya zil düğmesinden (<kbd>T</kbd>) bağımsız hatırlatma kurun. Sayfa açıkken zamanı gelince kart, ses ve (izin verirseniz) masaüstü bildirimi çıkar; kapalıyken kaçırılanlar açılışta gösterilir. Ertele: 10 dk / 1 saat / yarın.</li>
@@ -3306,7 +3773,7 @@ function audioUpdate(){
   const set=(k,v)=>AU.g[k].gain.setTargetAtTime(v,t,.8);
   AU.master.gain.setTargetAtTime(DB.settings.volume,t,.3);
   const wt=WEATHER_T[DB.view.weather]||{};
-  set('wind',(s==='cyber'?.12:.32)+(wt.storm?.35:0)+(wt.snow?.1:0)); set('birds',s==='normal'&&!wt.rain&&!wt.snow?(1-n)*.9:0); set('rain',wt.rain?(wt.storm?.75:.5):0); set('hum',(s==='cyber'?.55:n*.6)); set('synth',s==='cyber'?.5:0);
+  set('wind',(s==='cyber'?.12:.32)+(wt.storm?.35:0)+(wt.snow?.1:0)); set('birds',(s==='normal'||s==='steam')&&!wt.rain&&!wt.snow?(1-n)*.9:0); set('rain',wt.rain?(wt.storm?.75:.5):0); set('hum',(s==='cyber'?.55:s==='steam'?Math.max(.38,n*.6):n*.6)); set('synth',s==='cyber'?.5:0);
 }
 setInterval(audioUpdate,1500);
 function thunder(){
@@ -3329,6 +3796,7 @@ function allReminderItems(){ const out=[];
   return out.sort((a,b)=>a.at.localeCompare(b.at)); }
 function updateReminders(){
   const now=Date.now(); if(now<remNext) return; remNext=now+4000;
+  updateHolidayFlag(false);
   const due=allReminderItems().filter(i=>!i.fired&&Date.parse(i.at)<=now);
   if(due.length){ for(const i of due){ if(i.kind==='task') i.ref.remindFired=true; else i.ref.fired=true; fireReminder(i,now-Date.parse(i.at)>120000); }
     persist(true); if(panelFloor) renderPanel(true); }
@@ -3503,7 +3971,7 @@ addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey) return;
   switch(k){
     case '1': setTimeMode('day'); break; case '2': setTimeMode('noon'); break; case '3': setTimeMode('evening'); break; case '4': setTimeMode('night'); break;
-    case 'q': case 'Q': setStyle('normal'); break; case 'w': case 'W': setStyle('blender'); break; case 'e': case 'E': setStyle('cyber'); break;
+    case 'q': case 'Q': setStyle('normal'); break; case 'w': case 'W': setStyle('blender'); break; case 'e': case 'E': setStyle('cyber'); break; case 'p': case 'P': setStyle('steam'); break;
     case 'n': case 'N': setViewMode('normal'); break; case 'x': case 'X': setViewMode(DB.view.viewMode==='xray'?'normal':'xray'); break; case 'h': case 'H': setViewMode(DB.view.viewMode==='heat'?'normal':'heat'); break;
     case 'f': case 'F': focusSelected(); break; case 'r': case 'R': deselect(); flyToView('general'); break;
     case 'd': case 'D': openDashboard(); break; case 't': case 'T': openReminders(); break; case 'a': case 'A': openDirectory(); break;
