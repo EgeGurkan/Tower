@@ -2,7 +2,7 @@
 
 An interactive, single-file **3D architectural diorama and facility/task management application** modeling Istanbul's iconic **Towers** atop a procedurally generated floating island above the clouds.
 
-> **Live Demo:** You can try the application directly in your browser without any installation at
+> **Live Demo:** You can try the application directly in your browser without any installation from here:
 > [**https://egegurkan.github.io/Tower/**](https://egegurkan.github.io/Tower/).
 
 Built entirely inside a single `index.html` file with **Three.js**, every building floor, landscape element, texture, shader effect, and ambient soundscape is procedurally generated in code—requiring zero build steps and zero external 3D asset files.
