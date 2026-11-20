@@ -95,6 +95,21 @@ kbd{font-family:ui-monospace,Consolas,monospace;font-size:11px;padding:1px 6px;b
 .sel,.inp{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:9px;padding:6px 9px;outline:none;min-width:0}
 .sel:focus,.inp:focus,textarea.inp:focus{border-color:rgba(76,194,255,.6);box-shadow:0 0 0 3px rgba(76,194,255,.15)}
 select.sel option{background:#151c2c;color:var(--text)}
+/* üst bar açılır seçicileri: yerel açılır pencere yerine küçük, kaydırılabilir açılır panel */
+.dd{position:relative;display:inline-flex;min-width:0}
+.dd-btn{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:9px;padding:6px 26px 6px 10px;color:var(--text);font-size:12.5px;white-space:nowrap;position:relative;cursor:pointer;transition:border-color .15s,background .15s}
+.dd-btn::after{content:'';position:absolute;right:10px;top:50%;width:6px;height:6px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-70%) rotate(45deg);opacity:.7;transition:transform .18s}
+.dd-btn:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.06)}
+.dd.open .dd-btn{border-color:rgba(76,194,255,.6);box-shadow:0 0 0 3px rgba(76,194,255,.15)}
+.dd.open .dd-btn::after{transform:translateY(-30%) rotate(-135deg)}
+.dd-menu{position:fixed;z-index:200;max-height:196px;overflow-y:auto;padding:4px;border-radius:11px;background:rgba(16,22,36,.97);border:1px solid var(--line);
+  box-shadow:0 14px 34px rgba(0,0,0,.45);backdrop-filter:blur(10px);scrollbar-width:thin;visibility:hidden;opacity:0;transform:translateY(-6px) scale(.97);transform-origin:top left;
+  transition:opacity .16s ease,transform .16s ease,visibility 0s linear .16s}
+.dd-menu.open{visibility:visible;opacity:1;transform:none;transition:opacity .16s ease,transform .16s ease,visibility 0s}
+.dd-menu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);font-size:12.5px;white-space:nowrap;cursor:pointer}
+.dd-menu button:hover{background:rgba(255,255,255,.07)}
+.dd-menu button.on{background:rgba(76,194,255,.15);color:#fff}
+.dd-menu button.on::after{content:'✓';margin-left:auto;padding-left:14px;color:var(--accent);font-size:11px}
 textarea.inp{resize:vertical;width:100%;line-height:1.45}
 #clock{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px;min-width:38px;text-align:center}
 .dd{position:relative}
@@ -418,8 +433,8 @@ body.panel-open #gizmo{right:496px}
   </svg></div>
   <div id="loader-msg" class="ld-msgs">
     <span style="animation-delay:0s">Uçan ada hazırlanıyor…</span>
-    <span style="animation-delay:1.1s">Asansörler 23. kattan çağrılıyor…</span>
-    <span style="animation-delay:2.2s">Paşa’ya sabah maması veriliyor…</span>
+    <span style="animation-delay:1.1s">Teknik ekip göreve çağrılıyor…</span>
+    <span style="animation-delay:2.2s">Paşa’ya mama veriliyor…</span>
     <span style="animation-delay:3.3s">Turnike kartları kendilerini tanımaya çalışıyor…</span>
     <span style="animation-delay:4.4s">Kahve makinesi “bakımda” yazısından çıkarılıyor…</span>
     <span style="animation-delay:5.5s">Kibele’nin çağlayanına su dolduruluyor…</span>
@@ -3369,14 +3384,24 @@ const THOUGHTS=['Tatile 47 gün var. Saymıyorum ama 47.','Akşam ne yesem... Ye
   'Projeye “çevik” dedik; değişen tek şey toplantı sayısı oldu.','Masaüstümde “son_son_GERCEKSON_v7.xlsx” var. Bir de “bunu_kullan.xlsx”. Hangisi bilmiyorum.','Bugün kimse “bir dakikan var mı?” demedi. Henüz saat 10.',
   'Masamdaki bitki benden daha düzenli sulanıyor ve daha az stres yapıyor.','Sunumu “kısa tutacağım” dedim. 47 slayt. Kısa tuttum.','Yeni şifre kuralı: en az bir büyük harf, bir rakam ve bir gözyaşı.',
   'Bu adada yürüyüş yapmak kolay; kaybolmak daha kolay.','“Bunu mail ile de iletir misin?” dediler. Toplantının tutanağı da toplantı oldu.','Cuma öğleden sonra açılan iş, pazartesi sabahı kendini kopyalar.',
-  'Bir gün Kibele’nin aslanına binip öğle arasına erken çıkacağım.','Şirket içi eğitimde “zaman yönetimi” vardı. Geç kaldım.','Bugünkü motivasyonum: maaş günü ile hafta sonunun çakıştığı ay.'];
+  'Bir gün Kibele’nin aslanına binip öğle arasına erken çıkacağım.','Şirket içi eğitimde “zaman yönetimi” vardı. Geç kaldım.','Bugünkü motivasyonum: maaş günü ile hafta sonunun çakıştığı ay.',
+  '“Sadece 5 dakika” sürecek toplantının ikinci saatindeyiz. Saatler de toplantıya katıldı galiba.','Oditoryumdaki etkinliğe kayıt oldum. Konu: verimli zaman yönetimi. Geç kalacağım.',
+  'Kibele’nin çağlayanının sesi tam beyaz gürültü. Açık ofise bir tane de oraya koysalar.','Bugün ilk defa asansörde kimseyle göz göze gelmeden 30 kat çıktım. Kişisel rekor.',
+  'Mesai bitiminde ışığı kapatan son kişi olmak istemiyorum ama ilk çıkan da olmak istemiyorum. Kapıda bekliyorum.','Takvimime “odaklanma zamanı” koydum. Herkes onu boş saat sanıp toplantı attı.',
+  'Kule 3’e gidecektim, Kule 2’ye girdim, toplantıya katıldım, kimse fark etmedi. Belki ben de fark etmedim.','Hafta sonu planım: hafta içi yapamadıklarımı düşünüp hiçbirini yapmamak.',
+  'İçtiğim kahve sayısı, okuduğum mail sayısını geçti. Bunu bir başarı olarak görüyorum.','Bir gün tüm sekmelerimi kapatacağım. Bugün o gün değil.'];
 const CRITIQUES=['Asansör yine 23. katta bekletiyor. Merdivenden insem 41 kat kardiyo.','Klima ya Sibirya ya Sahra. Ofiste mevsim geçişi saatlik.','Turnike kartımı tanımıyor. Ben de artık kendimi tanımıyorum.','Kule 2 ile Kule 3’ü karıştıran stajyer yanlış toplantıya 40 dakika katıldı. Kimse fark etmedi.','Wi-Fi şifresi değişmiş. Yeni şifre: “ŞifreyiSorma2026!”. Gerçekten.','Toplantı odası “dolu” görünüyor, içeride kimse yok. Klasik.','Kahve makinesinde “bakımda” yazıyor. Ben de bakımdayım aslında.','Yazıcı yine kâğıt sıkıştırdı. Dijitale geçelim dedim, “onay için çıktı alın” dediler.','Pencereler açılmıyor ama fikirler de açılmıyor; en azından tutarlıyız.','Otoparkta yer yok, adada tek yol var. Trafik dairesel, sorunlar da.','Teknik hacimler 41. kattan sonra başlıyormuş. Bizim teknik borç 1. kattan başlıyor.','Şelale güzel ama bizim kattaki lavabo da şelale gibi akıyor, kimse bakmıyor.','Kuşlar bizden düzenli toplantı yapıyor. Hem de V formasyonunda.','Lobi o kadar büyük ki karşıdaki arkadaşa mail atmak daha hızlı.',
   'Saçakları camdan yapmışlar; yağmuru tutuyor, maaş zammını tutmuyor.','Otoparka hız tümseği koymuşlar. Asıl hız tümseği bizim onay süreci.','Kırmızı parke yol çok güzel. Bizim projenin durumu da kırmızı ama o pek güzel değil.',
   'Yemekhane avlusu açık hava, menü kapalı kutu.','Oditoryumda etkinlik var, bilet İŞİM’de; İŞİM’e girmek için önce şifre sıfırlama etkinliğine katılmak gerekiyor.','“Bunu offline konuşalım” dedi. Şimdi adanın öbür ucundayız.',
   'Kibele heykeli 8 bin yıllık. Bekleyen satın alma talebimiz de yakında ona yetişir.','Peyzajdaki niwaki’ler bizden daha profesyonel budanmış. Bizim organizasyon şeması hâlâ çalı.','Toplantı davetinde “opsiyonel” yazıyordu. Gitmeyince “neden yoktun” dediler.',
   'Sigara pavyonu da camdan, toplantı odaları da camdan. Şeffaflıkta sınır tanımıyoruz, bütçe hariç.','Katlı otoparktan çıkış batıdan, açık otoparktan doğudan. Sabahları yarı yarıya ayrılıyoruz; şirket kültürü gibi.',
   'Asansörde “kapıyı tut” diye koşan kişiyle 40 kat boyunca göz göze gelmemek bir sanattır.','Yeni intranet çok kullanıcı dostu; kullanıcıyı bulamıyor ama dostça bulamıyor.','Kat planı değişmiş, masam taşınmış. Ben hâlâ eski yerimde, ruhen.',
-  '“Kısa bir anket” 42 soruymuş. Son soru: “Anketi nasıl buldunuz?”','Kahve makinesinin yanındaki bilgi, yönetim kurulu bülteninden bir hafta önce çıkıyor.'];
+  '“Kısa bir anket” 42 soruymuş. Son soru: “Anketi nasıl buldunuz?”','Kahve makinesinin yanındaki bilgi, yönetim kurulu bülteninden bir hafta önce çıkıyor.',
+  'Bariyer araba görünce kalkıyor, beni görünce kalkmıyor. Kendimi biraz değersiz hissettim.','Teknik ekip “geliyoruz” dedi. Hangi yıl geleceklerini söylemediler.',
+  'Kule 1 VIP girişi var ama benim girişim hâlâ “misafir kartı unutulmuş” modunda.','Toplantı notlarını tutmam istendi. Not: toplantı bir sonraki toplantıya ertelendi.',
+  'Ortak alandaki bitkiler düzenli sulanıyor, ben düzenli maaş zammı bekliyorum. İkisi de yeşermeyi hak ediyor.','“Hızlı bir soru” diye başlayan mesaj 14 paragraf çıktı. Hızlı olan kısmı soru işaretiydi.',
+  'Yeni ofis düzeni “esnek çalışma alanı” imiş. Esnek olan tek şey masamın yeri.','Çarşıdaki kafe saat 12:00’de doluyor, 12:01’de efsane oluyor.',
+  'Kat görevlerinin hepsi “yüksek öncelik”. Öncelik sıralaması da yüksek öncelikli bir görev olarak eklendi.','Isı haritasında bizim kat kıpkırmızı. Klimayla ilgisi yokmuş, görevlerle ilgiliymiş.'];
 const DINER_Q=['Bugünün menüsü kuru fasulye. Öğleden sonraki toplantıların iptali önerilir.','Tatlıyı önce yedim. Hayat kısa, öğle arası daha kısa.','Avluda yemek yemek tatil gibi; tek fark telefonun titremesi.',
   'Yan masa bütçe konuşuyor; çorbam soğudu, onların bütçesi gibi.','Yemekhanede pilav tek tip ama yorumlar 14 farklı.','Yukarıdaki katlar bize özeniyor, biz de onların manzarasına. Adil bir takas.',
   'Tepsi iade sırası, yemek sırasından uzun. Bu da bir yönetim modeli.','Masada dört kişiyiz, üçümüz telefona bakıyor, biri yemeğe. Yemeğe bakan kazandı.','Garnitür porsiyonu küçük ama özgüveni büyük.',
@@ -4640,8 +4665,33 @@ function seedDemo(add=false){
 /* ==========================================================================
    BAŞLAT
    ========================================================================== */
+// ---- Üst bar seçicileri: yerel <select> gizli veri kaynağı olarak kalır; görünen kısım küçük, kaydırılabilir açılır panel ----
+//      (seçim yerel select’e yazılıp 'change' tetiklenir: mevcut işleyiciler, kısayollar ve kayıt aynen çalışır)
+const DD_LIST=[];
+function enhanceSelect(sel){
+  if(!sel||sel.dataset.dd) return; sel.dataset.dd='1';
+  const wrap=document.createElement('div'); wrap.className='dd'; wrap.title=sel.title||'';
+  const btn=document.createElement('button'); btn.type='button'; btn.className='dd-btn'; btn.setAttribute('aria-haspopup','listbox'); wrap.appendChild(btn);
+  sel.after(wrap); sel.style.display='none';
+  const menu=document.createElement('div'); menu.className='dd-menu'; menu.setAttribute('role','listbox'); document.body.appendChild(menu);
+  let shown='', hid=null;
+  const sync=()=>{ const t=sel.options[sel.selectedIndex]?.textContent||''; if(t!==shown){ shown=t; btn.textContent=t; }
+    const h=sel.classList.contains('hidden'); if(h!==hid){ hid=h; wrap.classList.toggle('hidden',h); if(h) close(); } };
+  const close=()=>{ menu.classList.remove('open'); wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  const open=()=>{ menu.innerHTML=[...sel.options].map((o,i)=>`<button type="button" role="option" data-i="${i}" class="${i===sel.selectedIndex?'on':''}">${esc(o.textContent)}</button>`).join('');
+    const r=btn.getBoundingClientRect(); menu.style.minWidth=Math.max(r.width,120)+'px';
+    menu.style.top=Math.min(r.bottom+6,innerHeight-menu.offsetHeight-8)+'px'; menu.style.left=Math.max(8,Math.min(r.left,innerWidth-menu.offsetWidth-8))+'px';
+    menu.classList.add('open'); wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); menu.querySelector('.on')?.scrollIntoView({block:'nearest'}); };
+  btn.addEventListener('click',e=>{ e.stopPropagation(); const was=menu.classList.contains('open'); DD_LIST.forEach(d=>d.close()); if(!was) open(); });
+  menu.addEventListener('click',e=>{ const b=e.target.closest('button[data-i]'); if(!b) return; sel.selectedIndex=+b.dataset.i; sel.dispatchEvent(new Event('change',{bubbles:true})); sync(); close(); });
+  DD_LIST.push({sync,close}); sync(); }
+document.addEventListener('pointerdown',e=>{ if(!e.target.closest('.dd,.dd-menu')) DD_LIST.forEach(d=>d.close()); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') DD_LIST.forEach(d=>d.close()); },true);
+addEventListener('resize',()=>DD_LIST.forEach(d=>d.close()));
+setInterval(()=>DD_LIST.forEach(d=>d.sync()),250); // kısayolla / koddan yapılan değişiklikleri yansıt
 function init(){
   initTopbar(); initViews(); initSummary();
+  ['#weather','#blender-sub','#heat-metric'].forEach(s=>enhanceSelect(document.querySelector(s)));
   if(firstRun){ persist(true); setTimeout(()=>toast('Hoş geldiniz · Bir kata tıklayıp “Yeni görev” ile başlayın','info',5200),1200); }
   statsCache.clear();
   applyQuality(); updateFloorVisuals(); updateIndicators(); updatePins(); renderSummary(); refreshTopbar();
