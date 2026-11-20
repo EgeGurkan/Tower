@@ -351,9 +351,26 @@ textarea.inp{resize:vertical;width:100%;line-height:1.45}
 /* ---------- Gizmo / loader ---------- */
 #gizmo{position:fixed;right:16px;bottom:16px;width:96px;height:96px;z-index:14;transition:right .38s cubic-bezier(.2,.8,.2,1);pointer-events:none}
 body.panel-open #gizmo{right:496px}
-#loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#1b2a4a,#070b16);transition:opacity .6s}
-#loader.done{opacity:0;pointer-events:none}
+#loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#1b2a4a,#070b16);transition:opacity .7s ease,transform .7s ease}
+#loader.done{opacity:0;pointer-events:none;transform:scale(1.04)}
 #loader .lc{text-align:center;color:var(--muted)}
+/* minyatür uçan ada: ortada süzülerek döner (yalnızca transform animasyonu: sahne kurulurken de akıcı) */
+#loader .ld-isl{width:150px;height:150px;margin:0 auto 18px;perspective:520px;animation:ldfloat 3.2s ease-in-out infinite}
+#loader .ld-isl svg{width:100%;height:100%;animation:ldspin 3.4s ease-in-out infinite alternate;transform-style:preserve-3d;filter:drop-shadow(0 18px 22px rgba(0,0,0,.45))}
+@keyframes ldspin{0%{transform:rotateY(-38deg) rotateX(8deg) rotateZ(-2deg)}100%{transform:rotateY(38deg) rotateX(8deg) rotateZ(2deg)}}
+@keyframes ldfloat{0%,100%{transform:translateY(-5px)}50%{transform:translateY(6px)}}
+/* komik durum yazıları: sırayla gelir, aşağı kayarak kaybolur */
+#loader .ld-msgs{position:relative;height:24px;width:min(560px,90vw);margin:0 auto;font-size:14px;color:#cfd8ea}
+#loader .ld-msgs span{position:absolute;left:0;right:0;opacity:0;animation:ldmsg 8.8s infinite;white-space:nowrap}
+@keyframes ldmsg{0%{opacity:0;transform:translateY(-14px)}2.2%{opacity:1;transform:translateY(0)}10%{opacity:1;transform:translateY(0)}12.5%{opacity:0;transform:translateY(18px)}100%{opacity:0;transform:translateY(18px)}}
+#loader .ld-bar{width:180px;height:3px;border-radius:3px;margin:16px auto 0;background:rgba(255,255,255,.1);overflow:hidden}
+#loader .ld-bar i{display:block;width:40%;height:100%;border-radius:3px;background:var(--accent);animation:ldbar 1.4s ease-in-out infinite}
+@keyframes ldbar{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
+/* altta ipuçları */
+#loader .ld-tips{position:absolute;left:0;right:0;bottom:34px;height:44px;text-align:center;font-size:12.5px;color:#93a3bf}
+#loader .ld-tips b{color:#ffd76a;font-weight:600;margin-right:6px}
+#loader .ld-tips span{position:absolute;left:50%;width:min(620px,92vw);transform:translateX(-50%);opacity:0;animation:ldtip 9.6s infinite}
+@keyframes ldtip{0%{opacity:0;margin-top:8px}3%{opacity:1;margin-top:0}13%{opacity:1;margin-top:0}16.6%{opacity:0;margin-top:-6px}100%{opacity:0}}
 #loader .spin{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,.12);border-top-color:var(--accent);animation:spin 1s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loader .err{max-width:520px;margin-top:14px;text-align:left}
@@ -387,7 +404,37 @@ body.panel-open #gizmo{right:496px}
 <canvas id="scene" tabindex="0"></canvas>
 <canvas id="fade"></canvas>
 
-<div id="loader"><div class="lc"><div class="spin"></div><div id="loader-msg">Uçan ada hazırlanıyor…</div></div></div>
+<div id="loader"><div class="lc">
+  <div class="ld-isl"><svg viewBox="0 0 150 150" aria-hidden="true">
+    <defs><linearGradient id="ldRock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a7a66"/><stop offset="1" stop-color="#3b3640"/></linearGradient>
+      <linearGradient id="ldGlass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9cc7ef"/><stop offset="1" stop-color="#4f86c6"/></linearGradient></defs>
+    <path d="M22 86 Q75 104 128 86 L112 104 L96 128 L84 120 L76 146 L66 122 L52 130 L40 106 Z" fill="url(#ldRock)"/>
+    <ellipse cx="75" cy="84" rx="54" ry="15" fill="#6aa84f"/><ellipse cx="75" cy="82" rx="50" ry="12.5" fill="#86b552"/>
+    <ellipse cx="103" cy="85" rx="8" ry="3" fill="#2f7aa0"/>
+    <rect x="48" y="46" width="12" height="36" rx="1.5" fill="url(#ldGlass)"/><rect x="62" y="52" width="12" height="30" rx="1.5" fill="url(#ldGlass)"/>
+    <rect x="80" y="24" width="15" height="58" rx="2" fill="url(#ldGlass)"/><rect x="85" y="14" width="1.4" height="11" fill="#ddd"/><rect x="86.4" y="14" width="6" height="4" fill="#e30a17"/>
+    <rect x="44" y="74" width="62" height="8" rx="1.5" fill="#cdb38c"/>
+    <circle cx="36" cy="80" r="5" fill="#4f8a3a"/><circle cx="115" cy="78" r="4.5" fill="#3f7a3a"/><circle cx="28" cy="84" r="3.5" fill="#5f9a43"/>
+  </svg></div>
+  <div id="loader-msg" class="ld-msgs">
+    <span style="animation-delay:0s">Uçan ada hazırlanıyor…</span>
+    <span style="animation-delay:1.1s">Asansörler 23. kattan çağrılıyor…</span>
+    <span style="animation-delay:2.2s">Paşa’ya sabah maması veriliyor…</span>
+    <span style="animation-delay:3.3s">Turnike kartları kendilerini tanımaya çalışıyor…</span>
+    <span style="animation-delay:4.4s">Kahve makinesi “bakımda” yazısından çıkarılıyor…</span>
+    <span style="animation-delay:5.5s">Kibele’nin çağlayanına su dolduruluyor…</span>
+    <span style="animation-delay:6.6s">Otoparkta boş yer aranıyor (iyimseriz)…</span>
+    <span style="animation-delay:7.7s">Toplantı odaları “dolu” olarak işaretleniyor…</span>
+  </div>
+  <div class="ld-bar"><i></i></div></div>
+  <div class="ld-tips">
+    <span style="animation-delay:0s"><b>İpucu</b>Bir kata tıklayıp görev, not ve hatırlatma ekleyebilirsin.</span>
+    <span style="animation-delay:1.6s"><b>İpucu</b>Q / W / E / P ile Normal, Blender, Cyberpunk ve Steampunk tarzları arasında geçiş yap.</span>
+    <span style="animation-delay:3.2s"><b>İpucu</b>1–4 tuşlarıyla gündüz, öğle, akşam ve gece arasında gezin.</span>
+    <span style="animation-delay:4.8s"><b>İpucu</b>İnsanlara, araçlara ve kedi–köpeklere tıkla; her birinin söyleyecek bir şeyi var.</span>
+    <span style="animation-delay:6.4s"><b>İpucu</b>Isı haritası görünümüyle en yoğun ve gecikmiş katları hemen gör.</span>
+    <span style="animation-delay:8s"><b>İpucu</b>Ctrl + K ile kat, görev ve kişi arayabilir; verilerini dışa aktarabilirsin.</span>
+  </div></div>
 
 <header id="topbar" class="glass">
   <div class="brand">
@@ -506,13 +553,15 @@ const CONFIG = {
     blocks: [ [-3.5,-19,26.5,28,14], [41.75,23,38.25,24,16], [27.5,-24,4.5,23,14], [-38.25,29,7.75,13,12,1] ], // son blok: K2–K3 arası, zemin katı açık geçit
     color:'#cdb38c', glass:'#3c5672', roof:'#8e8a84',
     // cam saçaklar: [cx, cz, genişlik, derinlik, yön] – yön: saçağın cepheden uzandığı yön (0: güney)
-    dome:[12,16,9,9], arch:[18,47], canopies:[[-63,46,14,5],[-13.5,46,14,5],[18,47,16,6],[-56,12,11,4.5,Math.PI],[-30,-3,10,4.5,-Math.PI/2]],
+    // 6. öğe: vaziyet planındaki giriş adı (saçağın önünde tabela)
+    dome:[12,16,9,9], arch:[18,47], canopies:[[-63,46,14,5,0,'KULE 3 GİRİŞ'],[-13.5,46,14,5,0,'KULE 2 GİRİŞ'],[18,47,16,6,0,'KULE ÇARŞI'],[-63,12,11,4.5,Math.PI,'KULE 3 GİRİŞ'],[-13.5,12,10,2.6,Math.PI,'KULE 2 GİRİŞ'],[-30,-3,10,4.5,-Math.PI/2],
+      [80,8,10,4.5,Math.PI/2,'KULE 1 GİRİŞ'],[55,-47,14,4.5,Math.PI,'KULE 1 VIP GİRİŞ'],[78,-24,12,4.5,Math.PI/2],[60,47,12,4.5,0,'İSTANBUL ŞUBESİ']],   // podyum doğu (Kule 1 girişi), Kule 1 kuzey (VIP), Kule 1 doğu, güney cephede İstanbul Şubesi
   },
   island: { rx:198, rz:172, depth:215, pond:{x:-128,z:100,r:13} },
   plaza: { cx:0, cz:3, hx:95, hz:66, r:14 },
   ring: { a:136, b:106, cz:3, width:9 },            // ada çevresindeki araç yolu (elips)
   parking: { x0:88, x1:100, z0:-48, z1:-16 },       // doğu otoparkı: tek sıra park yeri (batı yarısı) + koridor
-  parking2: { x:101.3, z:53.3, w:26, d:14, rot:-2.29 }, // güneydoğu açık otoparkı: halka yolun kıvrımına paralel, iki sıra
+  parking2: { x:104.27, z:49.92, w:17, d:14, rot:-2.29 }, // güneydoğu açık otoparkı: halka yolun kıvrımına paralel, iki sıra (parke yol tarafından kısaltıldı; uzak ucu aynı yerde)
   life: { personScale:1.7, carScale:1.45 },          // diorama ölçeğinde insan / araç büyütmesi
   // Bina yönetim ekibi (görev dağılımı, otomatik atama ve kişiselleştirilmiş yorumlar için).
   // disc: sorumlu olduğu disiplinler → mimari, insaat, elektrik, mekanik, bakim, yonetim, guvenlik, temizlik, bt, diger
@@ -548,7 +597,7 @@ const CONFIG = {
   spaces: [
     { id:'CARSI', label:'Çarşı', icon:'🛍️', pos:[44,23,30], desc:'Kulelerin ortak çarşısı: kafeler, restoranlar, kahve mekânları, market, eczane, kuaför ve mağazalar. İşmekan çalışma alanı ve Girişimcilik Şubesi.' },
     { id:'B1', label:'-1 Kat · Yemekhane', icon:'🍽️', pos:[-3,24,-28], desc:'Orta avlulu yemekhane, revir ve diş hekimi.' },
-    { id:'ODITORYUM', label:'Oditoryum', icon:'🎭', pos:[-55,11,67], desc:'Ön peyzaj şeridinden girilen oditoryum: büyük sahne ve geniş seyirci kapasitesi. Etkinlik biletleri İŞİM uygulamasından alınır.' },
+    { id:'ODITORYUM', label:'Oditoryum', icon:'🎭', pos:[-33,13,-25], desc:'Kibele heykelinin karşısında, podyumun batı cephesindeki kavisli cam girişten girilen oditoryum: büyük sahne ve geniş seyirci kapasitesi. Etkinlik biletleri İŞİM uygulamasından alınır.' },
     { id:'OTOPARK', label:'Açık Otopark · EV Şarj', icon:'🔌', pos:[94,9,-32], desc:'Açık otopark ve elektrikli araç şarj üniteleri.' },
     { id:'B4', label:'-4 Otopark · EV Şarj', icon:'🅿️', pos:[-112,16,-1], desc:'Kapalı otopark katı (-4) ve elektrikli araç şarj alanı.' },
     { id:'PEYZAJ', label:'Peyzaj · Açık Alan', icon:'🌳', pos:[40,10,90], desc:'Yürüyüş yolları, sigara içme alanları, ön peyzaj şeridi ve Kibele heykeli. Paşa, diğer köpek ve kediler de burada.' },
@@ -579,7 +628,7 @@ const CONFIG = {
     evChargers:4,                                         // açık otoparktaki şarj ünitesi sayısı
     // Fotoğraflardan: meydanın güney (ön) cephesi boyunca ön peyzaj şeridi: LED’li granit saksılar, oturma nişleri,
     // Kule Çarşı portalı, üçgen su duvarı, saksı kaseler, niwaki; kilit parke kaldırım
-    front:{z0:64.2,z1:69.8,walk:[58.4,64.1],segs:[[-85.2,-59.4],[-50.6,12.8],[23.2,62]],niches:[-72,-22,48]},
+    front:{z0:64.2,z1:69.8,walk:[58.4,64.1],segs:[[-85.2,12.8],[23.2,62]],niches:[-72,-22,48]},
     carsiGate:{x:18,z:67},
     greenWall:{a0:198,a1:326,r:17},                       // kuzeybatı döngüsünü kuzeyden saran kavisli yeşil duvar
   },
@@ -1006,9 +1055,9 @@ function flagTexture(){
   g.closePath(); g.fill();
   const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;
 }
-function buildFlag(x,y,z,s=1,rotY=-.6){
+function buildFlag(x,y,z,s=1,rotY=-.6,tex=null){
   const geo=new THREE.PlaneGeometry(6,4,16,4); geo.translate(3,-2,0); geo.scale(s,s,s);
-  const m=envMat({map:flagTexture(),side:THREE.DoubleSide,roughness:.8},{keep:true});
+  const m=envMat({map:tex||flagTexture(),side:THREE.DoubleSide,roughness:.8},{keep:true});
   const prev=m.onBeforeCompile;
   m.onBeforeCompile=sh=>{ prev(sh); sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uTime;')
     .replace('#include <begin_vertex>',`#include <begin_vertex>\nfloat k=position.x/${(6*s).toFixed(2)}; transformed.z += sin(position.x*${(1.1/s).toFixed(3)} - uTime*5.0)*${(.55*s).toFixed(3)}*k; transformed.y += sin(position.x*${(.8/s).toFixed(3)}-uTime*4.0)*${(.15*s).toFixed(3)}*k;`); };
@@ -1097,16 +1146,36 @@ function buildPodium(){
   const lantern=new THREE.Mesh(new THREE.CylinderGeometry(.6,1.6,2.5,8),glassMat); lantern.position.set(dx,dy+.9+dr+.9,dz); towersGroup.add(lantern);
   // kemerli giriş
   const [ax,az]=P.arch;
-  const arch=new THREE.Mesh(new THREE.CylinderGeometry(5.5,5.5,1.4,18,1,false,-Math.PI/2,Math.PI),glassMat);
-  arch.rotation.set(-Math.PI/2,0,0); arch.position.set(ax,8,az+.4); towersGroup.add(arch);
-  const archFrame=new THREE.Mesh(new THREE.TorusGeometry(5.6,.45,6,20,Math.PI),envMat({color:'#e6d7bb',roughness:.7}));
-  archFrame.position.set(ax,8,az+1.1); towersGroup.add(archFrame);
+  // Kule Çarşı girişi (fotoğraf 74): cepheden taşan, kemerli tepeli uzun cam bay; metal kayıtlar, saat
+  { const bw=6.4, bd=1.7, bh=13, z0=az, fr=envMat({color:'#cfd3d8',metalness:.7,roughness:.3},{keep:true}), P_=[];
+    const body=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd),glassMat); body.position.set(ax,.35+bh/2,z0+bd/2); towersGroup.add(body);
+    const top=new THREE.Mesh(new THREE.CylinderGeometry(bw/2,bw/2,bd,24,1,false,Math.PI/2,Math.PI).rotateX(Math.PI/2),glassMat); // üst yarım daire (kemer) top.position.set(ax,.35+bh,z0+bd/2); towersGroup.add(top);
+    const F=(w,h,d,x,y,z)=>P_.push(new THREE.BoxGeometry(w,h,d).translate(x,y,z));
+    for(const sx of [-1,1]) F(.35,bh,bd+.1,ax+sx*(bw/2+.12),.35+bh/2,z0+bd/2);
+    for(const x of [-1.6,0,1.6]) F(.1,bh,.08,ax+x,.35+bh/2,z0+bd+.02);
+    for(let y=2;y<bh;y+=1.6) F(bw,.1,.08,ax,.35+y,z0+bd+.02);
+    { const ar=new THREE.TorusGeometry(bw/2+.1,.18,6,24,Math.PI).translate(ax,.35+bh,z0+bd+.05); P_.push(ar); }
+    for(let k=1;k<6;k++){ const a=k/6*Math.PI; P_.push(new THREE.BoxGeometry(.08,bw/2,.08).translate(0,bw/4,0).rotateZ(Math.PI/2-a).translate(ax,.35+bh,z0+bd+.03)); }
+    const fm=new THREE.Mesh(mergeGeometries(P_),fr); fm.castShadow=true; towersGroup.add(fm);
+    // saat (beyaz kadran, koyu çerçeve ve akrep–yelkovan)
+    const cy=.35+bh-1.2, cz=z0+bd+.08;
+    const dial=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.06,28).rotateX(Math.PI/2),envMat({color:'#f4f1e8',roughness:.5},{keep:true})); dial.position.set(ax,cy,cz); towersGroup.add(dial);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.88,.07,6,28),fr); ring.position.set(ax,cy,cz+.02); towersGroup.add(ring);
+    const hm=envMat({color:'#22252a',roughness:.5},{keep:true});
+    const h1=new THREE.Mesh(new THREE.BoxGeometry(.06,.45,.03).translate(0,.2,0),hm); h1.position.set(ax,cy,cz+.05); h1.rotation.z=-.9; towersGroup.add(h1);
+    const h2=new THREE.Mesh(new THREE.BoxGeometry(.04,.65,.03).translate(0,.3,0),hm); h2.position.set(ax,cy,cz+.06); h2.rotation.z=.5; towersGroup.add(h2); }
   // saçaklar
   // cam saçaklar: ince çelik çerçeve + temperli cam panel, cepheden askı çubukları, önde iki ince dikme
   const canGlass=envMat({color:'#cfe6f2',metalness:.25,roughness:.04,transparent:true,opacity:.32,depthWrite:false,side:THREE.DoubleSide},{keep:true,noSnow:true});
   const steelMat=envMat({color:'#3a3f46',metalness:.7,roughness:.35},{keep:true});
-  for(const [cx,cz,w,d,rot=0] of P.canopies){
+  for(const [cx,cz,w,d,rot=0,label] of P.canopies){
+    if(label){ const lw=Math.min(w-1.2,.42*label.length+1), ox=Math.sin(rot)*(d+.14), oz=Math.cos(rot)*(d+.14); // vaziyet planındaki giriş adı: saçağın ön kenarında
+      signMesh(label,lw,.55,'#24272c','#f1e6c8',cx+ox,5.95,cz+oz,rot); }
     const g=new THREE.Group(); g.position.set(cx,0,cz); g.rotation.y=rot; towersGroup.add(g);
+    // saçağın altında cam giriş kapısı (koyu cam, metal çerçeve, ortada kapı kayıtları)
+    { const dw=Math.min(4.2,w-2.5), door=new THREE.Mesh(new THREE.BoxGeometry(dw,3.3,.1),envMat({color:'#22303f',metalness:.6,roughness:.15},{keep:true})); door.position.set(0,1.65,.06); g.add(door);
+      const df=[]; for(const sx of [-1,0,1]) df.push(new THREE.BoxGeometry(.1,3.4,.14).translate(sx*dw/2,1.7,.08)); df.push(new THREE.BoxGeometry(dw+.2,.14,.14).translate(0,3.37,.08),new THREE.BoxGeometry(dw,.08,.12).translate(0,1.05,.1));
+      g.add(new THREE.Mesh(mergeGeometries(df),steelMat)); }
     const glass=new THREE.Mesh(new THREE.BoxGeometry(w-.2,.06,d-.2),canGlass); glass.position.set(0,5.42,d/2); glass.renderOrder=2; g.add(glass); raycastBlockers.push(glass);
     const fr=[]; const F=(gw,gh,gd,x,y,z)=>fr.push(new THREE.BoxGeometry(gw,gh,gd).translate(x,y,z));
     F(w,.16,.14,0,5.38,.07); F(w,.16,.14,0,5.38,d-.07); F(.14,.16,d,-w/2+.07,5.38,d/2); F(.14,.16,d,w/2-.07,5.38,d/2);
@@ -1137,13 +1206,14 @@ function terrainH(x,z){
   const PK=CONFIG.parking; const pd=Math.max(PK.x0-x,x-PK.x1,PK.z0-z,z-(PK.z1+7)); h=lerp(.35,h,smooth(0,12,pd)); // otopark + güneyindeki giriş/çıkış alanı düz
   h=lerp(.35,h,smooth(0,10,park2Dist(x,z)));
   h=lerp(.35,h,smooth(0,7,Math.hypot(x-91,z-67)-7)); // ikinci otopark girişi: parke köşesi ile beyaz yol arası düz (zemin parkenin üstüne çıkmasın)
+  h=lerp(.35,h,smooth(0,6,Math.hypot(x-97,z-61)-8.5)); // ikinci otoparkın kısaltılmış ucu ile beyaz bağlantı yolu düz
   const SG=CONFIG.site.garage; const gd=Math.max(SG.x0-x,x-SG.x1,SG.z0-z,z-SG.z1); h=lerp(.35,h,smooth(0,12,gd));
   for(const c of [CONFIG.site.roundabout,CONFIG.site.loop]){ const dd=Math.hypot(x-c.x,z-c.z)-c.r-8; h=lerp(.35,h,smooth(0,14,dd)); }
   return h;
 }
 // Otopark trafiği: iki otopark da halka yola doğrudan değil, parke doğu yolu + beyaz yol üzerinden tek kavşaktan bağlanır
 const AISLE_X0=CONFIG.parking.x0+8.6; // tek sıra park yerinin önündeki koridor
-const TRUNK={ north:[89,-12.5], south:[89,61], join:[89,63.2], turn:[84.2,67.5], gate:[84.2,78.6] };
+const TRUNK={ north:[89,-12.5], south:[89,61], join:[92.2,63.4], turn:[84.2,67.8], gate:[84.2,78.6] };
 // katlı otopark: rampadan iner, bağlantı parkesinden batı parke yoluna, oradan batı beyaz yoldan halka yola
 // (dış rampa yok: araçlar katlı otoparkın zemin katından doğuya çıkar)
 const TRUNK_W={ top:[-104,-8], foot:[-100.5,-8], conn:[-96.6,-8], north:[-89,-8.4], south:[-89,61], turn:[-89,66.5], gate:[-89.2,78.6] };
@@ -1156,9 +1226,9 @@ function inParking(x,z,m=0){ const PK=CONFIG.parking; return x>PK.x0-m&&x<PK.x1+
 const SITE=CONFIG.site;
 const siteZones=[{x:SITE.roundabout.x,z:SITE.roundabout.z,r:SITE.roundabout.r+10},{x:SITE.loop.x,z:SITE.loop.z,r:SITE.loop.r+10},
   {x:(SITE.garage.x0+SITE.garage.x1)/2,z:(SITE.garage.z0+SITE.garage.z1)/2,r:27},...SITE.palms.map(([x,z])=>({x,z,r:4})),
-  {x:SITE.kibele.x,z:SITE.kibele.z,r:8},{x:SITE.auditorium.x,z:SITE.auditorium.z,r:6},
+  {x:SITE.kibele.x,z:SITE.kibele.z,r:8},
   {x:8,z:75,r:7},{x:SITE.carsiGate.x,z:SITE.carsiGate.z,r:8},...SITE.smokeZones.filter(z=>!z.pav).map(z=>({x:z.x+2,z:z.z,r:7.5})),
-  {x:96.5,z:-12.5,r:7},{x:91,z:66,r:7.5},{x:91.5,z:72,r:6},{x:-97,z:-8,r:5}]; // otopark giriş/çıkış alanları ve katlı otopark zemin kat çıkışı: bitki yok
+  {x:96.5,z:-12.5,r:7},{x:91,z:66,r:7.5},{x:91.5,z:72,r:6},{x:97,z:60,r:7},{x:-89,z:75.5,r:6.5},{x:84,z:75.5,r:6.5}, /* bariyer kolları kalkınca ağaca girmesin */{x:-97,z:-8,r:5}]; // otopark giriş/çıkış alanları ve katlı otopark zemin kat çıkışı: bitki yok
 // Yaya ve hayvan gezinme engelleri: eksen hizalı dikdörtgenler [x0,z0,x1,z1]. İnsanlar peyzajın, kedi-köpekler binaların
 // içinden geçmez: yürüyüş yolları bu engellerin köşelerinden geçen en kısa yolla planlanır (navPath)
 const NAV_RECTS=[];
@@ -1265,8 +1335,10 @@ const PATHS=[
   { pts:'ring' },
   { pts:[[18,69],[18,88],[19,104]] },
   // beyaz yolların ucu halka yolun asfaltının altına kadar uzar: eğri yol kenarında boşluk/taşma kalmaz
-  { pts:[[84,67.4],[84,73],[84.2,79],[84.9,85.2]], w:6.5, y:.1 },  // y: parke bant ve açık renkli yolla aynı seviye (basamak/kontur olmasın)   // ön şeridin doğu ucundan halka yola inen beyaz yol (açık otoparkların tek çıkışı)
+  { pts:[[84,64.2],[84,73],[84.2,79],[84.9,85.2]], w:6.5, y:.1 },  // y: parke bant ve açık renkli yolla aynı seviye (basamak/kontur olmasın)   // ön şeridin doğu ucundan halka yola inen beyaz yol (açık otoparkların tek çıkışı)
   { pts:[[-89,64.4],[-89,73],[-89.2,79],[-89.9,85.2]], w:6.5 }, // batı ucundan halka yola inen beyaz yol (katlı otoparkın çıkışı)
+  // batı meydanı yaya yolu: kuzeybatıda halka yoldan, batı peyzaj şeridinin ve yeni peyzaj alanının arasından Kibele önündeki parke yola
+  { pts:[[-97.6,-69.2],[-81,-57.5],[-67.6,-47.6],[-67.4,-33],[-66.3,-27.5],[-60.6,-21.6],[-58.4,-19.2],[-58.3,-16.25]] },  // son parça parkeye dik iner: uç parke kenarına tam oturur  // uç, Kibele önündeki parke yolun kenarında biter (üstüne binmez)
 ];  // tüm patikalar ana halka yolun içinde kalır
 function ringPts(){ const {a,b,cz}=CONFIG.ring,out=[]; for(let i=0;i<48;i++){ const t=i/48*Math.PI*2; out.push([Math.cos(t)*a,cz+Math.sin(t)*b]); } return out; }
 function roadTexture(){ const c=document.createElement('canvas'); c.width=64; c.height=128; const g=c.getContext('2d');
@@ -1316,6 +1388,7 @@ function carveTerrain(){
   pa.needsUpdate=true; terrainMesh.geometry.computeVertexNormals(); terrainMesh.geometry.computeBoundingSphere();
 }
 const lampSpots=[];
+const BARRIERS=[]; // {arm, open:0..1, cx,cz: şerit merkezi}
 function buildPaths(){
   const geos=[];
   for(const p of PATHS){
@@ -1324,15 +1397,18 @@ function buildPaths(){
     if(closed){ ringCurve=rb.curve; ringLen=rb.curve.getLength();
       const road=new THREE.Mesh(rb.geo,envMat({map:roadTexture(),roughness:.85},{wet:true})); road.material.polygonOffset=true; road.material.polygonOffsetFactor=-3; road.material.polygonOffsetUnits=-3;
       road.receiveShadow=true; islandGroup.add(road); }
-    else { if(p.w){ // beyaz yolun halka yol asfaltı altında kalan ucu biraz gömülür: yol kenarında ince şerit gibi görünmesin
+    else { { // patikanın halka yol asfaltı altında kalan ucu biraz gömülür: yol kenarında ince şerit gibi görünmesin
         // dik etek duvarları polygonOffset ile asfaltın önüne geçip ince çizgi gibi görünüyordu: yol altında etekler sıfır yükseklikte
         const {a,b,cz,width}=CONFIG.ring, pa=rb.geo.attributes.position, C=pa.count/rb.points.length;
         const ddOf=i=>{ const x=pa.getX(i), z=pa.getZ(i)-cz, f=(x/a)**2+(z/b)**2-1, gr=2*Math.hypot(x/(a*a),z/(b*b)); return Math.abs(f)/gr; };
-        for(let i=0;i<pa.count;i++){ const dd=ddOf(i); if(dd<width/2+.6) pa.setY(i,pa.getY(i)-1.0*smooth(width/2+.6,width/2-.3,dd)); }
+        // yalnızca asfaltın altında kalan kısım gömülür: yol kenarına kadar patika zeminde kalır (arada çim şeridi açılmaz)
+        for(let i=0;i<pa.count;i++){ const dd=ddOf(i); if(dd<width/2-.05) pa.setY(i,pa.getY(i)-1.0*smooth(width/2-.05,width/2-.7,dd)); }
         for(let i=0;i<pa.count;i++){ const k=i%C; if((k===0||k===C-1)&&ddOf(i)<width/2+2) pa.setY(i,pa.getY(k===0?i+1:i-1)); } }
       geos.push(rb.geo); }
     const step=closed?11:9, off=closed?CONFIG.ring.width/2+1.6:(p.w||3.6)/2+1.6;
-    for(let i=step;i<rb.points.length-2;i+=step*2){ const a=rb.points[i], b=rb.points[i+1]; const dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz)||1; const s=(i/step)%2?1:-1; const lx=a.x-dz/l*off*s, lz=a.z+dx/l*off*s; if(!inParking(lx,lz,3)) lampSpots.push([lx,lz]); }
+    for(let i=step;i<rb.points.length-2;i+=step*2){ const a=rb.points[i], b=rb.points[i+1]; const dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz)||1; const s=(i/step)%2?1:-1; const lx=a.x-dz/l*off*s, lz=a.z+dx/l*off*s;
+      if(!closed){ const {a:ra,b:rb2,cz:rcz,width:rw}=CONFIG.ring, ex=lx, ez=lz-rcz, f=(ex/ra)**2+(ez/rb2)**2-1, dd=Math.abs(f)/(2*Math.hypot(ex/(ra*ra),ez/(rb2*rb2))); if(dd<rw/2+2.2) continue; } // patika lambası halka yola taşmasın
+      if(!inParking(lx,lz,3)) lampSpots.push([lx,lz]); }
   }
   const m=new THREE.Mesh(mergeGeometries(geos),pathMat); m.receiveShadow=true; islandGroup.add(m);
   // otopark
@@ -1341,21 +1417,30 @@ function buildPaths(){
   { const uv=pg.attributes.uv; for(let i=0;i<uv.count;i++) uv.setY(i,1-(1-uv.getY(i))*(zt-PK.z0)/(PK.z1-PK.z0)); }
   const pk=new THREE.Mesh(pg,envMat({map:parkingTexture(),roughness:.85},{wet:true})); pk.position.set((PK.x0+PK.x1)/2,.42,(PK.z0+zt)/2); pk.receiveShadow=true; islandGroup.add(pk);
   const bumps=[]; // sarı-siyah çizgili hız tümsekleri (asfalt–parke birleşimleri)
-  const bump=(x,z,len,rot)=>{ const n=Math.max(2,Math.round(len/.55)), sl=len/n;
+  // y0: tümseğin oturduğu yüzey yüksekliği (otopark .42; yollarda yolun kendi yüksekliği)
+  const bump=(x,z,len,rot,y0=.42)=>{ const n=Math.max(2,Math.round(len/.55)), sl=len/n;
     // belirgin olsun: koyu taban + 0.18 m yüksek sarı-siyah şeritler (asfaltın polygonOffset’i altında kaybolmaz)
-    bumps.push(cg(new THREE.BoxGeometry(.85,.1,len+.12).rotateY(rot).translate(x,.46,z),'#1d1d1f'));
-    for(let k=0;k<n;k++){ const o=-len/2+(k+.5)*sl; bumps.push(cg(new THREE.BoxGeometry(.6,.18,sl-.02).translate(0,0,o).rotateY(rot).translate(x,.52,z),k%2?'#1d1d1f':'#f2c200')); } };
+    bumps.push(cg(new THREE.BoxGeometry(.85,.1,len+.12).rotateY(rot).translate(x,y0+.04,z),'#1d1d1f'));
+    for(let k=0;k<n;k++){ const o=-len/2+(k+.5)*sl; bumps.push(cg(new THREE.BoxGeometry(.6,.18,sl-.02).translate(0,0,o).rotateY(rot).translate(x,y0+.1,z),k%2?'#1d1d1f':'#f2c200')); } };
   const curb=(x0,z0,x1,z1)=>bumps.push(cg(new THREE.BoxGeometry(Math.max(.3,x1-x0),.3,Math.max(.3,z1-z0)).translate((x0+x1)/2,.53,(z0+z1)/2),'#c4bfb4'));
-  { const ap=new THREE.Mesh(new THREE.PlaneGeometry(PK.x1-(PK.x0+5.6),(PK.z1+7)-zt).rotateX(-Math.PI/2),road0Mat()); ap.position.set((PK.x0+5.6+PK.x1)/2,.42,(zt+PK.z1+7)/2); ap.receiveShadow=true; islandGroup.add(ap);
-    // bordürler: otoparkın kuzey, doğu ve batı (çit tarafı) kenarları + asfalt cebin güney kenarı
-    curb(PK.x0+5.6,PK.z1+6.9,PK.x1+.3,PK.z1+7.2); curb(PK.x1,PK.z0-.3,PK.x1+.3,PK.z1+7.2); curb(PK.x0-.3,PK.z0-.3,PK.x1+.3,PK.z0); curb(PK.x0-.3,PK.z0-.3,PK.x0,zt);
-    bump(PK.x0+6.3,(zt+PK.z1+7)/2,(PK.z1+7)-zt-.6,0); }
+  const flatShape=(pts,mat,y)=>{ const sh=new THREE.Shape(pts.map(([x,z])=>new THREE.Vector2(x,-z))); const m=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),mat); m.position.y=y; m.receiveShadow=true; islandGroup.add(m); return m; };
+  const brickMat=()=>{ const tx=paverTex(false); tx.repeat.set(1/5.7,1/5.7); const pm=envMat({map:tx,roughness:.82},{wet:true}); pm.polygonOffset=true; pm.polygonOffsetFactor=-1; pm.polygonOffsetUnits=-3; return pm; };
+  const outline=(pts,y,skip=[])=>{ for(let i=0;i<pts.length;i++){ if(skip.includes(i)) continue; const [x0,z0]=pts[i], [x1,z1]=pts[(i+1)%pts.length], L=Math.hypot(x1-x0,z1-z0);
+    bumps.push(cg(new THREE.BoxGeometry(.12,.06,L).rotateY(Math.atan2(x1-x0,z1-z0)).translate((x0+x1)/2,y,(z0+z1)/2),'#3c3a3e')); } };
+  // ---- Kırmızı (kilit parke) yol: ana otoparkın koridoru (güney ucundan kuzey ucuna) + Kule 1’in kuzey cephesi boyunca batıya, avlu merdivenine ----
+  //      park yerleri asfalt kalır; araçlar koridoru parke üzerinde kullanır
+  { const X1=PK.x1, XI=PK.x0+5.6, ZS=PK.z1+7, ZN=PK.z0-6.5, ZI=PK.z0, XW=23;
+    const L=[[XI,ZS],[X1,ZS],[X1,ZN],[XW,ZN],[XW,ZI],[XI,ZI]];
+    flatShape(L,brickMat(),.445); outline(L,.47,[]);
+    // bordürler yalnızca park yerlerinin çevresinde (çit tarafı ve kuzey ucu)
+    curb(PK.x0-.3,PK.z0-.3,XI,PK.z0); curb(PK.x0-.3,PK.z0-.3,PK.x0,zt);
+    bump(PK.x0+6.3,(zt+PK.z1+7)/2,(PK.z1+7)-zt-.6,0,.45); }
   // ---- ikinci açık otopark (güneydoğu, halka yola paralel): iki sıra park yeri, park etmiş araçlar, halka yola kısa bağlantı ----
-  { const Q=CONFIG.parking2, c=document.createElement('canvas'), S=20; c.width=Q.w*S; c.height=Q.d*S; const g=c.getContext('2d');
+  { const Q=CONFIG.parking2, NS=Math.floor((Q.w-4.2)/2.6)+1, c=document.createElement('canvas'), S=20; c.width=Q.w*S; c.height=Q.d*S; const g=c.getContext('2d'); // NS: sıra başına park yeri
     g.fillStyle='#55585e'; g.fillRect(0,0,c.width,c.height); for(let i=0;i<900;i++){ g.fillStyle=`rgba(255,255,255,${Math.random()*.04})`; g.fillRect(Math.random()*c.width,Math.random()*c.height,2,2); }
-    g.strokeStyle='#e8e4d8'; g.lineWidth=3; for(let k=0;k<=9;k++){ const x=(k*2.6)*S; g.beginPath(); g.moveTo(x,0); g.lineTo(x,5*S); g.moveTo(x,c.height); g.lineTo(x,c.height-5*S); g.stroke(); }
-    g.beginPath(); g.moveTo(0,5*S); g.lineTo(9*2.6*S,5*S); g.moveTo(0,c.height-5*S); g.lineTo(9*2.6*S,c.height-5*S); g.stroke();
-    g.fillStyle='#e8e4d8'; for(let x=1.5*S;x<9*2.6*S;x+=3*S) g.fillRect(x,c.height/2-2,1.2*S,4);
+    g.strokeStyle='#e8e4d8'; g.lineWidth=3; for(let k=0;k<=NS;k++){ const x=(k*2.6)*S; g.beginPath(); g.moveTo(x,0); g.lineTo(x,5*S); g.moveTo(x,c.height); g.lineTo(x,c.height-5*S); g.stroke(); }
+    g.beginPath(); g.moveTo(0,5*S); g.lineTo(NS*2.6*S,5*S); g.moveTo(0,c.height-5*S); g.lineTo(NS*2.6*S,c.height-5*S); g.stroke();
+    g.fillStyle='#e8e4d8'; for(let x=1.5*S;x<NS*2.6*S;x+=3*S) g.fillRect(x,c.height/2-2,1.2*S,4);
     const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
     const m=envMat({map:t,roughness:.85},{wet:true}); m.polygonOffset=true; m.polygonOffsetFactor=-1; m.polygonOffsetUnits=-3;
     const lot=new THREE.Mesh(new THREE.PlaneGeometry(Q.w,Q.d).rotateX(-Math.PI/2).rotateY(Q.rot),m); lot.position.set(Q.x,.42,Q.z); lot.receiveShadow=true; islandGroup.add(lot);
@@ -1365,7 +1450,7 @@ function buildPaths(){
     // park etmiş araçlar
     const CC=['#d8dde3','#1f2328','#9aa3ad','#b3262e','#2b5aa8','#f2c200','#f5f5f2','#3f6f4a'], r=mulberry32(91);
     // park yerleri: bir kısmı sabit park etmiş araçlar, kalanı hareketli araçlara açık (koridor noktası: yerel z=0)
-    for(const row of [-1,1]) for(let k=0;k<9;k++){ const lx=-Q.w/2+1.3+k*2.6, [x,z]=L(lx,row*(Q.d/2-2.5)), [ax,az]=L(lx,0);
+    for(const row of [-1,1]) for(let k=0;k<NS;k++){ const lx=-Q.w/2+1.3+k*2.6, [x,z]=L(lx,row*(Q.d/2-2.5)), [ax,az]=L(lx,0);
       if(r()<.22){ cb.push(cg(new THREE.BoxGeometry(1.8,.8,4.2).translate(0,.4,0).rotateY(Q.rot).translate(x,.48,z),CC[(r()*CC.length)|0]), cg(new THREE.BoxGeometry(1.6,.5,2.2).translate(0,1.05,-.2*row).rotateY(Q.rot).translate(x,.48,z),'#2c3440')); }
       else lotStalls2.push({x,z,yaw:row>0?Q.rot:Q.rot+Math.PI,ax,az,lot:2,car:null}); }
     islandGroup.add(vcMesh(cb,{noSnow:true},{roughness:.45,metalness:.3}));
@@ -1374,23 +1459,39 @@ function buildPaths(){
     // otopark ucu ile parke köşesi arasındaki boşluk kırmızı parke ile doldurulur; çıkışta tam genişlikte hız tümseği
     { // otopark ucunun köşeleri: Cn = parke yola bakan köşe, Cf = halka yola bakan köşe; Ex = uç kenarın parke yol kenarını (x=92) kestiği nokta
       const [cnx,cnz]=L(Q.w/2,Q.d/2), [cfx,cfz]=L(Q.w/2,-Q.d/2), ul=Math.hypot(cfx-cnx,cfz-cnz), ux=(cfx-cnx)/ul, uz=(cfz-cnz)/ul;
-      // P: kırmızı bandın otopark kenarında bittiği yer = hız tümseğinin üst ucu (çizimdeki gibi)
-      const exz=cnz+(92-cnx)/ux*uz, Px=92+ux*.8, Pz=exz+uz*.8, WZ=67.4, WX0=80.75, WX1=87.25, gy=terrainH(0,0);
-      const flat=(pts,mat,y)=>{ const sh=new THREE.Shape(pts.map(([x,z])=>new THREE.Vector2(x,-z))); const m=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),mat); m.position.y=y; m.receiveShadow=true; islandGroup.add(m); };
-      // kırmızı parke bant (çizimdeki kırmızı): parke yolun alt kenarı boyunca beyaz yolun sol kenarından otopark çıkışının üst ucuna
-      { const tx=paverTex(false); tx.repeat.set(1/5.7,1/5.7); const pm=envMat({map:tx,roughness:.82},{wet:true}); pm.polygonOffset=true; pm.polygonOffsetFactor=-1; pm.polygonOffsetUnits=-3;
-        flat([[WX0,64.1],[92,64.1],[92,exz],[Px,Pz],[WX1,WZ],[WX0,WZ]],pm,gy+.05); }
-      // açık renkli yol (çizimdeki sarı): otopark çıkışı boyunca, beyaz yolla aynı malzeme ve seviyede
-      { const fm=envMat({color:'#d8ccb2',roughness:.95},{wet:true}); fm.polygonOffset=true; fm.polygonOffsetFactor=-1; fm.polygonOffsetUnits=-3;
-        flat([[Px,Pz],[cfx+.2,cfz+.15],[WX1,74.6],[WX1-.5,74.9],[WX1-.5,WZ+.05],[WX1,WZ]],fm,gy+.09); } // beyaz yolun altına 0.5 m girer: birleşimde dikiş görünmez
+      // Ex: kısaltılmış otoparkın uç kenarının uzantısının parke yol kenarını (x=92) kestiği nokta (otopark artık parke yolun üstüne girmez)
+      const exz=cnz+(92-cnx)/ux*uz, WZ=67.4, WX0=80.75, WX1=87.25, gy=terrainH(0,0);
+      // kırmızı parke yol ön kaldırımla kesiştiği çizgide (z=64.1) düz biter; altı beyaz yol ve beyaz bağlantı yolu
+      // beyaz bağlantı yolu: otoparkın yeni ucundan parke yol boyunca beyaz yola (beyaz yolla aynı malzeme ve seviyede)
+      { const fm=envMat({color:'#d8ccb2',roughness:.95},{wet:true}); fm.polygonOffset=true; fm.polygonOffsetFactor=-1; fm.polygonOffsetUnits=-3; const ZT=64.1;
+        flatShape([[92,exz],[cfx+.15,cfz+.1],[99.6,66.6],[90.6,73.6],[WX1,73.6],[WX1-.5,73.9],[WX1-.5,ZT+.05],[WX1,ZT],[92,ZT]],fm,gy+.09); } // beyaz yolun altına 0.5 m girer: dikiş görünmez
       // beyaz yol ile halka yol arasındaki çimenliğe üç ağaç
       { const tg=[]; for(const [x,z,s] of [[90.7,75.7,.72],[93.6,73.8,.9],[96.5,71.4,.78]]){ const y=terrainH(x,z)-.2, th=3.2*s, rr=2.9*s;
           tg.push(cg(new THREE.CylinderGeometry(.28*s,.45*s,th,6).translate(x,y+th/2,z),'#5b4130'), cg(new THREE.IcosahedronGeometry(rr,1).scale(1,.88,1).translate(x,y+th+rr*.55,z),s>.8?'#4f8a3a':'#5f9a43')); }
         const tm=vcMesh(tg,{},{roughness:.9,flatShading:true}); tm.castShadow=true; islandGroup.add(tm);
         for(let i=lampSpots.length-1;i>=0;i--){ const [lx,lz]=lampSpots[i]; if([[90.7,75.7],[93.6,73.8],[96.5,71.4]].some(([x,z])=>Math.hypot(lx-x,lz-z)<3.6)) lampSpots.splice(i,1); } }
-      // hız tümseği yalnızca otopark çıkışında (parke yolun üstüne taşmaz): yerel z -6.8 … Ex’in biraz öncesi
-      { const z0=-Q.d/2+.2, z1=Q.d/2-((92-cnx)/(cfx-cnx))*Q.d-.4, [bx,bz]=L(Q.w/2-.75,(z0+z1)/2); bump(bx,bz,z1-z0,Q.rot); } }
+      // sarı-siyah hız tümseği otoparkla birlikte geri alındı: yeni çıkış ucunda, tam genişlikte
+      { const [bx,bz]=L(Q.w/2-.75,0); bump(bx,bz,Q.d-.4,Q.rot); } }
     siteObstacles.push({x:Q.x,z:Q.z,r:15}); }
+  // ---- Bariyerler: iki beyaz yolun halka yola çıktığı yerde her şeritte bir kollu bariyer (araç yaklaşınca kalkar) ----
+  { const armMat=envMat({vertexColors:true,roughness:.5},{keep:true});
+    const armGeo=(len)=>{ const P=[], n=Math.max(4,Math.round(len/.45)); for(let k=0;k<n;k++) P.push(colGeo(new THREE.BoxGeometry(len/n,.1,.08).translate((k+.5)*len/n,0,0),k%2?'#f4f4f0':'#d6262e'));
+      P.push(colGeo(new THREE.BoxGeometry(.08,.14,.1).translate(len-.04,0,0),'#ffb000')); return mergeGeometries(P); };
+    const add=(px,pz,dx,dz,len,y0,laneX,laneZ)=>{ // (px,pz): direk, (dx,dz): kolun uzandığı yön
+      bumps.push(cg(new THREE.BoxGeometry(.42,1.05,.42).translate(px,y0+.52,pz),'#f2c200'), cg(new THREE.BoxGeometry(.44,.16,.44).translate(px,y0+.62,pz),'#1d1d1f'),
+        cg(new THREE.BoxGeometry(.3,.08,.3).translate(px,y0+1.09,pz),'#2a2d31'));
+      const pivot=new THREE.Group(); pivot.position.set(px,y0+.95,pz); pivot.rotation.y=Math.atan2(-dz,dx);
+      const arm=new THREE.Group(); const m=new THREE.Mesh(armGeo(len),armMat); m.castShadow=true; arm.add(m); pivot.add(arm); islandGroup.add(pivot);
+      BARRIERS.push({arm,open:0,cx:laneX,cz:laneZ}); };
+    // doğu beyaz yol (açık otoparklar) – şeritler x≈82.75 (çıkış) ve 85.25 (giriş)
+    { const z=76.4, y0=terrainH(84,z)+.1; add(80.95,z,1,0,3.0,y0,82.6,z); add(87.05,z,-1,0,3.0,y0,85.4,z); }
+    // batı beyaz yol (katlı otopark)
+    // halka yolun kenarı yolun ucunu çapraz kestiği için direkler kademeli: batıdaki biraz kuzeyde (asfaltın dışında kalsın)
+    { const zw=74.3, ze=76.8; add(-92.05,zw,1,0,3.0,terrainH(-89,zw)+.32,-90.4,zw); add(-85.95,ze,-1,0,3.0,terrainH(-89,ze)+.32,-87.6,ze); }
+    // batı beyaz yolun başında (parke yolla birleşim) sarı-siyah hız tümseği
+    { const z=65.6; bump(-89,z,6.1,Math.PI/2,terrainH(-89,z)+.32); }
+    // kuzey–güney parke yolda (heykel ile pavyon arası) kauçuk hız tümseği – fotoğraftaki gibi
+    bump(-35.5,-33.2,4.8,Math.PI/2,terrainH(0,0)+.035); }
   // tümsek + bordürler: asfalt düzlemlerinin polygonOffset’i eğik bakışta bunları örtmesin diye kendi ofsetleri daha güçlü
   if(bumps.length){ const bm=vcMesh(bumps,{noSnow:true},{roughness:.6}); bm.material.polygonOffset=true; bm.material.polygonOffsetFactor=-4; bm.material.polygonOffsetUnits=-6; bm.renderOrder=1; islandGroup.add(bm); }
 }
@@ -1595,10 +1696,9 @@ function buildSiteDetails(){
     add(new THREE.BoxGeometry(len-.6,.12,.6).translate(cx,y+.5,cz-.35),'#a8693a'); add(new THREE.BoxGeometry(len-.6,.6,.1).translate(cx,y+.8,cz-.68),'#a8693a');
     add(new THREE.BoxGeometry(len+1,.5,1).translate(cx,y+.25,cz+1.9),'#5f8f3e'); }
   // ---- Kuzeybatı araç bırakma döngüsü ----
-  { const L=S.loop, y=terrainH(L.x,L.z); const lm=envMat({map:roundaboutTex(L.r*.45,L.r),roughness:.82},{wet:true}); lm.polygonOffset=true; lm.polygonOffsetFactor=-3; lm.polygonOffsetUnits=-3;
-    const lr=new THREE.Mesh(new THREE.RingGeometry(L.r*.45,L.r,56).rotateX(-Math.PI/2),lm); lr.position.set(L.x,y+.06,L.z); lr.receiveShadow=true; islandGroup.add(lr);
-    navBox(L.x-L.r*.45,L.z-L.r*.45,L.x+L.r*.45,L.z+L.r*.45);
-    add(new THREE.CylinderGeometry(L.r*.45,L.r*.45+.15,.45,32).translate(L.x,y+.22,L.z),'#2c2d30'); add(new THREE.CylinderGeometry(L.r*.45-.2,L.r*.45-.2,.47,32).translate(L.x,y+.23,L.z),'#5f8f3e'); }
+  // fotoğraf: meydanın tamamı kilit parke, koyu eş merkezli bantlar; duvar parkeden yükselir (ortada çim yok)
+  { const L=S.loop, y=terrainH(L.x,L.z), RR=15.2; const lm=envMat({map:roundaboutTex(2.2,RR),roughness:.82},{wet:true}); lm.polygonOffset=true; lm.polygonOffsetFactor=-3; lm.polygonOffsetUnits=-3;
+    const lr=new THREE.Mesh(new THREE.CircleGeometry(RR,72).rotateX(-Math.PI/2),lm); lr.position.set(L.x,y+.06,L.z); lr.receiveShadow=true; islandGroup.add(lr); }
   // ---- Batı katlı otopark ----
   { const G=S.garage, gx=(G.x0+G.x1)/2, gz=(G.z0+G.z1)/2, w=G.x1-G.x0, d=G.z1-G.z0, lh=3.2;
     for(let l=0;l<=G.levels;l++){ const y=.35+l*lh; add(new THREE.BoxGeometry(w,.35,d).translate(gx,y+.17,gz),l===G.levels?'#9a9c9f':'#b7b5ae');
@@ -1625,7 +1725,7 @@ function buildSiteDetails(){
     for(let k=0;k<9;k++){ const a=k/9*Math.PI*2; const fr=new THREE.BoxGeometry(.6,.08,3.6).translate(0,0,1.8).rotateX(.55).rotateY(a).translate(x+Math.sin(tilt)*-h,y+h,z); add(fr,k%2?'#3f7a35':'#4f8f3c'); } }
   // ---- Çitler (şimşir) ----
   { const PL=CONFIG.plaza, zS=PL.cz+PL.hz+1.6, xW=PL.cx-PL.hx-1.6, xE=PL.cx+PL.hx+1.6, zN=PL.cz-PL.hz-1.6;
-    const segs=[[[-85.2,zS],[-59.6,zS]],[[-50.4,zS],[13,zS]],[[23,zS],[64,zS]],[[xW,-52],[xW,-12.5]],[[xW,-3.5],[xW,22]],[[xW,36],[xW,60]],[[CONFIG.parking.x0-1.6,-45.5],[CONFIG.parking.x0-1.6,-21]],[[-90,zN],[-55,zN]],[[30,zN],[88,zN]]];
+    const segs=[[[-85.2,zS],[13,zS]],[[23,zS],[64,zS]],[[xW,-52],[xW,-12.5]],[[xW,-3.5],[xW,22]],[[xW,36],[xW,60]],[[CONFIG.parking.x0-1.6,-45.5],[CONFIG.parking.x0-1.6,-21]],[[-87.6,zN],[-55,zN]],[[30,zN],[88,zN]]];
     for(const [[x0,z0],[x1,z1]] of segs){ const L=Math.hypot(x1-x0,z1-z0); add(new THREE.BoxGeometry(1.2,1.1,1).scale(1,1,L).rotateY(Math.atan2(x1-x0,z1-z0)).translate((x0+x1)/2,.35+.55,(z0+z1)/2),'#3f6f33');
       navBox(Math.min(x0,x1)-.6,Math.min(z0,z1)-.5,Math.max(x0,x1)+.6,Math.max(z0,z1)+.5); } }
   // ---- Çiçek tarhları ----
@@ -1637,7 +1737,7 @@ function buildSiteDetails(){
     islandGroup.add(vcMesh(fp,{},{roughness:.7,flatShading:true})); }
   // ---- Banklar (yaya yolları + havuz çevresi) ----
   { const spots=[]; for(const p of PATHS){ if(p.pts==='ring'||p.w) continue; const curve=new THREE.CatmullRomCurve3(p.pts.map(q=>V(q[0],0,q[1])));
-      const L=curve.getLength(); for(let s=9;s<L-4;s+=17){ const u=s/L, q=curve.getPointAt(u), t=curve.getTangentAt(u); const side=(Math.round(s/17)%2)?1:-1; spots.push([q.x-t.z*2.8*side,q.z+t.x*2.8*side,Math.atan2(t.z*side,-t.x*side)]); } }
+      const L=curve.getLength(); for(let s=9;s<L-4;s+=17){ const u=s/L, q=curve.getPointAt(u), t=curve.getTangentAt(u); const side=(Math.round(s/17)%2)?1:-1; const bx=q.x-t.z*3.3*side, bz=q.z+t.x*3.3*side; if(bx>-94&&bx<-60.5&&bz>-58&&bz<-17) continue; spots.push([bx,bz,Math.atan2(t.z*side,-t.x*side)]); } } // bank yolun 3.3 m yanında; batı peyzaj alanının içine bank konmaz
     for(let i=0;i<5;i++){ const a=-1.2+i*.55; spots.push([POND.x+Math.cos(a)*(POND.r+3.2),POND.z+Math.sin(a)*(POND.r+3.2),Math.atan2(-Math.cos(a),-Math.sin(a))]); }
     for(const [x,z,yaw] of spots){ if(siteZones.some(s=>Math.hypot(x-s.x,z-s.z)<s.r-6)) continue; const y=terrainH(x,z);
       const b=[new THREE.BoxGeometry(2.2,.1,.55).translate(0,.48,0),new THREE.BoxGeometry(2.2,.5,.08).translate(0,.78,-.28)].map(g=>cg(g,'#8a6a4a'));
@@ -1660,32 +1760,62 @@ function buildSiteDetails(){
     dish.position.set(x,y+1.4,z); towersGroup.add(dish); const st=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1.4,6),envMat({color:'#777',roughness:.5},{keep:true})); st.position.set(x,y+.7,z); towersGroup.add(st); }
   // ---- Kibele heykeli (fotoğraf: beyaz mermer, kaide üstünde oturan figür, önünde yatan aslan, yanında konik taş) ----
   // yerel koordinatlarda kurulur, sonra KB.ry kadar döndürülür (figür ve aslan meydana / doğuya bakar)
-  { const K=S.kibele, y=terrainH(K.x,K.z), B=[], Pb=[], bz='#ece8df', s=1.6, ry=K.ry??Math.PI/2;
-    const ad=(g,c)=>Pb.push(cg(g,c));
-    ad(new THREE.BoxGeometry(11,.3,9).translate(0,y+.15,0),'#2f3034'); ad(new THREE.BoxGeometry(10.4,.06,8.4).translate(0,y+.31,0),'#3d3e43');
-    ad(new THREE.BoxGeometry(3.6,2.2,3).translate(0,y+1.4,0),'#e2ddd2'); ad(new THREE.BoxGeometry(4,.3,3.4).translate(0,y+2.6,0),'#d8d2c6');
-    { const lx=-.4, lz=3.4, ly=y+.3;
-      B.push(cg(new THREE.CapsuleGeometry(.55,1.7,4,8).rotateZ(Math.PI/2).translate(lx,ly+.6,lz),bz), cg(new THREE.SphereGeometry(.62,10,8).translate(lx+1.5,ly+1.05,lz),bz),
-        cg(new THREE.IcosahedronGeometry(.75,1).scale(1,1,.9).translate(lx+1.25,ly+1.15,lz),'#e4dfd4'), cg(new THREE.BoxGeometry(.9,.3,.35).translate(lx+1.6,ly+.15,lz+.3),bz), cg(new THREE.BoxGeometry(.9,.3,.35).translate(lx+1.6,ly+.15,lz-.3),bz));
-      B.push(cg(new THREE.ConeGeometry(1.1,7.5,16).translate(4,y+.3+3.75,-2.6),'#e9e5dc')); }
+  // Fotoğraflar: kırmızı granit kavisli fon duvarı (koyu yatay bantlı), önünde basamaklı su çağlayanı ve fıskiyeli havuz,
+  // delikli beyaz mermer arka panel, iki yanda oturan aslanlar, yanda konik taş, servi ağaçları
+  { const K=S.kibele, y=terrainH(K.x,K.z), B=[], Pb=[], Wt=[], Wf=[], bz='#d9d3c6', s=1.6, ry=K.ry??Math.PI/2, RG='#8c5246', RG2='#7a463c', BAND='#2e2a2c';
+    const ad=(g,c)=>Pb.push(cg(g,c)), TOP=2.45;
+    // kavisli fon duvarı (merkez yerel z=+4, yarıçap 9): heykelden belirgin yüksek; uçları pavyon çatısına değmez
+    { const n=12, a0=-30*Math.PI/180, a1=30*Math.PI/180, R=9, cz=4, h=8.8;
+      for(let i=0;i<n;i++){ const a=a0+(i+.5)*(a1-a0)/n, w=2*R*Math.sin((a1-a0)/n/2)+.04, x=R*Math.sin(a), z=cz-R*Math.cos(a), r=-a;
+        ad(new THREE.BoxGeometry(w,h,.5).translate(0,y+h/2,0).rotateY(r).translate(x,0,z),i%2?RG:RG2);
+        for(const hb of [1.6,3.3,5.0,6.7]) ad(new THREE.BoxGeometry(w,.09,.54).translate(0,y+hb,0).rotateY(r).translate(x,0,z),BAND);
+        ad(new THREE.BoxGeometry(w,.14,.62).translate(0,y+h+.07,0).rotateY(r).translate(x,0,z),'#3a2a28'); } }
+    // üst teras (heykel seviyesi) ve heykel kaidesi
+    ad(new THREE.BoxGeometry(8.4,TOP,5.6).translate(0,y+TOP/2,-1.8),RG); ad(new THREE.BoxGeometry(8.5,.08,5.7).translate(0,y+TOP+.04,-1.8),'#6e3b33');
+    ad(new THREE.BoxGeometry(3.6,.2,3).translate(0,y+TOP+.1,0),'#e2ddd2'); ad(new THREE.BoxGeometry(4,.3,3.4).translate(0,y+2.6,0),'#d8d2c6');
+    // havuz (fıskiyeli) ve basamaklı su çağlayanı, iki yanda granit yan duvarlar
+    { ad(new THREE.BoxGeometry(6.8,TOP-.15,2.4).translate(0,y+(TOP-.15)/2,2.2),RG2);
+      for(const sx of [-1,1]) ad(new THREE.BoxGeometry(.4,TOP+.1,2.4).translate(sx*3.6,y+(TOP+.1)/2,2.2),RG);
+      ad(new THREE.BoxGeometry(7.6,TOP+.1,.4).translate(0,y+(TOP+.1)/2,3.4),RG);
+      Wt.push(new THREE.PlaneGeometry(6.8,2.2).rotateX(-Math.PI/2).translate(0,y+TOP-.1,2.2));
+      const n=8, z0=3.6, run=.45, drop=(TOP-.35)/n;
+      for(let i=0;i<n;i++){ const top=TOP-.1-(i+1)*drop, z=z0+(i+.5)*run;
+        ad(new THREE.BoxGeometry(6.8,top,run).translate(0,y+top/2,z),i%2?RG:RG2);
+        // basamaklar granit kalır; her basamağın ön kenarından ince beyaz su perdesi dökülür (fotoğraftaki gibi)
+        Wf.push(new THREE.PlaneGeometry(6.7,drop+.02).translate(0,y+top+drop/2,z-run/2+.02), new THREE.PlaneGeometry(6.7,.08).rotateX(-Math.PI/2).translate(0,y+top+.012,z-run/2+.06)); }
+      for(const sx of [-1,1]){ for(let i=0;i<n;i++){ const top=TOP+.1-(i+1)*drop, z=z0+(i+.5)*run; ad(new THREE.BoxGeometry(.6,top,run).translate(sx*3.7,y+top/2,z),RG); } }
+      ad(new THREE.BoxGeometry(8,.3,.6).translate(0,y+.15,z0+n*run+.3),RG2);
+      // iki yanda koyu taş merdiven: yoldan heykel terasına (fotoğraf 68)
+      for(const sx of [-1,1]){ const ns=10, sr=TOP/ns, sz0=6.6, srun=.52;
+        for(let i=0;i<ns;i++){ const h=(i+1)*sr; ad(new THREE.BoxGeometry(1.2,h,srun+.02).translate(sx*4.6,y+h/2,sz0-(i+.5)*srun),i%2?'#3a3d42':'#33363b'); }
+        ad(new THREE.BoxGeometry(1.2,TOP,1.4).translate(sx*4.6,y+TOP/2,sz0-ns*srun-.7),'#33363b'); }
+      const jm=new THREE.MeshStandardMaterial({color:'#eef8ff',transparent:true,opacity:.6,roughness:.1,depthWrite:false});
+      for(let k=0;k<7;k++){ const lx=-2.7+k*.9, lz=2.4, wx=K.x+lx*Math.cos(ry)+lz*Math.sin(ry), wz=K.z-lx*Math.sin(ry)+lz*Math.cos(ry);
+        const j=new THREE.Mesh(new THREE.ConeGeometry(.1,.7,6).translate(0,.35,0),jm); j.position.set(wx,y+TOP-.1,wz); fountainJets.add(j); } }
+    // delikli beyaz mermer arka panel (kemerli)
+    { ad(new THREE.BoxGeometry(2.4,3.6,.45).translate(0,y+TOP+1.8,-1.55),'#ebe7de'); ad(new THREE.CylinderGeometry(1.2,1.2,.45,20,1,false,-Math.PI/2,Math.PI).rotateX(Math.PI/2).translate(0,y+TOP+3.6,-1.55),'#ebe7de');
+      for(let r=0;r<5;r++) for(let c=0;c<4;c++) if(!(r<2&&(c===1||c===2))) ad(new THREE.CylinderGeometry(.13,.13,.05,8).rotateX(Math.PI/2).translate(-.75+c*.5,y+TOP+2.2+r*.55,-1.31),'#b9b2a4'); }
+    // iki yanda oturan aslanlar (heykelin önünde, havuza bakar)
+    for(const sx of [-1,1]){ const lx=sx*2.25, lz=.7, ly=y+TOP;
+      B.push(cg(new THREE.BoxGeometry(.8,.7,1.5).translate(lx,ly+.35,lz-.1),bz), cg(new THREE.BoxGeometry(.6,.8,.6).translate(lx,ly+.75,lz+.45),bz),
+        cg(new THREE.IcosahedronGeometry(.48,1).scale(1,1.05,.9).translate(lx,ly+1.3,lz+.5),'#e4dfd4'), cg(new THREE.SphereGeometry(.3,10,8).translate(lx,ly+1.3,lz+.82),bz)); }
+    // konik taş (yanda) ve servi ağaçları
+    B.push(cg(new THREE.ConeGeometry(.9,5.0,16).translate(3.0,y+TOP+2.5,-2.5),'#ddd8cc'));
+    for(const [lx,lz,h] of [[-6.0,-3.9,8.5],[-6.0,-2.0,7.2]]){ ad(new THREE.CylinderGeometry(.15,.2,1,6).translate(lx,y+.5,lz),'#5b4636'); ad(new THREE.ConeGeometry(.62,h,8).translate(lx,y+.8+h/2,lz),'#2f5a34'); }
+    const tw=m=>g=>{ g.rotateY(ry); g.translate(K.x,0,K.z); return g; };
+    { const wm=new THREE.Mesh(mergeGeometries(Wt.map(tw())),waterMat); islandGroup.add(wm); }
+    { const fm=new THREE.MeshStandardMaterial({color:'#f2f8ff',transparent:true,opacity:.55,roughness:.15,metalness:.1,side:THREE.DoubleSide,depthWrite:false});
+      const fmesh=new THREE.Mesh(mergeGeometries(Wf.map(tw())),fm); fmesh.renderOrder=2; islandGroup.add(fmesh); }
     const T=(g)=>B.push(cg(g.scale(s,s,s).translate(0,y+2.75,0),bz));
     T(new THREE.BoxGeometry(1.4,.9,1).translate(0,.45,-.1)); T(new THREE.BoxGeometry(1.4,1.2,.2).translate(0,1.3,-.55));
     T(new THREE.CylinderGeometry(.32,.42,1.1,8).translate(0,1.45,0)); T(new THREE.SphereGeometry(.24,10,8).translate(0,2.2,0)); T(new THREE.CylinderGeometry(.18,.22,.36,8).translate(0,2.52,0));
     T(new THREE.BoxGeometry(.7,.25,.55).translate(0,.95,.35)); T(new THREE.BoxGeometry(.5,.6,.2).translate(0,.45,.6));
     for(const sx of [-1,1]){ T(new THREE.BoxGeometry(.38,.42,.8).translate(sx*.95,.25,.25)); T(new THREE.BoxGeometry(.32,.36,.32).translate(sx*.95,.62,.62)); T(new THREE.IcosahedronGeometry(.25,0).translate(sx*.95,.62,.48)); }
     for(const g of [...B,...Pb]){ g.rotateY(ry); g.translate(K.x,0,K.z); }
-    P.push(...Pb); islandGroup.add(vcMesh(B,{keep:true},{metalness:.02,roughness:.45})); siteObstacles.push({x:K.x,z:K.z,r:7}); navRot(K.x,K.z,5.5,4.5,ry); }
-  // ---- Oditoryum giriş pavyonu (peyzajdan girilir) ----
-  // küçük sigara sundurmalarıyla aynı dilde: koyu düz çatı + LED saçak, çıtalı dikmeler; altında cam giriş kutusu ve aşağı inen merdiven
-  { const A=S.auditorium, y=terrainH(A.x,A.z);
-    smallShelter({x:A.x,z:A.z,rot:0},{inner:(Ad,Ld,yy)=>{
-      Ad(new THREE.BoxGeometry(7.6,.14,5.6).translate(0,yy+.07,0),'#2f3034');
-      Ad(new THREE.BoxGeometry(4.4,2.5,2.4).translate(0,yy+1.39,.9),'#8fb8da'); Ad(new THREE.BoxGeometry(4.5,.12,2.5).translate(0,yy+2.7,.9),'#2a2d31');
-      Ad(new THREE.BoxGeometry(1.6,2.1,.05).translate(0,yy+1.19,-.32),'#1f2a38');
-      for(let k=0;k<4;k++) Ad(new THREE.BoxGeometry(3.2,.1,.42).translate(0,yy+.13-k*.02,-1.2-k*.42),k%2?'#9a9690':'#b8b2a8');
-      Ld(new THREE.BoxGeometry(4.4,.05,.05).translate(0,yy+.16,-.35)); } });
-    signMesh('ODİTORYUM',4.6,.45,'#25282c','#ffd76a',A.x,y+3.25,A.z-2.72,Math.PI);
-    signMesh('Etkinlik biletleri · İŞİM uygulaması',3.6,.42,'#1d2a40','#ffffff',A.x,y+2.2,A.z-.33,Math.PI); }
+    P.push(...Pb); islandGroup.add(vcMesh(B,{keep:true},{metalness:.02,roughness:.45})); siteObstacles.push({x:K.x,z:K.z,r:7});
+    { const xs=[], zs=[]; for(const [lx,lz] of [[-6.6,-5.4],[6.6,-5.4],[-6.6,7.8],[6.6,7.8]]){ xs.push(K.x+lx*Math.cos(ry)+lz*Math.sin(ry)); zs.push(K.z-lx*Math.sin(ry)+lz*Math.cos(ry)); }
+      navBox(Math.min(...xs),Math.min(...zs),Math.max(...xs),Math.max(...zs)); } }
+  // (vaziyet planı: oditoryum girişi podyumun batı cephesindeki kavisli cam giriştir; ön şeritteki eski pavyon kaldırıldı)
   // ---- Sigara içme alanları (sundurma, kül tablası, tabela) ----
   // fotoğraf: koyu düz çatı + LED saçak, dikey çıtalı koyu dikmeler, LED’li ahşap oturma, ayaklı küllükler
   // küçük sundurma: yerel koordinatlarda kurulur, Z.rot kadar döndürülür (koyu düz çatı + LED saçak, çıtalı dikmeler, LED’li ahşap bank, ayaklı küllükler)
@@ -1773,18 +1903,27 @@ function buildPhotoLandscape(P,add){
   { const W=S.greenWall, L=S.loop, y=terrainH(L.x,L.z), mid=(W.a0+W.a1)/2;
     for(let a=W.a0;a<W.a1;a+=4){ const t=(a+2)*Math.PI/180, x=L.x+Math.cos(t)*W.r, z=L.z+Math.sin(t)*W.r, ry=-t-Math.PI/2, ix=-Math.cos(t), iz=-Math.sin(t);
       const seg=2*W.r*Math.sin(2*Math.PI/180)+.06;
-      add(new THREE.BoxGeometry(seg,4.6,.9).translate(0,2.3,0).rotateY(ry).translate(x,y,z),'#cbc1b0');
-      add(new THREE.BoxGeometry(seg,.22,1.15).translate(0,4.71,0).rotateY(ry).translate(x,y,z),'#b0a693');
+      // fotoğraf: bej brüt beton istinat duvarı; dikey sarmaşık şeritleri ve kademeli koyu saksılar
+      const k=Math.round((a-W.a0)/4);
+      add(new THREE.BoxGeometry(seg,4.6,.9).translate(0,2.3,0).rotateY(ry).translate(x,y,z),k%3===1?'#c4b797':'#cbbf9f');
+      add(new THREE.BoxGeometry(seg,.22,1.15).translate(0,4.71,0).rotateY(ry).translate(x,y,z),'#a99c80');
+      add(new THREE.BoxGeometry(seg,.05,.95).translate(0,2.3,0).rotateY(ry).translate(x,y,z),'#b3a688');
       if(Math.abs(a+2-mid)<11) continue; // ortada kurum adı paneli
-      add(new THREE.BoxGeometry(seg*.4,3.7,.22).translate(0,2.35,0).rotateY(ry).translate(x+ix*.55,y,z+iz*.55),'#4c7a35');
-      for(const hy of [1.25,2.75]){ add(new THREE.BoxGeometry(seg*.55,.36,.62).translate(0,hy,0).rotateY(ry).translate(x+ix*.78,y,z+iz*.78),'#2c2d30');
-        add(new THREE.IcosahedronGeometry(.42,0).scale(1.2,.8,.8).translate(x+ix*.85,y+hy+.42,z+iz*.85),'#5f8f3e'); }
+      if(k%2===0){ const ih=2.6+((k*7)%5)*.4; // sarmaşık şeridi (farklı boylarda) + saksılar
+        add(new THREE.BoxGeometry(seg*.62,ih,.18).translate(0,4.55-ih/2,0).rotateY(ry).translate(x+ix*.52,y,z+iz*.52),k%4===0?'#3f6f33':'#4c7a35');
+        for(let j=0;j<4;j++) add(new THREE.IcosahedronGeometry(.32,0).scale(1,1.3,.6).translate(x+ix*.62+(j%2?.25:-.25)*Math.sin(t),y+4.4-j*ih/4,z+iz*.62-(j%2?.25:-.25)*Math.cos(t)),'#355e2f'); }
+      for(const hy of k%2?[1.5,3.1]:[.9]){ add(new THREE.BoxGeometry(seg*.6,.42,.55).translate(0,hy,0).rotateY(ry).translate(x+ix*.75,y,z+iz*.75),'#26292d');
+        add(new THREE.IcosahedronGeometry(.4,0).scale(1.2,.75,.8).translate(x+ix*.8,y+hy+.38,z+iz*.8),'#5f8f3e'); }
       add(new THREE.IcosahedronGeometry(.45,0).translate(x+ix*1.7,y+.4,z+iz*1.7),'#3f6f33');
       upl(x+ix*1.05,y,z+iz*1.05,ry,seg*.75,4.3); }
     // kurum adı: duvar yüzünün önünde (kavisli duvarın içinde kalmasın) koyu çerçeveli taş levha
     { const tm=mid*Math.PI/180, rr=W.r-.95, sx=L.x+Math.cos(tm)*rr, sz=L.z+Math.sin(tm)*rr, ry=-tm-Math.PI/2;
       add(new THREE.BoxGeometry(6.3,1.45,.14).translate(0,y+3.05,0).rotateY(ry).translate(L.x+Math.cos(tm)*(rr+.12),0,L.z+Math.sin(tm)*(rr+.12)),'#3a3b3f');
       const sg=signMesh('TÜRKİYE İŞ BANKASI',6,1.15,'#e2d9c7','#5a4a2a',sx,y+3.05,sz,ry); sg.material.side=THREE.FrontSide; }
+    // duvarın arkasında (üst kotta) palmiyeler – fotoğraftaki gibi duvarın üstünden görünür
+    for(const ad of [236,252,296]){ const t=ad*Math.PI/180, px=L.x+Math.cos(t)*(W.r+2.4), pz=L.z+Math.sin(t)*(W.r+2.4), py=terrainH(px,pz), h=8.5+(ad%3);
+      add(new THREE.CylinderGeometry(.26,.42,h,8).translate(px,py+h/2,pz),'#8a6e4f'); add(new THREE.SphereGeometry(.55,8,6).translate(px,py+h,pz),'#6b5a3a');
+      for(let j=0;j<11;j++){ const a=j/11*Math.PI*2; add(new THREE.BoxGeometry(.7,.08,3.9).translate(0,0,1.95).rotateX(.42+(j%2)*.18).rotateY(a).translate(px,py+h+.1,pz),j%2?'#3f7a35':'#4f8f3c'); } }
     siteObstacles.push({x:L.x,z:L.z,r:W.r+2}); }
   // ---- Yönlendirme totemi (fotoğraf: giriş yolu) – döngü girişinde ----
   { const x=-24, z=-57.5, y=terrainH(x,z); navBox(x-.8,z-.75,x+5.5,z+.75);
@@ -1799,7 +1938,7 @@ function buildPhotoLandscape(P,add){
   { const F=S.front, y=terrainH(0,66), z0=F.z0, z1=F.z1, Gt=S.carsiGate, WF=[24.6,37.2];
     { const t=paverTex(false); t.repeat.set(176/5.7,1); const m=envMat({map:t,roughness:.82},{wet:true}); m.polygonOffset=true; m.polygonOffsetFactor=-2; m.polygonOffsetUnits=-2;
       const w=new THREE.Mesh(new THREE.PlaneGeometry(176,F.walk[1]-F.walk[0]).rotateX(-Math.PI/2),m); w.position.set(0,y+.03,(F.walk[0]+F.walk[1])/2); w.receiveShadow=true; islandGroup.add(w);
-      add(new THREE.BoxGeometry(176,.06,.25).translate(0,y+.04,F.walk[0]),'#3c3a3e'); }
+      add(new THREE.BoxGeometry(172,.06,.25).translate(0,y+.04,F.walk[0]),'#3c3a3e'); } // köşelerde parke şeritlerin içine girmez
     const planter=(xa,xb,za,zb)=>{ if(xb-xa<.4) return; const cx=(xa+xb)/2, cz=(za+zb)/2, w=xb-xa, d=zb-za; navBox(xa,za,xb,zb);
       add(new THREE.BoxGeometry(w,.85,d).translate(cx,y+.42,cz),'#232427'); add(new THREE.BoxGeometry(w-.3,.04,d-.3).translate(cx,y+.83,cz),'#3b2a1e');
       if(za<z0+.1) for(let x=xa+1.2;x<xb-.6;x+=2.6) led.push(new THREE.BoxGeometry(.22,.1,.04).translate(x,y+.32,za-.02)); };
@@ -1866,7 +2005,8 @@ function buildPhotoLandscape(P,add){
       for(const [a,b,c,e,s] of [[x0,x1,z0,z0,'N'],[x0,x1,z1,z1,'S'],[x0,x0,z0,z1,'W'],[x1,x1,z0,z1,'E']]) if(!skip.includes(s)) add(new THREE.BoxGeometry(Math.max(.12,b-a),.06,Math.max(.12,e-c)).translate((a+b)/2,y+.035,(c+e)/2),'#3c3a3e'); };
     brick(86,93.6,-19.2,-9,'S');      // doğu kenarı kuzey ucu: otoparkın park sırasına kadar uzar (asfalt cebin batısı)
     brick(86,92,-9,64.1,'NESW');      // doğu kenarı: ön şeritten otoparka (güney ucu ikinci otoparkın beyaz giriş alanına açılır; orada kontur yok)
-    add(new THREE.BoxGeometry(.12,.06,62.4+9).translate(92,y+.035,(62.4-9)/2),'#3c3a3e'); add(new THREE.BoxGeometry(.12,.06,58.4+9).translate(86,y+.035,(58.4-9)/2),'#3c3a3e');
+    add(new THREE.BoxGeometry(.12,.06,64.1+9).translate(92,y+.035,(64.1-9)/2),'#3c3a3e');
+    add(new THREE.BoxGeometry(30,.06,.12).translate(77,y+.035,64.1),'#3c3a3e'); // parke yolun beyaz yolla kesiştiği düz bitiş çizgisi add(new THREE.BoxGeometry(.12,.06,58.4+9).translate(86,y+.035,(58.4-9)/2),'#3c3a3e');
     brick(92,93.5,3,13);              // göbeğe bağlantı
     brick(-92,-86,-16,64.1,'E');      // batı kenarı: ön şeritten kuzeye (doğu kontur çizgisi ön kaldırımın içine girmez)
     add(new THREE.BoxGeometry(.12,.06,58.4+16).translate(-86,y+.035,(58.4-16)/2),'#3c3a3e');
@@ -1874,6 +2014,8 @@ function buildPhotoLandscape(P,add){
     brick(-86,-33,-16,-11);           // heykel önünden batı kenarına
     brick(-38,-33,-55,15.5);          // döngüden heykel/pavyon önünden Kule 3 – podyum girişine (5 m)
     brick(-38,-33,15.5,58.4);         // Kule 3 ile Kule 2 arası: açık zemin kat geçidinin altından ön şeride (aynı 5 m genişlik)
+    // fotoğraflar: parke yolun ortasında koyu taş şerit (araç yolu ekseni)
+    for(const [za,zb] of [[-55,-16.2],[-10.8,58.2]]) add(new THREE.BoxGeometry(.34,.1,zb-za).translate(-35.5,y+.08,(za+zb)/2),'#34323a'); // parke düzlemlerinin polygonOffset’i eğik bakışta örtmesin diye kalın ve yükseltilmiş
     siteObstacles.push({x:89,z:25,r:3},{x:-89,z:25,r:3}); }
   // ==== -1 KAT YEMEKHANE ORTA AVLUSU (gömülü avlu; fotoğraflar: gri taş zemin, ahşap kenarlı saksılar, zeytin, ginkgo,
   //      çim, mavi sandalyeler, büyük merdiven, yemekhanenin cam cephesi) ====
@@ -1950,7 +2092,7 @@ function buildPhotoLandscape(P,add){
     // doğu cephesi boyunca LED’li ahşap oturma
     { const bx=x+w/2+1.9; add(new THREE.BoxGeometry(1.3,.42,d-2).translate(bx,y+.21,z),'#2c2d30'); add(new THREE.BoxGeometry(1.5,.1,d-1.8).translate(bx,y+.47,z),'#8a5530');
       add(new THREE.BoxGeometry(.55,.55,7).translate(bx+.35,y+.8,z+3),'#8a5530'); led.push(new THREE.BoxGeometry(.05,.05,d-2.4).translate(bx+.66,y+.07,z)); }
-    // ==== Pavyonun batısı: peyzajla karışık oturma şeridi (ön cephedeki gibi) + yukarı çıkan merdiven ve pergolalı teras (fotoğraflar) ====
+    // ==== Pavyonun batısı: peyzajla karışık oturma şeridi (ön cephedeki gibi); kuzey ucu saksıyla kapanır (vaziyet planı) ====
     { const X0=-62, X1=-55.2, Z0=-53, Z1=-29, gy=y;
       // pavyon ile şerit arasında kilit parke yürüyüş yolu
       { const t=paverTex(false); t.repeat.set(2.6/5.7,26/5.7); const pm=envMat({map:t,roughness:.82},{wet:true}); pm.polygonOffset=true; pm.polygonOffsetFactor=-2; pm.polygonOffsetUnits=-2;
@@ -1959,12 +2101,10 @@ function buildPhotoLandscape(P,add){
         if(xb>=X1-.01) for(let z=za+1;z<zb-.5;z+=2.4) led.push(new THREE.BoxGeometry(.04,.1,.22).translate(xb+.02,gy+.32,z)); };
       const plant=(za,zb)=>{ for(let z=za+.9;z<zb-.5;z+=2.2){ add(new THREE.IcosahedronGeometry(.5,1).scale(1,.85,1).translate(X1-1,gy+1.2,z),'#3f6f33'); const k=Math.round(Math.abs(z)*3)%3;
           if(k===0) cycad(X0+3.2,gy+.85,z,1); else if(k===1) carex(X0+3,gy+.85,z); else add(new THREE.IcosahedronGeometry(.7,1).scale(1.1,.8,1).translate(X0+3,gy+1.35,z),'#4c7a35'); } };
-      for(const [za,zb] of [[-43,-39],[-31,Z1]]){ box(za,zb); plant(za,zb); navBox(X0,za,X1,zb); }
-      olive(X0+2.6,gy+.85,-41,1.0); niwaki(X0+1.2,gy+.85,-30,.9);
-      // merdiven önü açık: iki yanında saksılı niwaki ve sikas
-      for(const [px,pz] of [[-61.7,-52.2],[-55.9,-52.2]]){ add(new THREE.CylinderGeometry(.55,.45,.8,12).translate(px,gy+.4,pz),'#2c2d30'); add(new THREE.CylinderGeometry(.5,.5,.04,12).translate(px,gy+.79,pz),'#3b2a1e'); navBox(px-.55,pz-.55,px+.55,pz+.55); }
-      niwaki(-61.7,gy+.8,-52.2,.75); cycad(-55.9,gy+.8,-52.2,.85);
-      navBox(X0-.3,-51.3,X0+1.8,-28.7); navBox(-64,-63.6,-54.4,-53); navBox(x-w/2-.3,z-d/2-.3,x+w/2+2.6,z+d/2+.3);
+      // vaziyet planı: şeridin kuzey ucu saksıyla kapanır (buradan başka bir alana merdiven çıkmaz; asıl merdiven arkadaki yolda)
+      for(const [za,zb] of [[Z0-1.5,-51],[-43,-39],[-31,Z1]]){ box(za,zb); plant(za,zb); navBox(X0,za,X1,zb); }
+      olive(X0+2.6,gy+.85,-41,1.0); niwaki(X0+1.2,gy+.85,-30,.9); niwaki(X0+1.2,gy+.85,-53,.9);
+      navBox(X0-.3,-51.3,X0+1.8,-28.7); navBox(x-w/2-.3,z-d/2-.3,x+w/2+2.6,z+d/2+.3);
       // iki oturma nişi (doğuya, pavyona açılır): çizgili granit zemin, LED’li ahşap L bank, altıgen tabureler
       for(const c of [-47,-35]){ const nx0=X0+1.5;
         for(let k=0;k<7;k++) add(new THREE.BoxGeometry(X1-nx0,.12,8/7).translate((nx0+X1)/2,gy+.06,c-4+(k+.5)*8/7),k%2?'#55575c':'#2f3034');
@@ -1976,30 +2116,67 @@ function buildPhotoLandscape(P,add){
         upl(nx0-.2,gy+.85,c,Math.PI/2,7.4,1.6);
         for(const dz of [-1.6,.2,2]) SEATS.push({x:nx0+.6,z:c+dz,y:gy+.6,yaw:Math.PI/2,zone:'west',app:[nx0+2.9,c+dz]});
         for(const sx of [-58.4,-56.9]) SEATS.push({x:sx,z:c-3.35,y:gy+.6,yaw:0,zone:'west',app:[sx,c-1.2]}); }
-      // kuzey ucunda yukarı çıkan merdiven + korkuluklu, pergolalı teras (alandan ayrılış)
-      { const sx0=-60.8, sx1=-57.2, rise=3.1, n=16, run=4.8/n, tz0=-57.8, tz1=-63.6, tx0=-64, tx1=-54.4, ty=gy+rise;
-        for(let i=0;i<n;i++){ const h=(i+1)*rise/n; add(new THREE.BoxGeometry(sx1-sx0,h,run+.02).translate((sx0+sx1)/2,gy+h/2,Z0-(i+.5)*run),i%2?'#8e9298':'#9aa0a6');
-          add(new THREE.BoxGeometry(sx1-sx0,.03,.05).translate((sx0+sx1)/2,gy+h+.01,Z0-i*run-.02),'#c9b99c'); }
-        for(const x of [sx0-.25,sx1+.25]){ add(new THREE.BoxGeometry(.5,rise+.9,4.8).translate(x,gy+(rise+.9)/2,Z0-2.4),'#b9ad9a');
-          add(new THREE.BoxGeometry(.06,.06,Math.hypot(4.8,rise)).rotateX(Math.atan2(rise,4.8)).translate(x,gy+rise/2+1.4,Z0-2.4),'#3a3f46'); }
-        add(new THREE.BoxGeometry(tx1-tx0,rise,tz0-tz1).translate((tx0+tx1)/2,gy+rise/2,(tz0+tz1)/2),'#b9ad9a');
-        add(new THREE.BoxGeometry(tx1-tx0-.3,.06,tz0-tz1-.3).translate((tx0+tx1)/2,ty+.03,(tz0+tz1)/2),'#8f9399');
-        const rail=(xa,za,xb,zb)=>{ const L=Math.hypot(xb-xa,zb-za), r=Math.atan2(xb-xa,zb-za), n2=Math.max(1,Math.round(L/1.5));
-          for(let i=0;i<=n2;i++){ const t=i/n2; add(new THREE.BoxGeometry(.06,1,.06).translate(xa+(xb-xa)*t,ty+.5,za+(zb-za)*t),'#3a3f46'); }
-          for(const hh of [.55,1]) add(new THREE.BoxGeometry(.06,.06,L).rotateY(r).translate((xa+xb)/2,ty+hh,(za+zb)/2),'#3a3f46'); };
-        rail(tx0,tz0,sx0,tz0); rail(sx1,tz0,tx1,tz0); rail(tx1,tz0,tx1,tz1); rail(tx1,tz1,tx0,tz1); rail(tx0,tz1,tx0,tz0);
-        // pergola (koyu çelik çerçeve + tik ahşap çıtalar) ve altında bank
-        const px0=tx0+1.2, px1=tx1-1.2, pz0=tz0-.9, pz1=tz1+.9;
-        for(const xx of [px0,px1]) for(const zz of [pz0,pz1]) add(new THREE.BoxGeometry(.22,2.8,.22).translate(xx,ty+1.4,zz),'#2b2f34');
-        for(const zz of [pz0,pz1]) add(new THREE.BoxGeometry(px1-px0+.22,.22,.22).translate((px0+px1)/2,ty+2.72,zz),'#2b2f34');
-        for(let xx=px0;xx<=px1+.01;xx+=.55) add(new THREE.BoxGeometry(.14,.18,pz0-pz1+.4).translate(xx,ty+2.92,(pz0+pz1)/2),'#a8693a');
-        add(new THREE.BoxGeometry(px1-px0-.6,.12,.6).translate((px0+px1)/2,ty+.5,pz1+.45),'#a8693a'); add(new THREE.BoxGeometry(px1-px0-.6,.6,.1).translate((px0+px1)/2,ty+.8,pz1+.12),'#a8693a');
-        add(new THREE.BoxGeometry(tx1-tx0-.6,.6,.8).translate((tx0+tx1)/2,ty+.3,tz1+.5),'#2c2d30'); for(let xx=tx0+.8;xx<tx1-.5;xx+=1.3) add(new THREE.IcosahedronGeometry(.42,0).translate(xx,ty+.8,tz1+.5),'#3f6f33');
-        upl((tx0+tx1)/2,ty,tz1+.9,0,8,2.6); }
       siteObstacles.push({x:-58,z:-44,r:13}); }
     add(new THREE.CylinderGeometry(.06,.06,2.4,6).translate(x+w/2+3.6,y+1.2,z-d/2+.6),'#5a5f66');
     signMesh('🚬 SİGARA İÇME ALANI',3.4,.7,'#2b2f36','#ffd76a',x+w/2+3.6,y+2.5,z-d/2+.6,Math.PI/2);
     siteObstacles.push({x,z,r:14}); }
+  // ==== PODYUM BATI GİRİŞİ (fotoğraflar: kavisli cam üst bant, beyaz kavisli saçak ve gömme spotlar, granit yuvarlak kolonlar,
+  //      döner kapılı cam giriş, açılı direklerde Türk ve İş Bankası bayrakları) – heykel/pavyon karşısında, kuzey–güney parke yola bakar ====
+  { const cx=-14, cz=-25, R=17.6, half=27*Math.PI/180, n=14, y=terrainH(-30,-25), /* vaziyet planı: tam Kibele heykelinin karşısında */ gm=envMat({color:'#a9c7da',metalness:.55,roughness:.06,transparent:true,opacity:.42,depthWrite:false,side:THREE.DoubleSide},{keep:true,noSnow:true});
+    const P_=f=>[cx-R*Math.cos(f), cz+R*Math.sin(f)], glass=[];
+    for(let i=0;i<n;i++){ const f0=-half+i*2*half/n, f1=f0+2*half/n, fm=(f0+f1)/2, [x,z]=P_(fm), w=2*R*Math.sin(half/n)+.05, ry=fm-Math.PI/2; // yerel +z = yaydan dışa
+      // kavisli beyaz saçak bandı (yola taşmaz) + altında gömme spotlar
+      add(new THREE.BoxGeometry(w,1.25,2.8).translate(0,y+6.2,-.2).rotateY(ry).translate(x,0,z),'#e9e7e2'); add(new THREE.BoxGeometry(w,.12,2.9).translate(0,y+5.52,-.2).rotateY(ry).translate(x,0,z),'#d8d6d0');
+      led.push(new THREE.CylinderGeometry(.09,.09,.04,8).translate(0,y+5.45,.6).rotateY(ry).translate(x,0,z));
+      // çerçevesiz cam üst bant (saçağın üstünde, biraz geride) ve üst başlık
+      glass.push(new THREE.BoxGeometry(w,3.6,.06).translate(0,y+8.6,.3).rotateY(ry).translate(x,0,z));
+      add(new THREE.BoxGeometry(w,.12,.5).translate(0,y+7.6,.45).rotateY(ry).translate(x,0,z),'#c9cdd2');
+      add(new THREE.BoxGeometry(w,.5,1.2).translate(0,y+10.65,.2).rotateY(ry).translate(x,0,z),'#e9e7e2');
+      if(i%2===0) add(new THREE.BoxGeometry(.05,3.6,.08).translate(-w/2,y+8.6,.33).rotateY(ry).translate(x,0,z),'#b8bec6'); }
+    { const gmesh=new THREE.Mesh(mergeGeometries(glass),gm); gmesh.renderOrder=2; islandGroup.add(gmesh); }
+    // granit yuvarlak kolonlar (koyu taban) – saçağın dış kenarına yakın
+    for(const fdeg of [-15,0,15]){ const f=fdeg*Math.PI/180, [x,z]=P_(f), ox=-Math.cos(f)*.6, oz=Math.sin(f)*.6;
+      add(new THREE.CylinderGeometry(.5,.5,4.4,16).translate(x+ox,y+3.0,z+oz),'#b8a78c'); add(new THREE.CylinderGeometry(.54,.54,.85,16).translate(x+ox,y+.42,z+oz),'#25272b'); }
+    // zemin kat cam vitrin + iki döner kapı
+    add(new THREE.BoxGeometry(.12,4.8,15).translate(-30.06,y+2.4,-25),'#2a2d31');
+    { const sf=new THREE.Mesh(new THREE.BoxGeometry(.06,4.5,14.6),gm); sf.position.set(-30.14,y+2.3,-25); sf.renderOrder=2; islandGroup.add(sf); }
+    for(const dz of [-27.2,-22.8]){ const rd=new THREE.Mesh(new THREE.CylinderGeometry(1.0,1.0,2.6,20,1,true),gm); rd.position.set(-31.1,y+1.3,dz); islandGroup.add(rd);
+      add(new THREE.CylinderGeometry(1.05,1.05,.3,20).translate(-31.1,y+2.75,dz),'#c9cdd2'); add(new THREE.CylinderGeometry(1.05,1.05,.06,20).translate(-31.1,y+.03,dz),'#3a3d42');
+      for(let k=0;k<4;k++) add(new THREE.BoxGeometry(.05,2.5,.95).translate(0,1.3,.47).rotateY(k*Math.PI/2+.4).translate(-31.1,y,dz),'#9aa3ad'); }
+    navBox(-32.9,-33.5,-30,-16.5);
+    // oditoryum tabelası (saçak bandının önünde) ve girişin önünde yükseltilmiş granit kaldırım + bordür (fotoğraf 77/78)
+    signMesh('ODİTORYUM',5.2,.72,'#e9e7e2','#3a3020',-32.88,y+6.2,-25,-Math.PI/2);
+    add(new THREE.BoxGeometry(2.9,.12,18.5).translate(-31.45,y+.06,-25),'#b9ad9a'); add(new THREE.BoxGeometry(.22,.16,18.5).translate(-32.9,y+.08,-25),'#8f8679');
+    // açılı direklerde bayraklar (cepheden dışa doğru)
+    // fotoğraflar 73/79: girişin güney ucunda açılı direkte Türk bayrağı (gerçekçi boyut)
+    for(const [fz,tex] of [[-15.4,null]]){ const bx=-30.1, by=y+8.2, L=3.8, a=.6;
+      add(new THREE.CylinderGeometry(.06,.06,L,6).rotateZ(Math.PI/2-a).translate(bx-Math.cos(a)*L/2,by+Math.sin(a)*L/2,fz),'#c9cdd2');
+      buildFlag(bx-Math.cos(a)*L,by+Math.sin(a)*L,fz,.55,Math.PI,tex); }
+  }
+  // ==== BATI MEYDANI PEYZAJ ALANI (yaya yolu ile batı ve güney parke yolları arası): granit bordürlü çim, ağaçlar, niwaki,
+  //      çiçek kümeleri, sikas/carex grupları, bitki aydınlatmaları; yaya yolu kenarında oturma ====
+  { const y=terrainH(-76,-34), LP=[[-93,-52],[-87,-57.4],[-80.2,-53.4],[-70.8,-44.4],[-70.4,-32],[-68.9,-24.7],[-63.6,-18],[-93,-18]]; // batıda çite kadar
+    { const sh=new THREE.Shape(LP.map(([x,z])=>new THREE.Vector2(x,-z))); const gm=envMat({color:'#5f9440',roughness:.95},{wet:true}); gm.polygonOffset=true; gm.polygonOffsetFactor=-1; gm.polygonOffsetUnits=-3;
+      const lawn=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),gm); lawn.position.y=y+.3; lawn.receiveShadow=true; islandGroup.add(lawn); }
+    for(let i=0;i<LP.length;i++){ const [x0,z0]=LP[i], [x1,z1]=LP[(i+1)%LP.length], L=Math.hypot(x1-x0,z1-z0); // granit bordür
+      add(new THREE.BoxGeometry(.32,.38,L+.3).rotateY(Math.atan2(x1-x0,z1-z0)).translate((x0+x1)/2,y+.19,(z0+z1)/2),'#3c3d41'); }
+    navBox(-93,-52.5,-70.6,-18); navBox(-87,-57,-80.5,-52.5); navBox(-70.6,-32,-65.5,-18);
+    // genişletilen batı kısmı: ağaçlar, niwaki, sikas, çiçek
+    for(const [x,z,s,c] of [[-88.6,-45,1,'#4f8a3a'],[-89.6,-30.5,1.05,'#5f9a43'],[-87.2,-21.8,.85,'#6aa84f'],[-85.6,-53.6,.8,'#3f7a3a']]){ const th=3.4*s, rr=2.6*s; add(new THREE.CylinderGeometry(.26*s,.42*s,th,6).translate(x,y+.3+th/2,z),'#5b4130'); add(new THREE.IcosahedronGeometry(rr,1).scale(1,.9,1).translate(x,y+.3+th+rr*.5,z),c); upl(x,y+.32,z+1,0,2.4,4); }
+    niwaki(-90.4,y+.3,-37.6,.95); olive(-88.8,y+.3,-25.8,.85);
+    for(const [x,z] of [[-91,-48.6],[-86.6,-39.8],[-91.2,-22.4],[-86,-33.4]]) cycad(x,y+.3,z,.9);
+    for(const [x,z,c] of [[-90.6,-42,'#d16aa5'],[-87.8,-35.6,'#b65fcf'],[-91,-27,'#e2397a']]){ add(new THREE.IcosahedronGeometry(.8,1).scale(1.2,.7,1.2).translate(x,y+.65,z),'#3f6f33'); for(let j=0;j<6;j++){ const a=j*1.05; add(new THREE.IcosahedronGeometry(.2,0).translate(x+Math.cos(a)*.6,y+1.05,z+Math.sin(a)*.6),c); } }
+    const tree=(x,z,s,c)=>{ const th=3.4*s, rr=2.6*s; add(new THREE.CylinderGeometry(.26*s,.42*s,th,6).translate(x,y+.3+th/2,z),'#5b4130'); add(new THREE.IcosahedronGeometry(rr,1).scale(1,.9,1).translate(x,y+.3+th+rr*.5,z),c); upl(x,y+.32,z+1,0,2.4,4); };
+    tree(-79.5,-44.5,1,'#4f8a3a'); tree(-75.2,-28.5,1.1,'#5f9a43'); tree(-80.3,-23.4,.9,'#6aa84f'); tree(-74.5,-38.6,.85,'#3f7a3a');
+    olive(-77.6,y+.3,-34.2,1.05); olive(-71.6,y+.3,-22.4,.9);
+    for(const [x,z,s] of [[-82.2,-38.5,.95],[-73.2,-46,.85],[-82.4,-27,.8]]) niwaki(x,y+.3,z,s);
+    for(const [x,z] of [[-76.8,-48.2],[-72.6,-34.8],[-81.6,-33.4],[-70.6,-27.4],[-78.4,-20.9],[-83,-44.8]]) cycad(x,y+.3,z,.9);
+    for(let k=0;k<14;k++){ const x=-82.6+((k*37)%13)*.95, z=-47+((k*53)%29)*.95; if(z>-21||x>-71.5) continue; carex(x,y+.3,z); }
+    // çiçek kümeleri (pembe/mor – fotoğraflardaki gibi) ve top çalılar
+    for(const [x,z,c] of [[-78.6,-41.2,'#d16aa5'],[-76.2,-24.6,'#b65fcf'],[-82.6,-41.6,'#e2397a'],[-72.4,-30.4,'#b65fcf'],[-80.6,-30.4,'#d16aa5'],[-74.6,-43.2,'#e2397a']]){
+      add(new THREE.IcosahedronGeometry(.8,1).scale(1.2,.7,1.2).translate(x,y+.65,z),'#3f6f33'); for(let j=0;j<6;j++){ const a=j*1.05; add(new THREE.IcosahedronGeometry(.2,0).translate(x+Math.cos(a)*.6,y+1.05,z+Math.sin(a)*.6),c); } }
+    for(const [x,z,r0] of [[-83,-22.2,.7],[-72.2,-38,.6],[-77,-48.3,.7],[-67.6,-20.4,.55]]) add(new THREE.IcosahedronGeometry(r0,1).scale(1.1,.85,1.1).translate(x,y+.3+r0*.7,z),'#4c7a35');
+    siteObstacles.push({x:-76,z:-34,r:12},{x:-88,z:-36,r:9}); }
   // ---- Zeytinli saksı-banklar (avlu girişi çevresi) ----
   for(const [x,z] of [[-20,-67],[25,-66.5]]){ const y=terrainH(x,z);
     add(new THREE.BoxGeometry(5.4,.75,3.4).translate(x,y+.37,z),'#3c3d41'); add(new THREE.BoxGeometry(5,.06,3).translate(x,y+.76,z),'#4c7a35');
@@ -2010,7 +2187,7 @@ function buildPhotoLandscape(P,add){
   { const c=new THREE.CatmullRomCurve3(PATHS[1].pts.map(q=>V(q[0],0,q[1]))), L=c.getLength();
     for(let s=3;s<L-1;s+=5.5){ const u=s/L, q=c.getPointAt(u), t=c.getTangentAt(u); for(const sd of [-1,1]) bollard(q.x-t.z*2.5*sd,q.z+t.x*2.5*sd); } }
   // ---- Çit aydınlatmaları (meydan güney çiti) ----
-  { const zS=CONFIG.plaza.cz+CONFIG.plaza.hz+1.6; for(const [x0,x1] of [[-85.2,-59.6],[-50.4,13],[23,64]]) for(let x=x0+2;x<x1-1;x+=5) upl(x,.35,zS+.75,0,2,2.2); }
+  { const zS=CONFIG.plaza.cz+CONFIG.plaza.hz+1.6; for(const [x0,x1] of [[-85.2,13],[23,64]]) for(let x=x0+2;x<x1-1;x+=5) upl(x,.35,zS+.75,0,2,2.2); }
   if(led.length){ const lm=new THREE.Mesh(mergeGeometries(led),ledMat); islandGroup.add(lm); }
   if(ups.length){ const um=new THREE.Mesh(mergeGeometries(ups),uplightMat); um.renderOrder=3; islandGroup.add(um); }
 }
@@ -2500,10 +2677,13 @@ function applyTimeOfDay(h){
   if(st>0){ hemi.color.lerp(_stC.set('#e0b07a').multiplyScalar(lerp(1,.35,P.night)),.6*st); hemi.groundColor.lerp(_stC.set('#4a3020').multiplyScalar(lerp(1,.4,P.night)),.6*st); }
   if(cy>0){ hemi.color.lerp(col('#6a3aa0'),cy*.8); hemi.groundColor.lerp(col('#0a2a3a'),cy*.8); hemi.intensity=lerp(P.hi,.55,cy); }
   sun.intensity*=1-.78*oc; hemi.intensity*=1-.15*oc+WX.snow*.25-.2*WX.rain-.25*WX.storm; hemi.intensity+=WX.flash*3.5;
+  // Blender: stüdyo ışığı, ama günün saatine göre kısılır (akşam/gece gündüzden parlak görünmesin; alçak güneş cepheleri yakmasın)
+  let blK=1;
   if(cl>0){ const sub=DB.view.blenderSub, lit=sub==='clay'||sub==='material';
-    sun.intensity=lerp(sun.intensity,lit?2.5:1.6,cl*.8); sun.color.lerp(col(sub==='material'?'#fff3e2':'#ffffff'),cl*.8);
-    hemi.color.lerp(col('#e6eaf0'),cl); hemi.groundColor.lerp(col(sub==='material'?'#6b6656':'#5a5a5a'),cl); hemi.intensity=lerp(hemi.intensity,sub==='clay'?.9:sub==='material'?1.05:1.5,cl*.85); }
-  renderer.toneMappingExposure=lerp(P.exp*(1-.12*WX.rain-.18*WX.storm),1.0,cl)+WX.flash*.6;
+    blK=clamp(1-.66*night-.22*smooth(.45,.02,Math.max(el,0))*(1-night),.3,1);
+    sun.intensity=lerp(sun.intensity,(lit?2.5:1.6)*blK,cl*.8); sun.color.lerp(col(sub==='material'?'#fff3e2':'#ffffff'),cl*.8*blK);
+    hemi.color.lerp(col('#e6eaf0'),cl); hemi.groundColor.lerp(col(sub==='material'?'#6b6656':'#5a5a5a'),cl); hemi.intensity=lerp(hemi.intensity,(sub==='clay'?.9:sub==='material'?1.05:1.5)*blK,cl*.85); }
+  renderer.toneMappingExposure=lerp(P.exp*(1-.12*WX.rain-.18*WX.storm),lerp(.5,1.0,blK),cl)+WX.flash*.6; // Blender gecesi akşamdan belirgin koyu
   // bulutlar
   cloudU.uLit.value.copy(P.cl).lerp(CY_CL,cy*.85).lerp(_stC.copy(ST_CL).multiplyScalar(lerp(1,.12,P.night)),st*.8); cloudU.uShade.value.copy(P.cs).lerp(CY_CS,cy*.85).lerp(_stC.copy(ST_CS).multiplyScalar(lerp(1,.18,P.night)),st*.8);
   if(fallMat) fallMat.uniforms.uLight.value.setScalar(clamp(.25+P.sunI*.25+P.hi*.2,0,1.1)).lerp(col('#7fa0ff'),P.night*.4);
@@ -2742,10 +2922,11 @@ const UMBS=['#d63a3a','#2f6fd6','#f2c200','#2d2d2d','#3fae6b','#8e44ad'];
 const ENT={ K2:{door:[-13.5,46.6],front:[-13.5,57]}, K3:{door:[-63,46.6],front:[-63,57]}, MAIN:{door:[18,47.6],front:[18,59]}, K1:{door:[55,-47.6],front:[55,-57]} };
 // yürüyüş rotaları (ara noktalar); her ayak navPath ile peyzaj ve binaların etrafından planlanır
 const WALK_ROUTES={ south:[ [[18,62],[18,69],[18,88],[19,102]], [[18,61],[48,61],[48,63.2]], [[18,61],[-22,61],[-22,63.2]], [[18,61],[-72,61],[-72,63.2]], [[84,62],[84,72],[84.2,80]], [[-63,60],[-89,61],[-89,72],[-89.2,80]],
-    [[18,61],[30,61.2],[34,61.2]], [[-55,61],[-55,63.6]], [[-56,61],[-53,63.4]], [[60,60],[84,58],[89,30],[93,8]], [[18,62],[18,72],[8,72.3]], [[-37,58],[-37,30],[-36,10],[-36,-13]], [[-63,59],[-89,61],[-89,-8],[-97,-8]], [[-63,59],[-89,61],[-89,-13.5],[-36,-13.5],[-36,13]],
-    [[-37,58],[-37,30],[-36,-13.5],[-53.9,-16],[-53.9,-27]] ],
-  north:[ [[30,-62.5],[-17,-62.5],[-36,-57],[-53.9,-55],[-53.9,-52.3],[-59,-52.3],[-59,-58.3],[-59.4,-60.6]], [[30,-62.5],[-17,-62.5],[-36,-57],[-53.9,-55],[-53.9,-36]], [[30,-62.5],[-30,-62.5],[-36,-54],[-36,-40]], [[84,-58],[84,-21],[89,-14]],
-    [[30,-62.5],[-20,-62.5],[-36,-58],[-36,-30]], [[30,-62.5],[23.5,-62.5],[23.6,-60.4]], [[30,-62.5],[-18,-62.5],[-24,-60],[-30,-50]] ] };
+    [[18,61],[30,61.2],[34,61.2]], [[-37,58],[-37,30],[-36,-13.5],[-35.6,-24],[-33.6,-25.5]], [[-37,58],[-37,30],[-36,-13.5],[-35.6,-22],[-33.6,-23]], // oditoryum girişi (batı cephesi) [[60,60],[84,58],[89,30],[93,8]], [[18,62],[18,72],[8,72.3]], [[-37,58],[-37,30],[-36,10],[-36,-13]], [[-63,59],[-89,61],[-89,-8],[-97,-8]], [[-63,59],[-89,61],[-89,-13.5],[-36,-13.5],[-36,13]],
+    [[-37,58],[-37,30],[-36,-13.5],[-53.9,-16],[-53.9,-27]],
+    [[-37,58],[-37,30],[-36,-13.5],[-55.5,-15.4],[-59.5,-19.6],[-66.3,-27.5],[-67.4,-33],[-67.6,-47.6],[-81,-57.5]] ], // batı meydanı yaya yolu
+  north:[ [[30,-62.5],[-17,-62.5],[-36,-57],[-53.9,-55],[-53.9,-36]], [[30,-62.5],[-30,-62.5],[-36,-54],[-36,-40]], [[84,-58],[84,-21],[89,-14]],
+    [[30,-62.5],[-20,-62.5],[-36,-58],[-36,-30]], [[30,-62.5],[-17,-62.5],[-36,-57],[-53.9,-55],[-67.6,-47.6],[-67.4,-33],[-66.3,-27.5]], [[30,-62.5],[23.5,-62.5],[23.6,-60.4]], [[30,-62.5],[-18,-62.5],[-24,-60],[-30,-50]] ] };
 // ---- Gezinme: dikdörtgen engellerin genişletilmiş köşeleri üzerinde görünürlük grafı + Dijkstra ----
 const NAV_M=.65; let NAV=null;
 function inRect(x,z,r,m){ return x>r[0]-m&&x<r[2]+m&&z>r[1]-m&&z<r[3]+m; }
@@ -2779,8 +2960,6 @@ function navRoute(pts){ const out=[pts[0]]; for(let i=1;i<pts.length;i++){ const
 // zemin yüksekliği (insanlar için): gömülü avlu tabanı ve merdiveni, batı şeridinin merdiveni ve terası
 function groundY(x,z){ const C=SITE.court;
   if(x>C.x0&&x<C.x1&&z>C.z0&&z<C.z1+5){ const fy=.35-C.depth, xs=C.x1-16.5; return (z<C.z0+2.6&&x>xs)?fy+(x-xs)/16.5*C.depth:fy; }
-  if(x>-60.8&&x<-57.2&&z<-53&&z>-57.8) return terrainH(-46,-41.5)+(-53-z)/4.8*3.1;
-  if(x>-64&&x<-54.4&&z<=-57.8&&z>-63.6) return terrainH(-46,-41.5)+3.1;
   return terrainH(x,z); }
 const agents=[], freeSlots=[...Array(MAXP).keys()].reverse(), groups=[];
 let lifeT=0, nextSpawn=2, lifeInit=false;
@@ -2852,9 +3031,9 @@ function spawnGroup(instant=false){
     if(instant){ a.x=tx; a.z=tz; a.delay=0; a.ri=a.route.length; a.onArrive(); }
   }
 }
-// peyzaj alanlarında takılan sohbet grupları: ön şerit nişleri, batı şeridi nişleri, merdivenli teras, güney çimenliği
+// peyzaj alanlarında takılan sohbet grupları: ön şerit nişleri, batı şeridi nişleri, güney çimenliği
 const CHAT_SPOTS=[{c:[-70.8,65.9],ent:'K3'},{c:[-20.8,65.9],ent:'K2'},{c:[49.2,65.9],ent:'MAIN'},{c:[-57.4,-46.2],ent:'K1',via:[[-53.9,-55]]},{c:[-57.4,-34.2],ent:'K3',via:[[-53.9,-16]]},
-  {c:[-59.2,-60.8],ent:'K1',via:[[-53.9,-55],[-53.9,-52.3],[-59,-52.3],[-59,-58.3]]},{c:[-32,86],ent:'MAIN',via:[[18,69],[18,78]]},{c:[44,87],ent:'MAIN',via:[[18,69],[18,78]]},{c:[60.5,62.2],ent:'MAIN'}];
+  {c:[-32,86],ent:'MAIN',via:[[18,69],[18,78]]},{c:[44,87],ent:'MAIN',via:[[18,69],[18,78]]},{c:[60.5,62.2],ent:'MAIN'}];
 function spawnChat(instant=false){
   const opts=CHAT_SPOTS.filter(s=>!groups.some(g=>Math.hypot(g.c[0]-s.c[0],g.c[1]-s.c[1])<4.5)); if(!opts.length) return; const s=pick(opts), E=ENT[s.ent], via=s.via||[];
   const n=2+Math.floor(Math.random()*2); if(freeSlots.length<n) return;
@@ -3002,6 +3181,9 @@ function updateCars(dt){
     _m4.compose(_v4.set(c.rx,y,c.rz),_q4,_v4b.set(CSC,CSC,CSC)); cars.setMatrixAt(c.slot,_m4); carLights.setMatrixAt(c.slot,c.state==='parked'?_zero:_m4);
   }
   cars.instanceMatrix.needsUpdate=true; carLights.instanceMatrix.needsUpdate=true;
+  // bariyerler: şeride yaklaşan araç (park/halka yolu dışındaki sürüşte) ya da yaya varsa kalkar, geçince iner
+  for(const b of BARRIERS){ const near=carList.some(c=>PATH_STATES.has(c.state)&&Math.hypot(c.rx-b.cx,c.rz-b.cz)<10)||agents.some(a=>a.delay<=0&&Math.hypot(a.x-b.cx,a.z-b.cz)<2.6);
+    b.open=damp(b.open,near?1:0,near?6:1.6,dt); b.arm.rotation.z=b.open*1.45; }
   const ln=Math.max(G.uNight.value,WX.fog*.7,WX.rain*.5,WX.snow*.4); lightMat.color.setScalar(.35+ln*3.2);
   updateEmergency(dt,actors);
 }
@@ -3200,7 +3382,7 @@ const DINER_Q=['Bugünün menüsü kuru fasulye. Öğleden sonraki toplantılar�
   'Tepsi iade sırası, yemek sırasından uzun. Bu da bir yönetim modeli.','Masada dört kişiyiz, üçümüz telefona bakıyor, biri yemeğe. Yemeğe bakan kazandı.','Garnitür porsiyonu küçük ama özgüveni büyük.',
   'Mavi sandalyeler çok güzel. Kalkmak istemiyorum, öğleden sonra da istemeyeceğim.','Çorba “günün çorbası” imiş. Hangi günün olduğunu sormadım.'];
 const BENCH_Q=['Bankta on dakika oturdum, takvim üç toplantı kaçırdığımı söylüyor. Değdi.','Bu niş benim yeni ofisim. Wi-Fi yok, şikâyet de yok.','Bitkilerin arasına oturunca kimse “müsait misin?” demiyor. Kamuflaj başarılı.',
-  'LED’li bank geceleri parlıyor. Ben de bir gün böyle parlayacağım; belki performans döneminde.','Merdivenle terasa çıktım, kimse beni bulamadı. Toplantıdan kaçmanın yeni rotası.','Güneş, rüzgâr, sikas... Bu peyzaj benim hedef kartımdan daha yeşil.',
+  'LED’li bank geceleri parlıyor. Ben de bir gün böyle parlayacağım; belki performans döneminde.','Kibele’nin çağlayanını izlerken bütün maillerimi unuttum. Bu bir terapi mi, kaçış mı?','Güneş, rüzgâr, sikas... Bu peyzaj benim hedef kartımdan daha yeşil.',
   'Altıgen tabureyi kim tasarladıysa toplantı odalarına da bir şey yapsın.','Oturdum, nefes aldım, maili açmadım. Bugünün başarısı bu.','Buradan kulelere bakınca 41. kat çok uzak görünüyor. Yakından da öyle.'];
 const CHAT_Q=['Ben sana söylemiştim, o proje “acil” değil “kronik”.','Hafta sonu ne mi yaptım? Pazartesiyi bekledim, klasik.','Yeni müdür çok iyi biri bence. Henüz hiç toplantı yapmadı.',
   'Tostun tarifi değişmiş diyorlar. İnanmıyorum, umudum aynı.','Aramızda kalsın, 38. katta da asansör bekliyorlarmış. Eşitlik bu olsa gerek.','Bu peyzajı kim tasarladıysa bizim sunum şablonlarını da yapsın lütfen.',
@@ -3385,7 +3567,7 @@ function frame(){
   if(viewShift>.5||viewShiftY>.5) camera.setViewOffset(innerWidth,innerHeight,viewShift,viewShiftY,innerWidth,innerHeight); else if(camera.view&&camera.view.enabled) camera.clearViewOffset();
   composer.render();
   if(pendingStyle){ pendingStyle=false; snapshotFade(); applyStyle(); }
-  if(firstFrame){ firstFrame=false; const ld=document.getElementById('loader'); setTimeout(()=>ld.classList.add('done'),Math.max(0,1100-performance.now())); } // yazı en az ~1 sn görünür
+  if(firstFrame){ firstFrame=false; const ld=document.getElementById('loader'); setTimeout(()=>ld.classList.add('done'),Math.max(0,2400-performance.now())); } // yükleme ekranı en az ~2.4 sn görünür (birkaç yazı ve ipucu okunabilsin)
   requestAnimationFrame(frame);
 }
 let lastW=0, lastH=0;
