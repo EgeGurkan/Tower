@@ -3538,8 +3538,39 @@ snowMat.uniforms.uTime=G.uTime;
 let snow; { const n=4500, p=[], s=[]; for(let i=0;i<n;i++){ const th=Math.random()*6.283, rr=Math.sqrt(Math.random())*280; p.push(Math.cos(th)*rr,Math.random()*320,Math.sin(th)*rr); s.push(Math.random()); }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(p,3)); g.setAttribute('aSeed',new THREE.Float32BufferAttribute(s,1));
   snow=new THREE.Points(g,snowMat); snow.frustumCulled=false; snow.visible=false; snow.userData.maxCount=n; scene.add(snow); }
-function setWeather(w){ DB.view.weather=w; if(typeof refreshTopbar==='function') refreshTopbar(); persist(true);
-  const L={clear:'Açık hava',rain:'Yağmur',snow:'Kar',fog:'Sis',storm:'Fırtına'}; toast('Hava durumu: '+L[w],'info',1500); setTimeout(audioUpdate,50); }
+// auto=true: kendiliğinden hava olayı (kaydedilmez); elle seçim (liste, Y kısayolu) otomatik olayı durdurur
+function setWeather(w,auto=false){ DB.view.weather=w; if(typeof refreshTopbar==='function') refreshTopbar();
+  if(!auto){ AUTO_WX.stopped=true; AUTO_WX.active=false; clearTimeout(AUTO_WX.t1); clearTimeout(AUTO_WX.t2); persist(true); }
+  const L={clear:'Açık hava',rain:'Yağmur',snow:'Kar',fog:'Sis',storm:'Fırtına'}; if(!auto) toast('Hava durumu: '+L[w],'info',1500); setTimeout(audioUpdate,50); }
+// ---- Kendiliğinden hava olayı: açılıştan 5 dk sonra bir kez, 1 dk sürer, sonra güneşli havaya döner.
+//      Tür, bugünün ayına göre İstanbul iklimi oranlarıyla rastgele seçilir (ör. haziranda kar yağmaz; kışın kar/yağmur/sis olabilir).
+//      Elle hava seçilirse veya sayfa güneşli dışında bir havayla açıldıysa çalışmaz.
+const ISTANBUL_WX=[ // aylık oranlar: [yağmur, kar, sis, fırtına]
+  [.42,.28,.20,.10], // Ocak: kar ihtimali en yüksek
+  [.42,.28,.20,.10], // Şubat
+  [.50,.12,.28,.10], // Mart: geç kar seyrek
+  [.58,0,.30,.12],   // Nisan: bahar yağmuru, sabah sisi
+  [.58,0,.27,.15],   // Mayıs
+  [.62,0,.30,.08],   // Haziran: yağmur ya da sis (kar yok)
+  [.60,0,.28,.12],   // Temmuz: kısa yaz sağanakları
+  [.60,0,.28,.12],   // Ağustos
+  [.56,0,.32,.12],   // Eylül
+  [.55,0,.37,.08],   // Ekim: sis artar
+  [.56,.04,.36,.04], // Kasım: geç kasımda nadir kar
+  [.48,.22,.25,.05], // Aralık
+];
+const AUTO_WX={stopped:false,t1:0,t2:0};
+function scheduleAutoWeather(){
+  if((DB.view.weather||'clear')!=='clear') return; // kullanıcı zaten bir hava seçmiş
+  AUTO_WX.t1=setTimeout(()=>{ if(AUTO_WX.stopped) return;
+    const m=new Date().getMonth(), P=ISTANBUL_WX[m], K=['rain','snow','fog','storm'], tot=P.reduce((a,b)=>a+b,0); let r=Math.random()*tot, w='rain';
+    for(let i=0;i<4;i++){ if(r<P[i]){ w=K[i]; break; } r-=P[i]; }
+    const AY=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'], L={rain:'yağmur başladı',snow:'kar yağmaya başladı',fog:'sis bastı',storm:'fırtına çıktı'};
+    setWeather(w,true); AUTO_WX.active=true; toast(`🌦 İstanbul’da ${AY[m]} havası: ${L[w]}. Birazdan açacak.`,'info',3200);
+    AUTO_WX.t2=setTimeout(()=>{ if(AUTO_WX.stopped) return; AUTO_WX.active=false; setWeather('clear',true); toast('☀ Hava açtı, güneş geri döndü.','info',2400); AUTO_WX.stopped=true; },60*1000);
+  },5*60*1000);
+  // olay sürerken sayfa kapanırsa geçici hava kaydedilmesin
+  addEventListener('pagehide',()=>{ if(AUTO_WX.active&&!AUTO_WX.stopped){ DB.view.weather='clear'; persist(true); } }); }
 function updateWeather(dt){
   const t=WEATHER_T[DB.view.weather]||{};
   for(const k of ['rain','snow','fog','storm']) WX[k]=damp(WX[k],t[k]||0,.9,dt);
@@ -4692,6 +4723,12 @@ setInterval(()=>DD_LIST.forEach(d=>d.sync()),250); // kısayolla / koddan yapıl
 function init(){
   initTopbar(); initViews(); initSummary();
   ['#weather','#blender-sub','#heat-metric'].forEach(s=>enhanceSelect(document.querySelector(s)));
+  scheduleAutoWeather();
+  // üst bar sığmadığında: başlık üzerinde fare tekerleği ile sağa–sola kaydır
+  { const tb=document.getElementById('topbar');
+    tb.addEventListener('wheel',e=>{ if(tb.scrollWidth<=tb.clientWidth+1) return; const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY; if(!d) return;
+      e.preventDefault(); tb.scrollLeft+=d*(e.deltaMode===1?32:1); DD_LIST.forEach(x=>x.close()); },{passive:false});
+    tb.addEventListener('scroll',()=>DD_LIST.forEach(x=>x.close()),{passive:true}); }
   if(firstRun){ persist(true); setTimeout(()=>toast('Hoş geldiniz · Bir kata tıklayıp “Yeni görev” ile başlayın','info',5200),1200); }
   statsCache.clear();
   applyQuality(); updateFloorVisuals(); updateIndicators(); updatePins(); renderSummary(); refreshTopbar();
